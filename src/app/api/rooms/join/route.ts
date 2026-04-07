@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Check nome duplicato
     const nameTaken = room.players.some(
-      p => p.name.toLowerCase() === name.toLowerCase()
+      (p: { name: string }) => p.name.toLowerCase() === name.toLowerCase()
     );
     if (nameTaken) {
       return NextResponse.json(

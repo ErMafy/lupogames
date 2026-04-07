@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica che l'avatar esista nella lista
-    const avatarExists = DEFAULT_AVATARS.some(a => a.name === avatar);
+    const avatarExists = DEFAULT_AVATARS.some((a: { name: string }) => a.name === avatar);
     if (!avatarExists) {
       return NextResponse.json(
         { success: false, error: 'Avatar non valido. Non inventarti animali!' },
