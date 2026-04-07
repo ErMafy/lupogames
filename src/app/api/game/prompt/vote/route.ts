@@ -131,7 +131,7 @@ async function showResults(roomCode: string, roundId: string, roomId: string) {
   }));
 
   // Ordina per voti
-  results.sort((a, b) => b.voteCount - a.voteCount);
+  results.sort((a: { voteCount: number }, b: { voteCount: number }) => b.voteCount - a.voteCount);
 
   // Aggiorna la fase
   await prisma.promptRound.update({
