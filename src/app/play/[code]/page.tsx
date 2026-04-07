@@ -11,6 +11,7 @@ import { AvatarGrid } from '@/components/game/AvatarGrid';
 import { TriviaController } from '@/components/game/TriviaController';
 import { PromptController } from '@/components/game/PromptController';
 import { SecretController } from '@/components/game/SecretController';
+import { TriviaVictoryAnimation } from '@/components/game/TriviaVictoryAnimation';
 import type { PusherMember, AvatarSelectedEvent, TriviaRoundData, PromptRoundData, SecretRoundData } from '@/types';
 
 interface Player {
@@ -59,6 +60,21 @@ export default function ControllerPage() {
   const [secretPhase, setSecretPhase] = useState<'COLLECTING' | 'GUESSING'>('COLLECTING');
   const [secretPlayers, setSecretPlayers] = useState<{ id: string; name: string; avatar: string | null; avatarColor: string | null }[]>([]);
   const [currentSecret, setCurrentSecret] = useState<string>('');
+
+  // Stato per tutti i giocatori (per classifica live)
+  const [allPlayers, setAllPlayers] = useState<Array<{
+    playerId: string;
+    playerName: string;
+    avatar: string | null;
+    score: number;
+    trackPosition?: number;
+    correctAnswers?: number;
+    wrongAnswers?: number;
+  }>>([]);
+
+  // Stato per victory animation
+  const [showVictory, setShowVictory] = useState(false);
+  const [winner, setWinner] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -523,6 +539,29 @@ export default function ControllerPage() {
                 Guarda lo schermo grande per i risultati...
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Victory Animation */}
+        {showVictory && winner && (
+          <div className="fixed inset-0 z-[9999]">
+            <TriviaVictoryAnimation
+              winner={{
+                playerId: winner.playerId,
+                playerName: winner.playerName,
+                avatar: winner.avatar || '🐺',
+                score: winner.score,
+                trackPosition: winner.trackPosition || 15,
+              }}
+              allPlayers={allPlayers.map(p => ({
+                playerId: p.playerId,
+                playerName: p.playerName,
+                avatar: p.avatar || '🐺',
+                score: p.score,
+                trackPosition: p.trackPosition || 0,
+              }))}
+              onComplete={() => {}}
+            />
           </div>
         )}
 
