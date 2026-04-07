@@ -1,0 +1,398 @@
+// 🐺 LUPO GAMES - Schema del Database
+// Perché ogni party game che si rispetti ha bisogno di un database serio...
+// ...anche se poi lo usiamo per salvare "Il mio superpotere inutile è scoreggiare glitter"
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// 🏠 STANZE - Dove la magia (e il caos) accade
+// ============================================
+
+model Room {
+  id          String   @id @default(cuid())
+  code        String   @unique @db.VarChar(4) // Es: "LUPO", "CIAO", "BRUM"
+  status      RoomStatus @default(LOBBY)
+  currentGame GameType?
+  currentRound Int      @default(0)
+  maxPlayers  Int      @default(15)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Il padrone di casa, quello che clicca i bottoni importanti
+  hostId      String?
+  
+  // Relazioni
+  players     Player[]
+  gameState   GameState?
+  triviaRounds TriviaRound[]
+  promptRounds PromptRound[]
+  secretRounds SecretRound[]
+  
+  @@index([code])
+  @@index([status])
+}
+
+enum RoomStatus {
+  LOBBY       // Aspettando i ritardatari cronici
+  PLAYING     // Si gioca, niente cazzeggio!
+  PAUSED      // Qualcuno deve andare in bagno
+  FINISHED    // GG, andate a dormire
+}
+
+enum GameType {
+  TRIVIA          // La Corsa del Sapere
+  CONTINUE_PHRASE // Continua la Frase
+  WHO_WAS_IT      // Chi è Stato?
+}
+
+// ============================================
+// 👤 GIOCATORI - I nostri valorosi concorrenti
+// ============================================
+
+model Player {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(20) // Max 20 char, non siamo qui per scrivere romanzi
+  
+  // L'avatar scelto (Lupo, Pecora, Maiale, etc.)
+  avatar      String?  @db.VarChar(30)
+  avatarColor String?  @db.VarChar(7) // Hex color, es: #FF5733
+  
+  // Punteggio totale - la gloria eterna (o almeno fino a fine serata)
+  score       Int      @default(0)
+  
+  // Per il trivia - posizione nella corsia (0-10)
+  trackPosition Int    @default(0)
+  
+  // È l'host? Il capo? Il boss? Il supremo?
+  isHost      Boolean  @default(false)
+  
+  // Connessione Pusher
+  pusherSocketId String?
+  isConnected    Boolean @default(true)
+  lastSeen       DateTime @default(now())
+  
+  // Relazioni
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  // Risposte ai vari giochi
+  triviaAnswers    TriviaAnswer[]
+  promptResponses  PromptResponse[]
+  promptVotes      PromptVote[]
+  secrets          Secret[]
+  secretVotes      SecretVote[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([roomId, name]) // Niente omonimi nella stessa stanza, che casino
+  @@unique([roomId, avatar]) // Un avatar per giocatore, non fate i furbi
+  @@index([roomId])
+}
+
+// ============================================
+// 🎮 STATO DEL GIOCO - Il cervellone
+// ============================================
+
+model GameState {
+  id            String   @id @default(cuid())
+  
+  roomId        String   @unique
+  room          Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  // Stato generico serializzato (per flessibilità massima)
+  state         Json     @default("{}")
+  
+  // Timer e countdown
+  timerEndsAt   DateTime?
+  
+  // Round corrente
+  currentRound  Int      @default(1)
+  totalRounds   Int      @default(10)
+  
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================
+// 🧠 TRIVIA - La Corsa del Sapere
+// ============================================
+
+model TriviaQuestion {
+  id          String   @id @default(cuid())
+  
+  // La domanda vera e propria
+  question    String   @db.Text
+  
+  // Le 4 risposte possibili
+  optionA     String   @db.VarChar(200)
+  optionB     String   @db.VarChar(200)
+  optionC     String   @db.VarChar(200)
+  optionD     String   @db.VarChar(200)
+  
+  // La risposta corretta (A, B, C, D)
+  correctAnswer String @db.VarChar(1)
+  
+  // Categoria (per filtrare, un giorno, forse, quando avremo tempo)
+  category    String   @db.VarChar(50)
+  
+  // Difficoltà: 1 = Easy peasy, 2 = Mmh, 3 = Einstein mode
+  difficulty  Int      @default(1)
+  
+  // Quante volte è stata usata (per evitare ripetizioni nella stessa serata)
+  timesUsed   Int      @default(0)
+  
+  // Relazioni
+  triviaRounds TriviaRound[]
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([category])
+  @@index([difficulty])
+}
+
+model TriviaRound {
+  id          String   @id @default(cuid())
+  roundNumber Int
+  
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  questionId  String
+  question    TriviaQuestion @relation(fields: [questionId], references: [id])
+  
+  // Quando è iniziata la domanda (per calcolare chi è più veloce)
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  
+  answers     TriviaAnswer[]
+  
+  @@unique([roomId, roundNumber])
+  @@index([roomId])
+}
+
+model TriviaAnswer {
+  id          String   @id @default(cuid())
+  
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  triviaRoundId String
+  triviaRound   TriviaRound @relation(fields: [triviaRoundId], references: [id], onDelete: Cascade)
+  
+  // La risposta data (A, B, C, D)
+  answer      String   @db.VarChar(1)
+  
+  // Era giusta? (calcolato al momento del salvataggio)
+  isCorrect   Boolean
+  
+  // Millisecondi impiegati per rispondere
+  responseTimeMs Int
+  
+  // Punti guadagnati (bonus per velocità)
+  pointsEarned Int     @default(0)
+  
+  answeredAt  DateTime @default(now())
+  
+  @@unique([playerId, triviaRoundId]) // Una risposta per domanda, ovvio
+}
+
+// ============================================
+// 💬 CONTINUA LA FRASE
+// ============================================
+
+model PromptPhrase {
+  id          String   @id @default(cuid())
+  
+  // La frase da completare
+  // Es: "Il mio superpotere inutile è..."
+  // Es: "La cosa più strana che ho fatto da ubriaco è..."
+  phrase      String   @db.Text
+  
+  // Categoria per temi (SFW, NSFW, Imbarazzante, etc.)
+  category    String   @db.VarChar(50) @default("generale")
+  
+  // Per evitare ripetizioni
+  timesUsed   Int      @default(0)
+  
+  promptRounds PromptRound[]
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([category])
+}
+
+model PromptRound {
+  id          String   @id @default(cuid())
+  roundNumber Int
+  
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  phraseId    String
+  phrase      PromptPhrase @relation(fields: [phraseId], references: [id])
+  
+  // Fasi del gioco
+  phase       PromptPhase @default(WRITING)
+  
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  
+  responses   PromptResponse[]
+  votes       PromptVote[]
+  
+  @@unique([roomId, roundNumber])
+  @@index([roomId])
+}
+
+enum PromptPhase {
+  WRITING     // I giocatori scrivono le risposte
+  VOTING      // Si vota la migliore
+  RESULTS     // Tadaaa! Ecco il vincitore
+}
+
+model PromptResponse {
+  id          String   @id @default(cuid())
+  
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  promptRoundId String
+  promptRound   PromptRound @relation(fields: [promptRoundId], references: [id], onDelete: Cascade)
+  
+  // La risposta creativa del giocatore
+  response    String   @db.VarChar(500)
+  
+  // Voti ricevuti (calcolato)
+  voteCount   Int      @default(0)
+  
+  // Punti guadagnati
+  pointsEarned Int     @default(0)
+  
+  submittedAt DateTime @default(now())
+  
+  votes       PromptVote[]
+  
+  @@unique([playerId, promptRoundId])
+}
+
+model PromptVote {
+  id          String   @id @default(cuid())
+  
+  // Chi ha votato
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  promptRoundId String
+  promptRound   PromptRound @relation(fields: [promptRoundId], references: [id], onDelete: Cascade)
+  
+  // Per quale risposta ha votato
+  responseId  String
+  response    PromptResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  
+  votedAt     DateTime @default(now())
+  
+  @@unique([playerId, promptRoundId]) // Un voto a round
+}
+
+// ============================================
+// 🕵️ CHI È STATO? - Segreti e misteri
+// ============================================
+
+model Secret {
+  id          String   @id @default(cuid())
+  
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  // Il segreto/aneddoto scandaloso
+  content     String   @db.VarChar(1000)
+  
+  // È stato già usato in un round?
+  isUsed      Boolean  @default(false)
+  
+  secretRounds SecretRound[]
+  
+  createdAt   DateTime @default(now())
+}
+
+model SecretRound {
+  id          String   @id @default(cuid())
+  roundNumber Int
+  
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  // Il segreto pescato per questo round
+  secretId    String
+  secret      Secret   @relation(fields: [secretId], references: [id])
+  
+  // Fasi
+  phase       SecretPhase @default(GUESSING)
+  
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  
+  votes       SecretVote[]
+  
+  @@unique([roomId, roundNumber])
+  @@index([roomId])
+}
+
+enum SecretPhase {
+  COLLECTING  // Raccolta segreti iniziale
+  GUESSING    // Chi sarà il colpevole?
+  REVEAL      // Il grande reveal!
+}
+
+model SecretVote {
+  id          String   @id @default(cuid())
+  
+  // Chi ha votato
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  secretRoundId String
+  secretRound   SecretRound @relation(fields: [secretRoundId], references: [id], onDelete: Cascade)
+  
+  // Per chi ha votato (ID del giocatore sospettato)
+  suspectedPlayerId String
+  
+  // Ha indovinato?
+  isCorrect   Boolean  @default(false)
+  
+  // Punti guadagnati
+  pointsEarned Int     @default(0)
+  
+  votedAt     DateTime @default(now())
+  
+  @@unique([playerId, secretRoundId])
+}
+
+// ============================================
+// 🎨 AVATAR DISPONIBILI
+// ============================================
+
+model Avatar {
+  id          String   @id @default(cuid())
+  
+  // Nome dell'avatar (Lupo, Pecora, Maiale, etc.)
+  name        String   @unique @db.VarChar(30)
+  
+  // Emoji o path dell'immagine
+  emoji       String   @db.VarChar(10)
+  
+  // Colore di default
+  defaultColor String  @db.VarChar(7) @default("#FFFFFF")
+  
+  // Ordine di visualizzazione nella griglia
+  sortOrder   Int      @default(0)
+  
+  isActive    Boolean  @default(true)
+}

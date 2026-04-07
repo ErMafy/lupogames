@@ -1,26 +1,591 @@
 @import "tailwindcss";
 
+/* 🐺 LUPO GAMES - Premium Design System */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colori Premium */
+  --lupo-purple: #8B5CF6;
+  --lupo-purple-dark: #6D28D9;
+  --lupo-pink: #EC4899;
+  --lupo-pink-dark: #DB2777;
+  --lupo-blue: #3B82F6;
+  --lupo-cyan: #06B6D4;
+  --lupo-gold: #F59E0B;
+  --lupo-gold-light: #FCD34D;
+  
+  /* Background Premium */
+  --bg-primary: #0A0A1B;
+  --bg-secondary: #12122B;
+  --bg-tertiary: #1A1A3E;
+  
+  /* Testi */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A5B4FC;
+  --text-muted: #6366F1;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  --gradient-gold: linear-gradient(135deg, #F59E0B 0%, #EAB308 50%, #FCD34D 100%);
+  --gradient-game-trivia: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);
+  --gradient-game-prompt: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%);
+  --gradient-game-secret: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+  
+  /* Shadows Premium */
+  --shadow-glow-purple: 0 0 40px rgba(139, 92, 246, 0.4);
+  --shadow-glow-pink: 0 0 40px rgba(236, 72, 153, 0.4);
+  --shadow-glow-gold: 0 0 40px rgba(245, 158, 11, 0.5);
+  --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --shadow-button: 0 10px 40px -10px rgba(139, 92, 246, 0.5);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ============================================
+   🌌 BACKGROUND PREMIUM
+   ============================================ */
+
+body {
+  background: var(--bg-primary);
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.3), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139, 92, 246, 0.15), transparent),
+    radial-gradient(ellipse 50% 30% at 0% 100%, rgba(236, 72, 153, 0.1), transparent);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Stelle animate nel background */
+.bg-stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 200px 50px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 250px 150px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 300px 90px, rgba(255,255,255,0.4), transparent);
+  background-size: 350px 200px;
+  animation: twinkle 8s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ============================================
+   ✨ ANIMAZIONI PREMIUM
+   ============================================ */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(1deg); }
+  75% { transform: translateY(4px) rotate(-1deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4),
+                0 0 40px rgba(139, 92, 246, 0.2),
+                inset 0 0 20px rgba(139, 92, 246, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.6),
+                0 0 80px rgba(139, 92, 246, 0.3),
+                0 0 120px rgba(236, 72, 153, 0.2),
+                inset 0 0 30px rgba(139, 92, 246, 0.2);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(30px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes countdown-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); color: #EF4444; }
+  100% { transform: scale(1); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-shimmer { 
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite; 
+}
+.animate-bounce-in { animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+.animate-slide-up { animation: slide-up 0.5s ease-out; }
+.animate-gradient { 
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite; 
+}
+.animate-rotate-slow { animation: rotate-slow 20s linear infinite; }
+.animate-shake { animation: shake 0.5s ease-in-out; }
+.animate-countdown { animation: countdown-pulse 1s ease-in-out infinite; }
+
+/* ============================================
+   🎨 GLASS MORPHISM PREMIUM
+   ============================================ */
+
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 35px 60px -15px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(139, 92, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+/* ============================================
+   🔘 BOTTONI PREMIUM
+   ============================================ */
+
+.btn-lupo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 10px 40px -10px rgba(139, 92, 246, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-lupo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.btn-lupo:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 20px 50px -10px rgba(139, 92, 246, 0.6),
+    0 0 30px rgba(236, 72, 153, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-lupo:hover::before {
+  left: 100%;
+}
+
+.btn-lupo:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-lupo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-lupo-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  font-weight: 600;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-lupo-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3);
+}
+
+/* Bottoni Trivia Colorati */
+.btn-trivia {
+  position: relative;
+  width: 100%;
+  padding: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-trivia-a { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); }
+.btn-trivia-b { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
+.btn-trivia-c { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+.btn-trivia-d { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+
+.btn-trivia:hover {
+  transform: scale(1.03);
+  box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.4);
+}
+
+.btn-trivia:active {
+  transform: scale(0.97);
+}
+
+.btn-trivia:disabled {
+  opacity: 0.5;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   📝 INPUT PREMIUM
+   ============================================ */
+
+.input-lupo {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-lupo::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.input-lupo:focus {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 
+    0 0 0 4px rgba(139, 92, 246, 0.15),
+    0 10px 40px -10px rgba(139, 92, 246, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   🏷️ BADGE & CHIP
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  background: rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 100px;
+}
+
+.badge-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(234, 179, 8, 0.2));
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #FCD34D;
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #6EE7B7;
+}
+
+.badge-error {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #FCA5A5;
+}
+
+/* ============================================
+   🎰 ROOM CODE DISPLAY
+   ============================================ */
+
+.room-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  color: white;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.2));
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  text-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* ============================================
+   👤 AVATAR PREMIUM
+   ============================================ */
+
+.avatar-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #8B5CF6, #EC4899, #3B82F6);
+  animation: rotate-slow 8s linear infinite;
+}
+
+.avatar-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 3px;
+  background: inherit;
+  filter: blur(8px);
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.avatar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+}
+
+/* ============================================
+   📊 PROGRESS & TIMER
+   ============================================ */
+
+.timer-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-ring svg {
+  transform: rotate(-90deg);
+}
+
+.timer-ring-bg {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.timer-ring-progress {
+  stroke: url(#timer-gradient);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.progress-bar {
+  position: relative;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8B5CF6, #EC4899);
+  border-radius: 100px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+/* ============================================
+   🏆 LEADERBOARD
+   ============================================ */
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.leaderboard-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.leaderboard-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  border-radius: 12px;
+}
+
+.leaderboard-rank-1 {
+  background: linear-gradient(135deg, #F59E0B, #FCD34D);
+  color: #1a1a1a;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.leaderboard-rank-2 {
+  background: linear-gradient(135deg, #94A3B8, #CBD5E1);
+  color: #1a1a1a;
+}
+
+.leaderboard-rank-3 {
+  background: linear-gradient(135deg, #D97706, #F59E0B);
+  color: #1a1a1a;
+}
+
+/* ============================================
+   📱 SCROLLBAR CUSTOM
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(236, 72, 153, 0.5));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.7), rgba(236, 72, 153, 0.7));
+}
+
+/* Hide scrollbar ma mantieni scroll */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   📐 UTILITY CLASSES
+   ============================================ */
+
+.text-gradient {
+  background: linear-gradient(135deg, #8B5CF6, #EC4899, #3B82F6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #F59E0B, #FCD34D);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.border-gradient {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
+              linear-gradient(135deg, #8B5CF6, #EC4899) border-box;
+}
+
+.glow-purple { box-shadow: var(--shadow-glow-purple); }
+.glow-pink { box-shadow: var(--shadow-glow-pink); }
+.glow-gold { box-shadow: var(--shadow-glow-gold); }

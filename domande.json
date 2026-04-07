@@ -1,0 +1,2098 @@
+[
+  {
+    "domanda": "Qual è il vero nome del conduttore televisivo Gerry Scotti?",
+    "risposta_corretta": "Virginio",
+    "risposte_sbagliate": ["Gerardo", "Giovanni", "Gianluigi"],
+    "difficolta": "difficile",
+    "categoria": "Trash"
+  },
+  {
+    "domanda": "Chi ha abbandonato clamorosamente il palco del Festival di Sanremo nel 2020?",
+    "risposta_corretta": "Bugo",
+    "risposte_sbagliate": ["Morgan", "Blanco", "Achille Lauro"],
+    "difficolta": "facile",
+    "categoria": "Trash"
+  },
+  {
+    "domanda": "Come si chiama lo storico programma sui sentimenti condotto da Maria De Filippi?",
+    "risposta_corretta": "Uomini e Donne",
+    "risposte_sbagliate": ["C'è Posta per Te", "Amici", "Temptation Island"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Qual è il famoso tormentone di Valeria Marini?",
+    "risposta_corretta": "Baci stellari",
+    "risposte_sbagliate": ["Adoro!", "Ma chi sei?", "Che vita meravigliosa"],
+    "difficolta": "facile",
+    "categoria": "Trash"
+  },
+  {
+    "domanda": "Chi canta la famosa canzone 'Non sono una signora'?",
+    "risposta_corretta": "Loredana Bertè",
+    "risposte_sbagliate": ["Patty Pravo", "Fiorella Mannoia", "Gianna Nannini"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quanti nipoti ha Zio Paperone?",
+    "risposta_corretta": "3",
+    "risposte_sbagliate": ["2", "4", "5"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "In quale film comico viene pronunciata la frase 'Poteva andare peggio, poteva piovere'?",
+    "risposta_corretta": "Frankenstein Junior",
+    "risposte_sbagliate": ["Fantozzi", "Amici Miei", "Il Grande Lebowski"],
+    "difficolta": "media",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Di che colore è il nastro simbolo della lotta contro il cancro al seno?",
+    "risposta_corretta": "Rosa",
+    "risposte_sbagliate": ["Rosso", "Blu", "Giallo"],
+    "difficolta": "facile",
+    "categoria": "Generale"
+  },
+  {
+    "domanda": "Chi è l'autrice della saga 'Cinquanta sfumature di grigio'?",
+    "risposta_corretta": "E.L. James",
+    "risposte_sbagliate": ["J.K. Rowling", "Stephenie Meyer", "Suzanne Collins"],
+    "difficolta": "media",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Qual è la capitale del Canada?",
+    "risposta_corretta": "Ottawa",
+    "risposte_sbagliate": ["Toronto", "Vancouver", "Montreal"],
+    "difficolta": "difficile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è lo stato indipendente più piccolo del mondo?",
+    "risposta_corretta": "Città del Vaticano",
+    "risposte_sbagliate": ["Monaco", "San Marino", "Andorra"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Che fiume attraversa la città di Parigi?",
+    "risposta_corretta": "Senna",
+    "risposte_sbagliate": ["Tamigi", "Loira", "Reno"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è l'isola più grande del Mar Mediterraneo?",
+    "risposta_corretta": "Sicilia",
+    "risposte_sbagliate": ["Sardegna", "Cipro", "Corsica"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In quale città si trova la Statua della Libertà?",
+    "risposta_corretta": "New York",
+    "risposte_sbagliate": ["Washington D.C.", "Los Angeles", "Chicago"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In quale nazione si trova il celebre mausoleo del Taj Mahal?",
+    "risposta_corretta": "India",
+    "risposte_sbagliate": ["Pakistan", "Turchia", "Egitto"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Quanti sono gli stati membri dell'Unione Europea (al 2024)?",
+    "risposta_corretta": "27",
+    "risposte_sbagliate": ["25", "28", "30"],
+    "difficolta": "difficile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Tra quali due nazioni si trovano le Cascate del Niagara?",
+    "risposta_corretta": "Stati Uniti e Canada",
+    "risposte_sbagliate": ["Brasile e Argentina", "Stati Uniti e Messico", "Zambia e Zimbabwe"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è la capitale dell'Islanda?",
+    "risposta_corretta": "Reykjavík",
+    "risposte_sbagliate": ["Oslo", "Stoccolma", "Helsinki"],
+    "difficolta": "difficile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è la capitale dell'Argentina?",
+    "risposta_corretta": "Buenos Aires",
+    "risposte_sbagliate": ["Santiago", "Montevideo", "Bogotà"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In che anno iniziò la Rivoluzione Francese con la presa della Bastiglia?",
+    "risposta_corretta": "1789",
+    "risposte_sbagliate": ["1776", "1804", "1799"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale figura storica pronunciò la frase 'Il dado è tratto' (Alea iacta est)?",
+    "risposta_corretta": "Giulio Cesare",
+    "risposte_sbagliate": ["Augusto", "Alessandro Magno", "Napoleone"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale antica civiltà precolombiana ha costruito la piramide di Chichén Itzá?",
+    "risposta_corretta": "Maya",
+    "risposte_sbagliate": ["Inca", "Aztechi", "Olmechi"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "In che anno l'Italia è diventata una Repubblica?",
+    "risposta_corretta": "1946",
+    "risposte_sbagliate": ["1945", "1948", "1950"],
+    "difficolta": "facile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale re d'Inghilterra è famoso per aver avuto sei mogli?",
+    "risposta_corretta": "Enrico VIII",
+    "risposte_sbagliate": ["Riccardo Cuor di Leone", "Guglielmo il Conquistatore", "Edoardo IV"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Chi fu il primo Presidente della Repubblica Italiana?",
+    "risposta_corretta": "Enrico De Nicola",
+    "risposte_sbagliate": ["Luigi Einaudi", "Sandro Pertini", "Alcide De Gasperi"],
+    "difficolta": "difficile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale vulcano distrusse le città di Pompei ed Ercolano nel 79 d.C.?",
+    "risposta_corretta": "Vesuvio",
+    "risposte_sbagliate": ["Etna", "Stromboli", "Campi Flegrei"],
+    "difficolta": "facile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Come si chiamava il 'Faraone bambino' la cui tomba fu scoperta intatta nel 1922?",
+    "risposta_corretta": "Tutankhamon",
+    "risposte_sbagliate": ["Ramses II", "Cheope", "Akhenaton"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "La Guerra dei Cent'anni fu combattuta principalmente tra quali due nazioni?",
+    "risposta_corretta": "Inghilterra e Francia",
+    "risposte_sbagliate": ["Spagna e Portogallo", "Francia e Germania", "Inghilterra e Scozia"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale santo fondò l'Ordine dei Frati Minori?",
+    "risposta_corretta": "San Francesco d'Assisi",
+    "risposte_sbagliate": ["San Benedetto", "San Domenico", "Sant'Antonio da Padova"],
+    "difficolta": "facile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quanto fa 7 moltiplicato per 8?",
+    "risposta_corretta": "56",
+    "risposte_sbagliate": ["54", "48", "64"],
+    "difficolta": "facile",
+    "categoria": "Matematica"
+  },
+  {
+    "domanda": "Qual è l'organo più esteso del corpo umano?",
+    "risposta_corretta": "La pelle",
+    "risposte_sbagliate": ["L'intestino", "I polmoni", "Il fegato"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quale pianeta del sistema solare è famoso per i suoi evidenti anelli?",
+    "risposta_corretta": "Saturno",
+    "risposte_sbagliate": ["Urano", "Nettuno", "Giove"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è il metallo miglior conduttore di elettricità a temperatura ambiente?",
+    "risposta_corretta": "Argento",
+    "risposte_sbagliate": ["Rame", "Oro", "Alluminio"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quanti lati ha un decagono?",
+    "risposta_corretta": "10",
+    "risposte_sbagliate": ["12", "8", "20"],
+    "difficolta": "facile",
+    "categoria": "Matematica"
+  },
+  {
+    "domanda": "Qual è l'animale più grande mai esistito sul nostro pianeta?",
+    "risposta_corretta": "Balenottera azzurra",
+    "risposte_sbagliate": ["Megalodonte", "Tirannosauro Rex", "Elefante africano"],
+    "difficolta": "media",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Qual è l'unità di misura della frequenza?",
+    "risposta_corretta": "Hertz",
+    "risposte_sbagliate": ["Decibel", "Watt", "Ohm"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Chi ha scritto 'L'origine delle specie', fondando la biologia evoluzionistica?",
+    "risposta_corretta": "Charles Darwin",
+    "risposte_sbagliate": ["Gregor Mendel", "Louis Pasteur", "Jean-Baptiste Lamarck"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "In quale stato fisico le molecole dell'acqua sono più vicine e ordinate?",
+    "risposta_corretta": "Solido (Ghiaccio)",
+    "risposte_sbagliate": ["Liquido", "Gassoso", "Plasma"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è l'unità di misura dell'energia nel Sistema Internazionale?",
+    "risposta_corretta": "Joule",
+    "risposte_sbagliate": ["Caloria", "Newton", "Volt"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quante Coppe del Mondo di calcio maschile ha vinto il Brasile?",
+    "risposta_corretta": "5",
+    "risposte_sbagliate": ["4", "6", "3"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Qual è la nazione d'origine del calciatore Lionel Messi?",
+    "risposta_corretta": "Argentina",
+    "risposte_sbagliate": ["Spagna", "Portogallo", "Brasile"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quanti anelli ci sono sul bersaglio classico del tiro con l'arco?",
+    "risposta_corretta": "10",
+    "risposte_sbagliate": ["8", "12", "5"],
+    "difficolta": "difficile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quale sport prevede l'uso di una palla ovale e si gioca nella NFL?",
+    "risposta_corretta": "Football americano",
+    "risposte_sbagliate": ["Rugby", "Football australiano", "Polo"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Nel conteggio dei punti a tennis, quale punteggio segue il 30?",
+    "risposta_corretta": "40",
+    "risposte_sbagliate": ["45", "50", "Vantaggio"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quale pilota di MotoGP è soprannominato 'Il Dottore'?",
+    "risposta_corretta": "Valentino Rossi",
+    "risposte_sbagliate": ["Marc Márquez", "Max Biaggi", "Giacomo Agostini"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quanti round durano generalmente gli incontri di boxe per il titolo mondiale professionisti?",
+    "risposta_corretta": "12",
+    "risposte_sbagliate": ["10", "15", "8"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quale nazione ha inventato il tennistavolo (ping pong)?",
+    "risposta_corretta": "Inghilterra",
+    "risposte_sbagliate": ["Cina", "Giappone", "Stati Uniti"],
+    "difficolta": "difficile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "In quale città si sono svolte le Olimpiadi estive del 2024?",
+    "risposta_corretta": "Parigi",
+    "risposte_sbagliate": ["Los Angeles", "Tokyo", "Londra"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "In quale sport eccelleva Michael Jordan?",
+    "risposta_corretta": "Pallacanestro (Basket)",
+    "risposte_sbagliate": ["Baseball", "Calcio", "Football Americano"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Chi è l'antagonista principale nel film Marvel 'Avengers: Infinity War'?",
+    "risposta_corretta": "Thanos",
+    "risposte_sbagliate": ["Loki", "Ultron", "Kang"],
+    "difficolta": "facile",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "In quale film viene pronunciata l'iconica frase 'No, io sono tuo padre'?",
+    "risposta_corretta": "L'Impero colpisce ancora (Star Wars Ep. V)",
+    "risposte_sbagliate": ["Una nuova speranza", "Il ritorno dello Jedi", "La vendetta dei Sith"],
+    "difficolta": "media",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Qual è il vero nome di Heisenberg nella serie TV 'Breaking Bad'?",
+    "risposta_corretta": "Walter White",
+    "risposte_sbagliate": ["Jesse Pinkman", "Saul Goodman", "Hank Schrader"],
+    "difficolta": "facile",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Quante stagioni ufficiali ha la serie 'Il Trono di Spade' (Game of Thrones)?",
+    "risposta_corretta": "8",
+    "risposte_sbagliate": ["7", "9", "6"],
+    "difficolta": "media",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Quale attore ha vinto il premio Oscar nel 2020 interpretando il villain 'Joker'?",
+    "risposta_corretta": "Joaquin Phoenix",
+    "risposte_sbagliate": ["Heath Ledger", "Jared Leto", "Jack Nicholson"],
+    "difficolta": "media",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Di che specie è il predatore nel film 'Lo Squalo' di Steven Spielberg?",
+    "risposta_corretta": "Squalo bianco",
+    "risposte_sbagliate": ["Squalo tigre", "Squalo martello", "Megalodonte"],
+    "difficolta": "facile",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Come si chiama la principessa amata dall'orco Shrek?",
+    "risposta_corretta": "Fiona",
+    "risposte_sbagliate": ["Ariel", "Aurora", "Ginevra"],
+    "difficolta": "facile",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "La popolarissima serie Netflix 'Squid Game' proviene da quale nazione?",
+    "risposta_corretta": "Corea del Sud",
+    "risposte_sbagliate": ["Giappone", "Cina", "Stati Uniti"],
+    "difficolta": "facile",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Quale film ha vinto l'Oscar come Miglior Film nel 2024?",
+    "risposta_corretta": "Oppenheimer",
+    "risposte_sbagliate": ["Barbie", "Povere Creature!", "Killers of the Flower Moon"],
+    "difficolta": "media",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Quale attore interpreta Neo nella saga di Matrix?",
+    "risposta_corretta": "Keanu Reeves",
+    "risposte_sbagliate": ["Tom Cruise", "Will Smith", "Brad Pitt"],
+    "difficolta": "facile",
+    "categoria": "Cinema"
+  },
+  {
+    "domanda": "Chi è l'autore de 'Le avventure di Pinocchio'?",
+    "risposta_corretta": "Carlo Collodi",
+    "risposte_sbagliate": ["Gianni Rodari", "Edmondo De Amicis", "Italo Calvino"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Chi ha dipinto 'La persistenza della memoria', famoso per gli orologi molli?",
+    "risposta_corretta": "Salvador Dalí",
+    "risposte_sbagliate": ["Pablo Picasso", "René Magritte", "Joan Miró"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "Chi è l'autore del celebre libro 'Il Piccolo Principe'?",
+    "risposta_corretta": "Antoine de Saint-Exupéry",
+    "risposte_sbagliate": ["Victor Hugo", "Marcel Proust", "Albert Camus"],
+    "difficolta": "media",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Quale poeta italiano ha composto la celebre poesia 'L'Infinito'?",
+    "risposta_corretta": "Giacomo Leopardi",
+    "risposte_sbagliate": ["Ugo Foscolo", "Eugenio Montale", "Giuseppe Ungaretti"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Chi ha scritto i romanzi distopici '1984' e 'La fattoria degli animali'?",
+    "risposta_corretta": "George Orwell",
+    "risposte_sbagliate": ["Aldous Huxley", "Ray Bradbury", "H.G. Wells"],
+    "difficolta": "media",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "In quale famoso museo di Parigi è esposta la Gioconda?",
+    "risposta_corretta": "Louvre",
+    "risposte_sbagliate": ["Musée d'Orsay", "Centre Pompidou", "Versailles"],
+    "difficolta": "facile",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "Di quale pittore rinascimentale è l'opera 'La Nascita di Venere'?",
+    "risposta_corretta": "Sandro Botticelli",
+    "risposte_sbagliate": ["Leonardo da Vinci", "Tiziano", "Raffaello Sanzio"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "In quale romanzo il Capitano Achab dà la caccia a una balena bianca?",
+    "risposta_corretta": "Moby Dick",
+    "risposte_sbagliate": ["Ventimila leghe sotto i mari", "L'isola del tesoro", "Il vecchio e il mare"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Chi è il creatore letterario del celebre Commissario Montalbano?",
+    "risposta_corretta": "Andrea Camilleri",
+    "risposte_sbagliate": ["Leonardo Sciascia", "Giorgio Faletti", "Gianrico Carofiglio"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Quale artista ha dipinto il capolavoro cubista 'Guernica'?",
+    "risposta_corretta": "Pablo Picasso",
+    "risposte_sbagliate": ["Francisco Goya", "Diego Velázquez", "Salvador Dalí"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "Di quale città inglese erano originari i Beatles?",
+    "risposta_corretta": "Liverpool",
+    "risposte_sbagliate": ["Londra", "Manchester", "Birmingham"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quale artista mondiale è universalmente riconosciuto come il 'Re del Pop'?",
+    "risposta_corretta": "Michael Jackson",
+    "risposte_sbagliate": ["Prince", "Elvis Presley", "Freddie Mercury"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quale genere musicale nacque a cavallo tra 800 e 900 a New Orleans?",
+    "risposta_corretta": "Jazz",
+    "risposte_sbagliate": ["Rock and Roll", "Blues", "Country"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quale famosissima popstar canta la hit 'Shake It Off'?",
+    "risposta_corretta": "Taylor Swift",
+    "risposte_sbagliate": ["Katy Perry", "Ariana Grande", "Miley Cyrus"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Qual è il vero nome all'anagrafe del cantautore Jovanotti?",
+    "risposta_corretta": "Lorenzo Cherubini",
+    "risposte_sbagliate": ["Jovanotti Cherubini", "Lorenzo Fragola", "Claudio Cecchetto"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quale celebre rapper ha cantato 'Lose Yourself' per il film 8 Mile?",
+    "risposta_corretta": "Eminem",
+    "risposte_sbagliate": ["Dr. Dre", "Snoop Dogg", "50 Cent"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quanti tasti (o chiavi) ha un pianoforte classico standard?",
+    "risposta_corretta": "88",
+    "risposte_sbagliate": ["76", "64", "100"],
+    "difficolta": "difficile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Chi è l'iconico frontman della rock band The Rolling Stones?",
+    "risposta_corretta": "Mick Jagger",
+    "risposte_sbagliate": ["Keith Richards", "Steven Tyler", "Paul McCartney"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Come si intitola ufficialmente l'Inno Nazionale Italiano?",
+    "risposta_corretta": "Il Canto degli Italiani (o Inno di Mameli)",
+    "risposte_sbagliate": ["Fratelli d'Italia", "L'Inno di Garibaldi", "Va, pensiero"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Chi ha composto il famosissimo brano classico 'Per Elisa'?",
+    "risposta_corretta": "Ludwig van Beethoven",
+    "risposte_sbagliate": ["Wolfgang Amadeus Mozart", "Johann Sebastian Bach", "Frédéric Chopin"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Qual è il nome del 'Frutto del Diavolo' mangiato da Monkey D. Rufy in One Piece?",
+    "risposta_corretta": "Gom Gom",
+    "risposte_sbagliate": ["Foco Foco", "Ope Ope", "Mera Mera"],
+    "difficolta": "facile",
+    "categoria": "Anime"
+  },
+  {
+    "domanda": "Come si chiama il fratello alto e vestito di verde di Super Mario?",
+    "risposta_corretta": "Luigi",
+    "risposte_sbagliate": ["Waluigi", "Toad", "Yoshi"],
+    "difficolta": "facile",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Qual è il nome del villaggio di appartenenza del ninja Naruto Uzumaki?",
+    "risposta_corretta": "Villaggio della Foglia (Konoha)",
+    "risposte_sbagliate": ["Villaggio della Sabbia", "Villaggio della Nuvola", "Villaggio del Suono"],
+    "difficolta": "facile",
+    "categoria": "Anime"
+  },
+  {
+    "domanda": "In quale celebre videogioco i giocatori saltano da un 'Bus della Battaglia' volante?",
+    "risposta_corretta": "Fortnite",
+    "risposte_sbagliate": ["Apex Legends", "Call of Duty: Warzone", "PUBG"],
+    "difficolta": "facile",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Qual è il nome del protagonista dai capelli bianchi nella saga di 'The Witcher'?",
+    "risposta_corretta": "Geralt di Rivia",
+    "risposte_sbagliate": ["Vesemir", "Dandelion", "Eskel"],
+    "difficolta": "media",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Di che colore è il fantasmino di nome 'Blinky' nel gioco originale di Pac-Man?",
+    "risposta_corretta": "Rosso",
+    "risposte_sbagliate": ["Rosa", "Azzurro", "Arancione"],
+    "difficolta": "difficile",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Quale famosa linea di console per videogiochi è prodotta da Microsoft?",
+    "risposta_corretta": "Xbox",
+    "risposte_sbagliate": ["PlayStation", "Nintendo Switch", "Sega Genesis"],
+    "difficolta": "facile",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "In quale anime il protagonista trova un quaderno che gli permette di uccidere scrivendoci un nome?",
+    "risposta_corretta": "Death Note",
+    "risposte_sbagliate": ["Bleach", "Tokyo Ghoul", "Fullmetal Alchemist"],
+    "difficolta": "facile",
+    "categoria": "Anime"
+  },
+  {
+    "domanda": "Quale Pokémon occupa il numero 001 nel Pokédex Nazionale?",
+    "risposta_corretta": "Bulbasaur",
+    "risposte_sbagliate": ["Pikachu", "Charmander", "Squirtle"],
+    "difficolta": "media",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Come si chiama la mappa principale e originale del gioco Among Us (l'astronave)?",
+    "risposta_corretta": "The Skeld",
+    "risposte_sbagliate": ["Mira HQ", "Polus", "The Airship"],
+    "difficolta": "difficile",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Come si chiama l'alga commestibile essiccata usata tipicamente per avvolgere il sushi?",
+    "risposta_corretta": "Nori",
+    "risposte_sbagliate": ["Wakame", "Kombu", "Agar"],
+    "difficolta": "media",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Quale dolce tipico francese è composto da due soffici dischi di meringa alla mandorla ripieni di crema?",
+    "risposta_corretta": "Macaron",
+    "risposte_sbagliate": ["Profiterole", "Éclair", "Croissant"],
+    "difficolta": "media",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "In quale città italiana è stata inventata la Pizza Margherita?",
+    "risposta_corretta": "Napoli",
+    "risposte_sbagliate": ["Roma", "Palermo", "Bologna"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Che tipo di taglio di carne è la famosa 'Bistecca alla Fiorentina'?",
+    "risposta_corretta": "Bistecca di vitellone/scottona con l'osso a T",
+    "risposte_sbagliate": ["Filetto senza osso", "Costine di maiale", "Fesa di tacchino"],
+    "difficolta": "media",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Quale celebre formaggio svizzero è caratterizzato dai grossi buchi?",
+    "risposta_corretta": "Emmentaler",
+    "risposte_sbagliate": ["Groviera", "Brie", "Gorgonzola"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Di che colore è la scatola della prima classica edizione del gioco da tavolo Trivial Pursuit?",
+    "risposta_corretta": "Blu",
+    "risposte_sbagliate": ["Rossa", "Verde", "Gialla"],
+    "difficolta": "difficile",
+    "categoria": "Giochi"
+  },
+  {
+    "domanda": "A quale famosa marca di abbigliamento sportivo appartiene il logo noto come 'Swoosh'?",
+    "risposta_corretta": "Nike",
+    "risposte_sbagliate": ["Adidas", "Puma", "Reebok"],
+    "difficolta": "facile",
+    "categoria": "Generale"
+  },
+  {
+    "domanda": "Cosa significa la sigla 'A.S.' nel nome della squadra calcistica A.S. Roma?",
+    "risposta_corretta": "Associazione Sportiva",
+    "risposte_sbagliate": ["Atletica Società", "Azione Sport", "Amatori Squadra"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "In quale giorno esatto si festeggia la ricorrenza di Halloween?",
+    "risposta_corretta": "31 Ottobre",
+    "risposte_sbagliate": ["1 Novembre", "30 Ottobre", "2 Novembre"],
+    "difficolta": "facile",
+    "categoria": "Cultura"
+  },
+  {
+    "domanda": "Quanti carati ha l'oro considerato puro?",
+    "risposta_corretta": "24 carati",
+    "risposte_sbagliate": ["18 carati", "100 carati", "12 carati"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+
+
+  {
+    "domanda": "Come si chiama l'attacco speciale più famoso di Goku in Dragon Ball?",
+    "risposta_corretta": "Kamehameha",
+    "risposte_sbagliate": ["Rasengan", "Genkidama", "Chidori"],
+    "difficolta": "facile",
+    "categoria": "Anime"
+  },
+  {
+    "domanda": "Qual è la valuta ufficiale della Svizzera?",
+    "risposta_corretta": "Franco svizzero",
+    "risposte_sbagliate": ["Euro", "Marco", "Corona"],
+    "difficolta": "facile",
+    "categoria": "Economia"
+  },
+  {
+    "domanda": "Quanti premi Oscar ha vinto Leonardo DiCaprio (fino al 2025)?",
+    "risposta_corretta": "1",
+    "risposte_sbagliate": ["0", "2", "3"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "In che anno l'Italia ha vinto i Mondiali di calcio in Spagna?",
+    "risposta_corretta": "1982",
+    "risposte_sbagliate": ["1978", "1986", "1990"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Qual è il nome del creatore della serie animata 'I Simpson'?",
+    "risposta_corretta": "Matt Groening",
+    "risposte_sbagliate": ["Seth MacFarlane", "Trey Parker", "Stan Lee"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Che animale è il 'Capibara'?",
+    "risposta_corretta": "Un roditore",
+    "risposte_sbagliate": ["Un marsupiale", "Un felino", "Un uccello incapace di volare"],
+    "difficolta": "media",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi ha cantato il famoso brano 'Volare (Nel blu dipinto di blu)'?",
+    "risposta_corretta": "Domenico Modugno",
+    "risposte_sbagliate": ["Gianni Morandi", "Claudio Villa", "Adriano Celentano"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quale parte del corpo umano è costituita dal 'miocardio'?",
+    "risposta_corretta": "Il cuore",
+    "risposte_sbagliate": ["Il cervello", "Lo stomaco", "Il fegato"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "In quale videogioco il protagonista si chiama Master Chief?",
+    "risposta_corretta": "Halo",
+    "risposte_sbagliate": ["Doom", "Gears of War", "Mass Effect"],
+    "difficolta": "media",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Qual è il fiume che attraversa la città di Londra?",
+    "risposta_corretta": "Tamigi",
+    "risposte_sbagliate": ["Senna", "Reno", "Danubio"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Come si chiama il fondatore dell'Impero Mongolo?",
+    "risposta_corretta": "Gengis Khan",
+    "risposte_sbagliate": ["Attila", "Tamerlano", "Kublai Khan"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale ingrediente dà il colore giallo al Risotto alla Milanese?",
+    "risposta_corretta": "Zafferano",
+    "risposte_sbagliate": ["Curcuma", "Curry", "Peperone"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Che cos'è la 'Kryptonite'?",
+    "risposta_corretta": "La debolezza di Superman",
+    "risposte_sbagliate": ["Un elemento della tavola periodica", "L'arma di Thor", "Un pianeta di Star Wars"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Quante corde ha tipicamente un basso elettrico standard?",
+    "risposta_corretta": "4",
+    "risposte_sbagliate": ["5", "6", "3"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Qual è lo stato americano con la popolazione più numerosa?",
+    "risposta_corretta": "California",
+    "risposte_sbagliate": ["Texas", "New York", "Florida"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è l'unico numero primo pari?",
+    "risposta_corretta": "2",
+    "risposte_sbagliate": ["0", "4", "Non esistono"],
+    "difficolta": "difficile",
+    "categoria": "Matematica"
+  },
+  {
+    "domanda": "Come si chiama la mossa del Re e della Torre negli scacchi?",
+    "risposta_corretta": "Arrocco",
+    "risposte_sbagliate": ["Scacco matto", "En passant", "Promozione"],
+    "difficolta": "media",
+    "categoria": "Giochi"
+  },
+  {
+    "domanda": "Quale marchio di auto ha come simbolo un Tridente?",
+    "risposta_corretta": "Maserati",
+    "risposte_sbagliate": ["Porsche", "Lamborghini", "Bugatti"],
+    "difficolta": "media",
+    "categoria": "Motori"
+  },
+  {
+    "domanda": "Quale filosofo bevve la cicuta a seguito di una condanna a morte?",
+    "risposta_corretta": "Socrate",
+    "risposte_sbagliate": ["Platone", "Aristotele", "Seneca"],
+    "difficolta": "difficile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Che cocktail si fa con Rum, Menta, Lime, Zucchero e Soda?",
+    "risposta_corretta": "Mojito",
+    "risposte_sbagliate": ["Caipirinha", "Margarita", "Daiquiri"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Chi ha vinto il Festival di Sanremo 2021 spaccando poi il mondo con l'Eurovision?",
+    "risposta_corretta": "Måneskin",
+    "risposte_sbagliate": ["Mahmood", "Diodato", "Blanco"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "In quale paese si trova la regione della Transilvania?",
+    "risposta_corretta": "Romania",
+    "risposte_sbagliate": ["Ungheria", "Bulgaria", "Slovacchia"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Come si chiama il cattivo principale della saga di Harry Potter?",
+    "risposta_corretta": "Voldemort",
+    "risposte_sbagliate": ["Grindelwald", "Sauron", "Piton"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Qual è il mammifero marino che possiede il dente a spirale simile a un corno?",
+    "risposta_corretta": "Narvalo",
+    "risposte_sbagliate": ["Beluga", "Dugongo", "Tricheco"],
+    "difficolta": "difficile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi è stato il primo uomo a viaggiare nello spazio?",
+    "risposta_corretta": "Jurij Gagarin",
+    "risposte_sbagliate": ["Neil Armstrong", "Buzz Aldrin", "John Glenn"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale frutto è al centro di una famosa disputa: va o non va sulla pizza?",
+    "risposta_corretta": "Ananas",
+    "risposte_sbagliate": ["Cocco", "Kiwi", "Mela"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Quale divinità greca è il Dio del Mare?",
+    "risposta_corretta": "Poseidone",
+    "risposte_sbagliate": ["Zeus", "Ade", "Ares"],
+    "difficolta": "facile",
+    "categoria": "Mitologia"
+  },
+  {
+    "domanda": "Che sigla si usa per indicare il DNA in italiano?",
+    "risposta_corretta": "Acido Desossiribonucleico",
+    "risposte_sbagliate": ["Acido Ribonucleico", "Acido Dinucleico", "Acido Desossigenato"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Nel gioco del Monopoli, quale colore hanno le caselle di Parco della Vittoria e Viale dei Giardini?",
+    "risposta_corretta": "Viola",
+    "risposte_sbagliate": ["Rosso", "Blu scuro", "Verde"],
+    "difficolta": "media",
+    "categoria": "Giochi"
+  },
+  {
+    "domanda": "Chi ha scritto 'Alice nel Paese delle Meraviglie'?",
+    "risposta_corretta": "Lewis Carroll",
+    "risposte_sbagliate": ["J.M. Barrie", "Roald Dahl", "C.S. Lewis"],
+    "difficolta": "media",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Quale organo produce la bile?",
+    "risposta_corretta": "Fegato",
+    "risposte_sbagliate": ["Cistifellea", "Pancreas", "Reni"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "In quale anno è nato Internet (World Wide Web)?",
+    "risposta_corretta": "1989",
+    "risposte_sbagliate": ["1981", "1995", "1999"],
+    "difficolta": "difficile",
+    "categoria": "Tecnologia"
+  },
+  {
+    "domanda": "Come si chiama l'azienda fondata da Bill Gates?",
+    "risposta_corretta": "Microsoft",
+    "risposte_sbagliate": ["Apple", "IBM", "Intel"],
+    "difficolta": "facile",
+    "categoria": "Tecnologia"
+  },
+  {
+    "domanda": "Di che colore è la maglia del leader della classifica generale al Tour de France?",
+    "risposta_corretta": "Gialla",
+    "risposte_sbagliate": ["Rosa", "A pois", "Bianca"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quale fiore è il simbolo dei Paesi Bassi?",
+    "risposta_corretta": "Tulipano",
+    "risposte_sbagliate": ["Rosa", "Girasole", "Margherita"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Chi è la voce italiana originale di Homer Simpson (storica)?",
+    "risposta_corretta": "Tonino Accolla",
+    "risposte_sbagliate": ["Pino Insegno", "Massimo Rossi", "Luca Ward"],
+    "difficolta": "difficile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Cosa indica l'acronimo 'SPQR' a Roma?",
+    "risposta_corretta": "Senatus Populusque Romanus",
+    "risposte_sbagliate": ["Società Pubblica Quirinale Roma", "Solo Preti Qui a Roma", "Sono Pazzi Questi Romani"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Chi ha inventato la stampa a caratteri mobili?",
+    "risposta_corretta": "Johannes Gutenberg",
+    "risposte_sbagliate": ["Leonardo da Vinci", "Galileo Galilei", "Isaac Newton"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Che animale è 'Perry' nel cartone 'Phineas e Ferb'?",
+    "risposta_corretta": "Ornitorinco",
+    "risposte_sbagliate": ["Castoro", "Talpa", "Lontra"],
+    "difficolta": "facile",
+    "categoria": "Anime"
+  },
+  {
+    "domanda": "Quale gas usano i dirigibili moderni per galleggiare nell'aria?",
+    "risposta_corretta": "Elio",
+    "risposte_sbagliate": ["Idrogeno", "Ossigeno", "Azoto"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "In che regione italiana si trova il borgo di Alberobello, famoso per i trulli?",
+    "risposta_corretta": "Puglia",
+    "risposte_sbagliate": ["Basilicata", "Calabria", "Campania"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Chi è l'autore della celebre opera 'Il Principe'?",
+    "risposta_corretta": "Niccolò Machiavelli",
+    "risposte_sbagliate": ["Dante Alighieri", "Ludovico Ariosto", "Giovanni Boccaccio"],
+    "difficolta": "media",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Nel gioco Uno, cosa fa la carta 'Cambio Giro'?",
+    "risposta_corretta": "Inverte il senso di gioco",
+    "risposte_sbagliate": ["Fa pescare 2 carte", "Salta il turno", "Cambia il colore"],
+    "difficolta": "facile",
+    "categoria": "Giochi"
+  },
+  {
+    "domanda": "Da quanti bit è composto un Byte?",
+    "risposta_corretta": "8",
+    "risposte_sbagliate": ["4", "16", "32"],
+    "difficolta": "media",
+    "categoria": "Tecnologia"
+  },
+  {
+    "domanda": "Come si chiama la montagna più alta del mondo?",
+    "risposta_corretta": "Monte Everest",
+    "risposte_sbagliate": ["K2", "Kilimangiaro", "Monte Bianco"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Quale arte marziale è originaria della Corea?",
+    "risposta_corretta": "Taekwondo",
+    "risposte_sbagliate": ["Karate", "Judo", "Kung Fu"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Nella mitologia norrena, chi è il dio del tuono?",
+    "risposta_corretta": "Thor",
+    "risposte_sbagliate": ["Odino", "Loki", "Freyr"],
+    "difficolta": "facile",
+    "categoria": "Mitologia"
+  },
+  {
+    "domanda": "Cosa misurano i 'Kelvin'?",
+    "risposta_corretta": "La temperatura",
+    "risposte_sbagliate": ["La pressione", "La luminosità", "La corrente elettrica"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "In quale film un gruppo di persone deve entrare nei sogni degli altri?",
+    "risposta_corretta": "Inception",
+    "risposte_sbagliate": ["Matrix", "Interstellar", "Shutter Island"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Che cosa mangiano principalmente i panda?",
+    "risposta_corretta": "Bambù",
+    "risposte_sbagliate": ["Eucalipto", "Insetti", "Pesce"],
+    "difficolta": "facile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Qual è il vero nome del supereroe Spiderman?",
+    "risposta_corretta": "Peter Parker",
+    "risposte_sbagliate": ["Clark Kent", "Bruce Wayne", "Barry Allen"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "In quale anno è scoppiata la Prima Guerra Mondiale?",
+    "risposta_corretta": "1914",
+    "risposte_sbagliate": ["1912", "1918", "1939"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Chi è l'alter ego malvagio di Dr. Jekyll?",
+    "risposta_corretta": "Mr. Hyde",
+    "risposte_sbagliate": ["Frankenstein", "Dracula", "L'Uomo Invisibile"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Quale nazione ha la foglia d'acero sulla bandiera?",
+    "risposta_corretta": "Canada",
+    "risposte_sbagliate": ["Svizzera", "Libano", "Nuova Zelanda"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In medicina, cos'è l'alopecia?",
+    "risposta_corretta": "La caduta dei capelli",
+    "risposte_sbagliate": ["Un'infezione della pelle", "La perdita di memoria", "L'infiammazione delle articolazioni"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Come si chiama il robot giallo dei Transformers che diventa una Chevrolet Camaro?",
+    "risposta_corretta": "Bumblebee",
+    "risposte_sbagliate": ["Optimus Prime", "Megatron", "Starscream"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Quale tennista ha vinto il maggior numero di tornei del Grande Slam in singolare maschile (fino al 2024)?",
+    "risposta_corretta": "Novak Djokovic",
+    "risposte_sbagliate": ["Roger Federer", "Rafael Nadal", "Pete Sampras"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Chi ha composto 'Le Quattro Stagioni'?",
+    "risposta_corretta": "Antonio Vivaldi",
+    "risposte_sbagliate": ["Wolfgang Amadeus Mozart", "Ludwig van Beethoven", "Johann Sebastian Bach"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Qual è il colore del minerale Zaffiro?",
+    "risposta_corretta": "Blu",
+    "risposte_sbagliate": ["Rosso", "Verde", "Giallo"],
+    "difficolta": "facile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Quale attore interpreta il Capitano Jack Sparrow?",
+    "risposta_corretta": "Johnny Depp",
+    "risposte_sbagliate": ["Orlando Bloom", "Brad Pitt", "Keanu Reeves"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "In quale città europea si trova la statua della Sirenetta?",
+    "risposta_corretta": "Copenaghen",
+    "risposte_sbagliate": ["Stoccolma", "Oslo", "Helsinki"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Che strumento usa un medico per ascoltare il cuore e i polmoni?",
+    "risposta_corretta": "Fonendoscopio (Stetoscopio)",
+    "risposte_sbagliate": ["Otoscopio", "Elettrocardiogramma", "Sfigmomanometro"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quale isola italiana è famosa per i faraglioni?",
+    "risposta_corretta": "Capri",
+    "risposte_sbagliate": ["Ischia", "Elba", "Pantelleria"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In quale decennio è uscito il primo film di 'Star Wars'?",
+    "risposta_corretta": "Anni '70 (1977)",
+    "risposte_sbagliate": ["Anni '60", "Anni '80", "Anni '90"],
+    "difficolta": "difficile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Come si chiama l'incantesimo usato in Harry Potter per disarmare l'avversario?",
+    "risposta_corretta": "Expelliarmus",
+    "risposte_sbagliate": ["Avada Kedavra", "Lumos", "Expecto Patronum"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Cosa produce una ghiandola sudoripara?",
+    "risposta_corretta": "Sudore",
+    "risposte_sbagliate": ["Saliva", "Lacrime", "Sebo"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Chi scrisse la tragedia 'Romeo e Giulietta'?",
+    "risposta_corretta": "William Shakespeare",
+    "risposte_sbagliate": ["Charles Dickens", "Oscar Wilde", "Victor Hugo"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Di che nazionalità era il pittore Pablo Picasso?",
+    "risposta_corretta": "Spagnola",
+    "risposte_sbagliate": ["Francese", "Italiana", "Messicana"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "Che cos'è l'Eternit?",
+    "risposta_corretta": "Un materiale contenente amianto",
+    "risposte_sbagliate": ["Un metallo prezioso", "Un gas velenoso", "Una plastica biodegradabile"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è il prefisso telefonico internazionale dell'Italia?",
+    "risposta_corretta": "+39",
+    "risposte_sbagliate": ["+1", "+44", "+34"],
+    "difficolta": "facile",
+    "categoria": "Generale"
+  },
+  {
+    "domanda": "Nella serie animata Pokémon, qual è il nome del rivale storico di Ash Ketchum?",
+    "risposta_corretta": "Gary Oak",
+    "risposte_sbagliate": ["Brock", "Team Rocket", "Professor Oak"],
+    "difficolta": "media",
+    "categoria": "Anime"
+  },
+  {
+    "domanda": "In quale città fu assassinato l'arciduca Francesco Ferdinando, evento che scatenò la WWI?",
+    "risposta_corretta": "Sarajevo",
+    "risposte_sbagliate": ["Vienna", "Belgrado", "Berlino"],
+    "difficolta": "difficile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Come si chiama l'albero da cui si producono le ghiande?",
+    "risposta_corretta": "Quercia",
+    "risposte_sbagliate": ["Pino", "Faggio", "Castagno"],
+    "difficolta": "facile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi ha vinto l'ultima edizione del 'Grande Fratello' (Vip o NIP) nel momento del suo massimo trash?",
+    "risposta_corretta": "Perla Vatiero (2024)",
+    "risposte_sbagliate": ["Beatrice Luzzi", "Tommaso Zorzi", "Antonella Elia"],
+    "difficolta": "difficile",
+    "categoria": "Trash"
+  },
+  {
+    "domanda": "Quale cocktail è composto da Prosecco, Aperol e Soda?",
+    "risposta_corretta": "Spritz",
+    "risposte_sbagliate": ["Negroni", "Americano", "Bellini"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Nel Signore degli Anelli, chi è il creatore dell'Unico Anello?",
+    "risposta_corretta": "Sauron",
+    "risposte_sbagliate": ["Saruman", "Morgoth", "Gandalf"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "A quale temperatura bolle l'acqua a livello del mare?",
+    "risposta_corretta": "100 gradi Celsius",
+    "risposte_sbagliate": ["90 gradi Celsius", "120 gradi Celsius", "80 gradi Celsius"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è il cereale più coltivato al mondo?",
+    "risposta_corretta": "Mais",
+    "risposte_sbagliate": ["Grano", "Riso", "Avena"],
+    "difficolta": "difficile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi ha cantato 'Albachiara'?",
+    "risposta_corretta": "Vasco Rossi",
+    "risposte_sbagliate": ["Ligabue", "Zucchero", "Eros Ramazzotti"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Quale mare bagna la Puglia a est?",
+    "risposta_corretta": "Mar Adriatico",
+    "risposte_sbagliate": ["Mar Ionio", "Mar Tirreno", "Mar Ligure"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Come si chiama l'antagonista principale nel gioco Super Mario Bros?",
+    "risposta_corretta": "Bowser",
+    "risposte_sbagliate": ["Wario", "Donkey Kong", "Waluigi"],
+    "difficolta": "facile",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Che cos'è l'Unione Sovietica (URSS)?",
+    "risposta_corretta": "Uno stato socialista esistito in Eurasia",
+    "risposte_sbagliate": ["Un'alleanza militare attuale", "Un partito politico russo", "Una federazione americana"],
+    "difficolta": "facile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale di questi animali NON è un rettile?",
+    "risposta_corretta": "Rana",
+    "risposte_sbagliate": ["Serpente", "Tartaruga", "Coccodrillo"],
+    "difficolta": "media",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Qual è il nome dell'agenzia spaziale degli Stati Uniti?",
+    "risposta_corretta": "NASA",
+    "risposte_sbagliate": ["ESA", "Roscosmos", "SpaceX"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Chi era il cantante principale dei Nirvana?",
+    "risposta_corretta": "Kurt Cobain",
+    "risposte_sbagliate": ["Dave Grohl", "Eddie Vedder", "Layne Staley"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Che figura geometrica è un rombo?",
+    "risposta_corretta": "Un quadrilatero",
+    "risposte_sbagliate": ["Un triangolo", "Un pentagono", "Un cerchio"],
+    "difficolta": "facile",
+    "categoria": "Matematica"
+  },
+  {
+    "domanda": "Quale famoso architetto catalano ha progettato la Sagrada Familia?",
+    "risposta_corretta": "Antoni Gaudí",
+    "risposte_sbagliate": ["Pablo Picasso", "Santiago Calatrava", "Salvador Dalí"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "In quale stato africano si trovano le piramidi di Giza?",
+    "risposta_corretta": "Egitto",
+    "risposte_sbagliate": ["Marocco", "Sudafrica", "Nigeria"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Quale attore ha schiaffeggiato Chris Rock durante gli Oscar del 2022?",
+    "risposta_corretta": "Will Smith",
+    "risposte_sbagliate": ["Denzel Washington", "Samuel L. Jackson", "Kevin Hart"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Che cos'è l'aurora boreale?",
+    "risposta_corretta": "Un fenomeno ottico atmosferico",
+    "risposte_sbagliate": ["Una stella cadente", "Un'eclissi solare", "Un tipo di nuvola"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quanti giocatori ci sono in una squadra di basket in campo?",
+    "risposta_corretta": "5",
+    "risposte_sbagliate": ["6", "7", "4"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Chi ha scritto 'Il Signore degli Anelli'?",
+    "risposta_corretta": "J.R.R. Tolkien",
+    "risposte_sbagliate": ["C.S. Lewis", "George R.R. Martin", "J.K. Rowling"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Quale osso si trova nel braccio umano tra la spalla e il gomito?",
+    "risposta_corretta": "Omero",
+    "risposte_sbagliate": ["Femore", "Radio", "Ulna"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Di quale colore è la pillola che Neo prende nel film 'Matrix' per scoprire la verità?",
+    "risposta_corretta": "Rossa",
+    "risposte_sbagliate": ["Blu", "Verde", "Gialla"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Che lingua parlano ufficialmente in Austria?",
+    "risposta_corretta": "Tedesco",
+    "risposte_sbagliate": ["Austriaco", "Inglese", "Francese"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Cosa significa la sigla 'BFF' in chat?",
+    "risposta_corretta": "Best Friends Forever",
+    "risposte_sbagliate": ["Big Fat Fish", "Be Free Forever", "Best Food First"],
+    "difficolta": "facile",
+    "categoria": "Generale"
+  },
+  {
+    "domanda": "Come si chiama l'ispettore a cui dà la caccia Arsenio Lupin (o che dà la caccia a lui)?",
+    "risposta_corretta": "Zenigata",
+    "risposte_sbagliate": ["Megure", "Gordon", "Ganimard"],
+    "difficolta": "media",
+    "categoria": "Anime"
+  },
+  {
+    "domanda": "In quale città è ambientata la serie 'Gomorra'?",
+    "risposta_corretta": "Napoli",
+    "risposte_sbagliate": ["Roma", "Palermo", "Milano"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Qual è il mese più corto dell'anno?",
+    "risposta_corretta": "Febbraio",
+    "risposte_sbagliate": ["Aprile", "Novembre", "Gennaio"],
+    "difficolta": "facile",
+    "categoria": "Generale"
+  },
+  {
+    "domanda": "Da quale animale si ottiene il Cashmere?",
+    "risposta_corretta": "Capra",
+    "risposte_sbagliate": ["Pecora", "Lama", "Alpaca"],
+    "difficolta": "difficile",
+    "categoria": "Natura"
+  },
+  
+  {
+    "domanda": "Qual è il pianeta più vicino al Sole?",
+    "risposta_corretta": "Mercurio",
+    "risposte_sbagliate": ["Venere", "Marte", "Terra"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quanti colori ci sono nell'arcobaleno?",
+    "risposta_corretta": "7",
+    "risposte_sbagliate": ["5", "6", "8"],
+    "difficolta": "facile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi ha scritto 'La Divina Commedia'?",
+    "risposta_corretta": "Dante Alighieri",
+    "risposte_sbagliate": ["Giovanni Boccaccio", "Francesco Petrarca", "Alessandro Manzoni"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Qual è la capitale del Giappone?",
+    "risposta_corretta": "Tokyo",
+    "risposte_sbagliate": ["Kyoto", "Osaka", "Seoul"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In quale sport si usa il termine 'Fuoricampo'?",
+    "risposta_corretta": "Baseball",
+    "risposte_sbagliate": ["Tennis", "Cricket", "Golf"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Come si chiama il cane di Topolino?",
+    "risposta_corretta": "Pluto",
+    "risposte_sbagliate": ["Pippo", "Spike", "Fido"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Quale elemento chimico ha simbolo 'O'?",
+    "risposta_corretta": "Ossigeno",
+    "risposte_sbagliate": ["Oro", "Osmio", "Oganesson"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è l'oceano più grande della Terra?",
+    "risposta_corretta": "Oceano Pacifico",
+    "risposte_sbagliate": ["Oceano Atlantico", "Oceano Indiano", "Oceano Artico"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Chi è il creatore di Facebook?",
+    "risposta_corretta": "Mark Zuckerberg",
+    "risposte_sbagliate": ["Elon Musk", "Bill Gates", "Steve Jobs"],
+    "difficolta": "facile",
+    "categoria": "Tecnologia"
+  },
+  {
+    "domanda": "In quale anno l'uomo è sbarcato sulla Luna?",
+    "risposta_corretta": "1969",
+    "risposte_sbagliate": ["1965", "1971", "1961"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale osso si trova nella gamba?",
+    "risposta_corretta": "Femore",
+    "risposte_sbagliate": ["Omero", "Ulna", "Radio"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è il monte più alto d'Italia?",
+    "risposta_corretta": "Monte Bianco",
+    "risposte_sbagliate": ["Monte Rosa", "Cervino", "Gran Sasso"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Chi ha diretto il film 'Pulp Fiction'?",
+    "risposta_corretta": "Quentin Tarantino",
+    "risposte_sbagliate": ["Steven Spielberg", "Martin Scorsese", "Christopher Nolan"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Quanti giocatori scendono in campo in una squadra di pallavolo?",
+    "risposta_corretta": "6",
+    "risposte_sbagliate": ["5", "7", "11"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quale animale è il simbolo del WWF?",
+    "risposta_corretta": "Panda gigante",
+    "risposte_sbagliate": ["Tigre", "Orso Polare", "Elefante"],
+    "difficolta": "media",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Qual è il vero nome di Batman?",
+    "risposta_corretta": "Bruce Wayne",
+    "risposte_sbagliate": ["Clark Kent", "Peter Parker", "Tony Stark"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Come si chiama il processo con cui le piante producono cibo?",
+    "risposta_corretta": "Fotosintesi",
+    "risposte_sbagliate": ["Respirazione", "Osmosi", "Mitocondria"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Chi cantava 'Bohemian Rhapsody'?",
+    "risposta_corretta": "Queen",
+    "risposte_sbagliate": ["The Beatles", "Rolling Stones", "Pink Floyd"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "In quale continente si trova l'Egitto?",
+    "risposta_corretta": "Africa",
+    "risposte_sbagliate": ["Asia", "Europa", "Medio Oriente"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è il pezzo degli scacchi che può muoversi a 'L'?",
+    "risposta_corretta": "Cavallo",
+    "risposte_sbagliate": ["Alfiere", "Torre", "Regina"],
+    "difficolta": "media",
+    "categoria": "Giochi"
+  },
+  {
+    "domanda": "Che cos'è il 'Tofu'?",
+    "risposta_corretta": "Formaggio di soia",
+    "risposte_sbagliate": ["Carne essiccata", "Radice di zenzero", "Alga fermentata"],
+    "difficolta": "media",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Quale di questi non è un linguaggio di programmazione?",
+    "risposta_corretta": "Cobra",
+    "risposte_sbagliate": ["Python", "Java", "C++"],
+    "difficolta": "media",
+    "categoria": "Tecnologia"
+  },
+  {
+    "domanda": "Chi ha inventato la lampadina a incandescenza commerciale?",
+    "risposta_corretta": "Thomas Edison",
+    "risposte_sbagliate": ["Nikola Tesla", "Alexander Graham Bell", "Guglielmo Marconi"],
+    "difficolta": "difficile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Come si chiama l'unità di misura della forza?",
+    "risposta_corretta": "Newton",
+    "risposte_sbagliate": ["Joule", "Pascal", "Watt"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è la valuta ufficiale del Giappone?",
+    "risposta_corretta": "Yen",
+    "risposte_sbagliate": ["Yuan", "Won", "Baht"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Chi ha scolpito il David a Firenze?",
+    "risposta_corretta": "Michelangelo",
+    "risposte_sbagliate": ["Leonardo da Vinci", "Donatello", "Raffaello"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "Quanti giorni ha un anno bisestile?",
+    "risposta_corretta": "366",
+    "risposte_sbagliate": ["365", "364", "367"],
+    "difficolta": "facile",
+    "categoria": "Generale"
+  },
+  {
+    "domanda": "Cosa significa l'acronimo WWW?",
+    "risposta_corretta": "World Wide Web",
+    "risposte_sbagliate": ["World Web Wide", "Wild World Web", "Web World Wide"],
+    "difficolta": "facile",
+    "categoria": "Tecnologia"
+  },
+  {
+    "domanda": "Quale frutto è associato alla teoria della gravità di Newton?",
+    "risposta_corretta": "Mela",
+    "risposte_sbagliate": ["Pera", "Arancia", "Pesca"],
+    "difficolta": "facile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "In quale città si trova il Colosseo?",
+    "risposta_corretta": "Roma",
+    "risposte_sbagliate": ["Atene", "Napoli", "Firenze"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è l'animale terrestre più veloce?",
+    "risposta_corretta": "Ghepardo",
+    "risposte_sbagliate": ["Leopardo", "Leone", "Gazzella"],
+    "difficolta": "facile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Che strumento suonava Jimi Hendrix?",
+    "risposta_corretta": "Chitarra",
+    "risposte_sbagliate": ["Basso", "Batteria", "Pianoforte"],
+    "difficolta": "facile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Chi ha dipinto la Gioconda?",
+    "risposta_corretta": "Leonardo da Vinci",
+    "risposte_sbagliate": ["Michelangelo", "Caravaggio", "Giotto"],
+    "difficolta": "facile",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "Quale gas respiriamo per vivere?",
+    "risposta_corretta": "Ossigeno",
+    "risposte_sbagliate": ["Anidride carbonica", "Azoto", "Elio"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quanti sono i segni zodiacali?",
+    "risposta_corretta": "12",
+    "risposte_sbagliate": ["10", "11", "13"],
+    "difficolta": "facile",
+    "categoria": "Curiosità"
+  },
+  {
+    "domanda": "Quale nazione ha vinto i Mondiali di calcio nel 2006?",
+    "risposta_corretta": "Italia",
+    "risposte_sbagliate": ["Francia", "Brasile", "Germania"],
+    "difficolta": "media",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Come si chiama il folletto verde compagno di avventure di Peter Pan?",
+    "risposta_corretta": "Trilli",
+    "risposte_sbagliate": ["Campanellino", "Polvere di fata", "Stella"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Qual è la radice quadrata di 144?",
+    "risposta_corretta": "12",
+    "risposte_sbagliate": ["14", "10", "16"],
+    "difficolta": "media",
+    "categoria": "Matematica"
+  },
+  {
+    "domanda": "In quale stato americano si trova Hollywood?",
+    "risposta_corretta": "California",
+    "risposte_sbagliate": ["Florida", "New York", "Texas"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Chi scrisse l'Iliade e l'Odissea?",
+    "risposta_corretta": "Omero",
+    "risposte_sbagliate": ["Virgilio", "Sofocle", "Euripide"],
+    "difficolta": "media",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Come si chiama il personaggio principale di The Legend of Zelda?",
+    "risposta_corretta": "Link",
+    "risposte_sbagliate": ["Zelda", "Ganon", "Mario"],
+    "difficolta": "media",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Quale metallo è liquido a temperatura ambiente?",
+    "risposta_corretta": "Mercurio",
+    "risposte_sbagliate": ["Piombo", "Ferro", "Gallio"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Qual è la lingua madre più parlata al mondo (per numero di madrelingua)?",
+    "risposta_corretta": "Cinese Mandarino",
+    "risposte_sbagliate": ["Inglese", "Spagnolo", "Hindi"],
+    "difficolta": "difficile",
+    "categoria": "Cultura"
+  },
+  {
+    "domanda": "Quale pianeta è conosciuto come il Pianeta Rosso?",
+    "risposta_corretta": "Marte",
+    "risposte_sbagliate": ["Giove", "Venere", "Saturno"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Chi ha scoperto la penicillina?",
+    "risposta_corretta": "Alexander Fleming",
+    "risposte_sbagliate": ["Louis Pasteur", "Marie Curie", "Robert Koch"],
+    "difficolta": "difficile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "In quale continente si trova il deserto del Sahara?",
+    "risposta_corretta": "Africa",
+    "risposte_sbagliate": ["Asia", "America del Sud", "Oceania"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è il nome del porcellino amico di Winnie the Pooh?",
+    "risposta_corretta": "Pimpi",
+    "risposte_sbagliate": ["Tigro", "Ih-Oh", "Ro"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Quanti tentacoli ha un polpo?",
+    "risposta_corretta": "8",
+    "risposte_sbagliate": ["6", "10", "12"],
+    "difficolta": "facile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi ha formulato la teoria della relatività?",
+    "risposta_corretta": "Albert Einstein",
+    "risposte_sbagliate": ["Isaac Newton", "Galileo Galilei", "Stephen Hawking"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quale animale fa il verso 'barrito'?",
+    "risposta_corretta": "Elefante",
+    "risposte_sbagliate": ["Leone", "Cavallo", "Rinoceronte"],
+    "difficolta": "media",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Come si chiama la paura dei ragni?",
+    "risposta_corretta": "Aracnofobia",
+    "risposte_sbagliate": ["Agorafobia", "Claustrofobia", "Acrofobia"],
+    "difficolta": "media",
+    "categoria": "Generale"
+  },
+  {
+    "domanda": "Quale città italiana è famosa per il Palio dell'Assunta?",
+    "risposta_corretta": "Siena",
+    "risposte_sbagliate": ["Firenze", "Arezzo", "Pisa"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In che anno è caduto il Muro di Berlino?",
+    "risposta_corretta": "1989",
+    "risposte_sbagliate": ["1985", "1991", "1990"],
+    "difficolta": "difficile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Chi canta la canzone 'Rolling in the Deep'?",
+    "risposta_corretta": "Adele",
+    "risposte_sbagliate": ["Beyoncé", "Lady Gaga", "Rihanna"],
+    "difficolta": "media",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Qual è il paese più grande del mondo per superficie?",
+    "risposta_corretta": "Russia",
+    "risposte_sbagliate": ["Canada", "Cina", "Stati Uniti"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "In che sport si vince la 'Stanley Cup'?",
+    "risposta_corretta": "Hockey su ghiaccio",
+    "risposte_sbagliate": ["Football americano", "Basket", "Rugby"],
+    "difficolta": "difficile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Chi ha scritto 'Harry Potter'?",
+    "risposta_corretta": "J.K. Rowling",
+    "risposte_sbagliate": ["J.R.R. Tolkien", "George R.R. Martin", "Stephen King"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Che tipo di pasta è tradizionalmente usata per il Pesto alla Genovese?",
+    "risposta_corretta": "Trofie",
+    "risposte_sbagliate": ["Spaghetti", "Penne", "Farfalle"],
+    "difficolta": "media",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Qual è la capitale della Spagna?",
+    "risposta_corretta": "Madrid",
+    "risposte_sbagliate": ["Barcellona", "Siviglia", "Valencia"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Come si chiama l'azienda produttrice della PlayStation?",
+    "risposta_corretta": "Sony",
+    "risposte_sbagliate": ["Microsoft", "Nintendo", "Sega"],
+    "difficolta": "facile",
+    "categoria": "Videogiochi"
+  },
+  {
+    "domanda": "Quale imperatore romano nominò senatore il suo cavallo?",
+    "risposta_corretta": "Caligola",
+    "risposte_sbagliate": ["Nerone", "Commodo", "Tiberio"],
+    "difficolta": "difficile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale frutto è la base della bevanda 'Guacamole'?",
+    "risposta_corretta": "Avocado",
+    "risposte_sbagliate": ["Pomodoro", "Mango", "Papaya"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "Quanti millimetri ci sono in un metro?",
+    "risposta_corretta": "1000",
+    "risposte_sbagliate": ["100", "10", "10000"],
+    "difficolta": "facile",
+    "categoria": "Matematica"
+  },
+  {
+    "domanda": "Chi ha dipinto la Cappella Sistina?",
+    "risposta_corretta": "Michelangelo",
+    "risposte_sbagliate": ["Leonardo", "Botticelli", "Tiziano"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  },
+  {
+    "domanda": "Qual è il mare che bagna le coste a est dell'Italia?",
+    "risposta_corretta": "Mare Adriatico",
+    "risposte_sbagliate": ["Mare Tirreno", "Mar Ionio", "Mar Ligure"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Quale vitamina è prodotta dal corpo umano quando esposto al sole?",
+    "risposta_corretta": "Vitamina D",
+    "risposte_sbagliate": ["Vitamina C", "Vitamina A", "Vitamina B12"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quanti anelli ci sono nel logo delle Olimpiadi?",
+    "risposta_corretta": "5",
+    "risposte_sbagliate": ["4", "6", "7"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Qual è il gas principale responsabile dell'effetto serra?",
+    "risposta_corretta": "Anidride carbonica",
+    "risposte_sbagliate": ["Metano", "Ozono", "Monossido di carbonio"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Chi è il protagonista del film 'Forrest Gump'?",
+    "risposta_corretta": "Tom Hanks",
+    "risposte_sbagliate": ["Brad Pitt", "Johnny Depp", "Leonardo DiCaprio"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Qual è l'unità di misura della corrente elettrica?",
+    "risposta_corretta": "Ampere",
+    "risposte_sbagliate": ["Volt", "Watt", "Ohm"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "In quale stato si trovano le rovine inca di Machu Picchu?",
+    "risposta_corretta": "Perù",
+    "risposte_sbagliate": ["Messico", "Cile", "Colombia"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Che cos'è l'origami?",
+    "risposta_corretta": "L'arte di piegare la carta",
+    "risposte_sbagliate": ["Una danza giapponese", "Un tipo di sushi", "Un'arma marziale"],
+    "difficolta": "facile",
+    "categoria": "Cultura"
+  },
+  {
+    "domanda": "Quanti denti ha solitamente un essere umano adulto?",
+    "risposta_corretta": "32",
+    "risposte_sbagliate": ["30", "28", "34"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Quale animale dorme in letargo d'inverno?",
+    "risposta_corretta": "Orso",
+    "risposte_sbagliate": ["Lupo", "Cervo", "Volpe"],
+    "difficolta": "facile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi scrisse 'I Promessi Sposi'?",
+    "risposta_corretta": "Alessandro Manzoni",
+    "risposte_sbagliate": ["Giacomo Leopardi", "Giovanni Pascoli", "Giosuè Carducci"],
+    "difficolta": "facile",
+    "categoria": "Letteratura"
+  },
+  {
+    "domanda": "Qual è la formula chimica dell'acqua?",
+    "risposta_corretta": "H2O",
+    "risposte_sbagliate": ["CO2", "O2", "NaCl"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Da quale pianta si ottiene il rum?",
+    "risposta_corretta": "Canna da zucchero",
+    "risposte_sbagliate": ["Patata", "Agave", "Orzo"],
+    "difficolta": "media",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "In quale città si trovano le famose Ramblas?",
+    "risposta_corretta": "Barcellona",
+    "risposte_sbagliate": ["Madrid", "Lisbona", "Siviglia"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Qual è il colore del sangue dei polpi?",
+    "risposta_corretta": "Blu",
+    "risposte_sbagliate": ["Rosso", "Verde", "Trasparente"],
+    "difficolta": "difficile",
+    "categoria": "Natura"
+  },
+  {
+    "domanda": "Chi è stato il primo presidente degli Stati Uniti?",
+    "risposta_corretta": "George Washington",
+    "risposte_sbagliate": ["Abraham Lincoln", "Thomas Jefferson", "John Adams"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Quale band cantava 'Stairway to Heaven'?",
+    "risposta_corretta": "Led Zeppelin",
+    "risposte_sbagliate": ["The Doors", "Deep Purple", "Black Sabbath"],
+    "difficolta": "difficile",
+    "categoria": "Musica"
+  },
+  {
+    "domanda": "Cosa studia un entomologo?",
+    "risposta_corretta": "Gli insetti",
+    "risposte_sbagliate": ["Le parole", "Gli uccelli", "I fossili"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Come si chiama l'attuale moneta del Regno Unito?",
+    "risposta_corretta": "Sterlina",
+    "risposte_sbagliate": ["Euro", "Dollaro", "Franco"],
+    "difficolta": "facile",
+    "categoria": "Economia"
+  },
+  {
+    "domanda": "Qual è il gruppo sanguigno definito donatore universale?",
+    "risposta_corretta": "0 negativo",
+    "risposte_sbagliate": ["AB positivo", "A positivo", "B negativo"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Dove è nato il ballo del Tango?",
+    "risposta_corretta": "Argentina",
+    "risposte_sbagliate": ["Spagna", "Brasile", "Cuba"],
+    "difficolta": "media",
+    "categoria": "Cultura"
+  },
+  {
+    "domanda": "Che razza di cane è il protagonista di 'Rex'?",
+    "risposta_corretta": "Pastore Tedesco",
+    "risposte_sbagliate": ["Golden Retriever", "Labrador", "Dobermann"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Qual è il continente più freddo della Terra?",
+    "risposta_corretta": "Antartide",
+    "risposte_sbagliate": ["Artide", "Nord America", "Asia"],
+    "difficolta": "facile",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Chi ha inventato il telefono?",
+    "risposta_corretta": "Antonio Meucci",
+    "risposte_sbagliate": ["Guglielmo Marconi", "Alexander Graham Bell", "Thomas Edison"],
+    "difficolta": "media",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Qual è la distanza di una maratona?",
+    "risposta_corretta": "42,195 km",
+    "risposte_sbagliate": ["40 km", "45 km", "21,097 km"],
+    "difficolta": "difficile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Quale frutto contiene la sostanza nota come 'bromelina'?",
+    "risposta_corretta": "Ananas",
+    "risposte_sbagliate": ["Banana", "Kiwi", "Mango"],
+    "difficolta": "difficile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Cosa misurava la scala Richter?",
+    "risposta_corretta": "L'energia dei terremoti",
+    "risposte_sbagliate": ["La forza del vento", "La temperatura", "La pressione atmosferica"],
+    "difficolta": "media",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Come si chiama l'elfo domestico di Harry Potter?",
+    "risposta_corretta": "Dobby",
+    "risposte_sbagliate": ["Winky", "Kreacher", "Gollum"],
+    "difficolta": "facile",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "Qual è il lago più grande d'Italia?",
+    "risposta_corretta": "Lago di Garda",
+    "risposte_sbagliate": ["Lago Maggiore", "Lago di Como", "Lago Trasimeno"],
+    "difficolta": "media",
+    "categoria": "Geografia"
+  },
+  {
+    "domanda": "Da che nazione proviene il formaggio 'Feta'?",
+    "risposta_corretta": "Grecia",
+    "risposte_sbagliate": ["Turchia", "Italia", "Cipro"],
+    "difficolta": "facile",
+    "categoria": "Cucina"
+  },
+  {
+    "domanda": "In che anno è stata scoperta l'America?",
+    "risposta_corretta": "1492",
+    "risposte_sbagliate": ["1453", "1501", "1488"],
+    "difficolta": "facile",
+    "categoria": "Storia"
+  },
+  {
+    "domanda": "Che cos'è la Vuvuzela?",
+    "risposta_corretta": "Uno strumento a fiato",
+    "risposte_sbagliate": ["Un piatto tipico", "Un ballo africano", "Un insetto"],
+    "difficolta": "media",
+    "categoria": "Cultura"
+  },
+  {
+    "domanda": "Qual è l'animale che appare nel logo della Ferrari?",
+    "risposta_corretta": "Cavallo",
+    "risposte_sbagliate": ["Toro", "Leone", "Ghepardo"],
+    "difficolta": "facile",
+    "categoria": "Sport"
+  },
+  {
+    "domanda": "Chi ha diretto il film 'Avatar'?",
+    "risposta_corretta": "James Cameron",
+    "risposte_sbagliate": ["Steven Spielberg", "Peter Jackson", "Ridley Scott"],
+    "difficolta": "media",
+    "categoria": "Intrattenimento"
+  },
+  {
+    "domanda": "In quale galassia si trova il nostro sistema solare?",
+    "risposta_corretta": "Via Lattea",
+    "risposte_sbagliate": ["Andromeda", "Sombrero", "Occhio Nero"],
+    "difficolta": "facile",
+    "categoria": "Scienza"
+  },
+  {
+    "domanda": "Chi dipinse 'L'Urlo'?",
+    "risposta_corretta": "Edvard Munch",
+    "risposte_sbagliate": ["Vincent van Gogh", "Salvador Dalí", "Gustav Klimt"],
+    "difficolta": "media",
+    "categoria": "Arte"
+  }
+]
