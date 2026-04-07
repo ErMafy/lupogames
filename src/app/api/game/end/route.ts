@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepara classifica finale
-    const finalScores = room.players.map((p, index) => ({
+    const finalScores = room.players.map((p: { id: string; name: string; avatar: string | null; avatarColor: string | null; score: number; trackPosition: number }, index: number) => ({
       playerId: p.id,
       playerName: p.name,
       avatar: p.avatar,
