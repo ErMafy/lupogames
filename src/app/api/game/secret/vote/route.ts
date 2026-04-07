@@ -192,7 +192,7 @@ async function showSecretResults(roomCode: string, roundId: string, roomId: stri
       });
 
       if (secrets.length > 0) {
-        const selectedSecret = pickRandom(secrets, 1)[0];
+        const selectedSecret = (pickRandom(secrets, 1) as { id: string; playerId: string; content: string }[])[0];
 
         const newSecretRound = await prisma.secretRound.create({
           data: {

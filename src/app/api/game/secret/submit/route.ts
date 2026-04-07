@@ -102,7 +102,7 @@ async function startGuessingRound(roomCode: string, roomId: string, roundNumber:
     return;
   }
 
-  const selectedSecret = pickRandom(secrets, 1)[0];
+  const selectedSecret = (pickRandom(secrets, 1) as { id: string; content: string; playerId: string }[])[0];
 
   // Crea il round
   const secretRound = await prisma.secretRound.create({

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const selectedPhrases = pickRandom(phrases, rounds);
+    const selectedPhrases = pickRandom(phrases, rounds) as { id: string; phrase: string }[];
     const firstPhrase = selectedPhrases[0];
 
     // Crea il primo round

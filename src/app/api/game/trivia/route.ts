@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const selectedQuestions = pickRandom(questions, rounds);
+    const selectedQuestions = pickRandom(questions, rounds) as { id: string; question: string; category: string; optionA: string; optionB: string; optionC: string; optionD: string }[];
     const firstQuestion = selectedQuestions[0];
 
     // Crea il primo round
