@@ -175,7 +175,7 @@ async function endGame(roomCode: string, roomId: string) {
 
   await sendToRoom(roomCode, 'game-ended', {
     gameType: 'WHO_WAS_IT',
-    finalScores: players.map((p, i) => ({
+    finalScores: players.map((p: { id: string; name: string; avatar: string | null; score: number }, i: number) => ({
       rank: i + 1,
       playerId: p.id,
       playerName: p.name,
