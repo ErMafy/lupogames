@@ -101,7 +101,7 @@ async function showResults(roomCode: string, roundId: string, roomId: string) {
   });
 
   // Calcola i punti (100 per ogni voto ricevuto)
-  const results = await Promise.all(responses.map(async (r) => {
+  const results = await Promise.all(responses.map(async (r: { id: string; response: string; playerId: string; player: { name: string; avatar: string | null }; votes: unknown[] }) => {
     const points = r.votes.length * 100;
     
     // Aggiorna i punti del giocatore
