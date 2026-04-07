@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         where: { roomId: room.id },
         data: {
           state: {
-            phraseIds: selectedPhrases.map(p => p.id),
+            phraseIds: selectedPhrases.map((p: { id: string }) => p.id),
             currentPhraseIndex: 1,
             currentRoundId: promptRound.id,
           },

@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         where: { roomId: room.id },
         data: {
           state: {
-            questionIds: selectedQuestions.map(q => q.id),
+            questionIds: selectedQuestions.map((q: { id: string }) => q.id),
             currentQuestionIndex: 1, // Già al primo
             currentRoundId: triviaRound.id,
           },

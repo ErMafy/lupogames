@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crea o aggiorna la risposta
-    const existingResponse = promptRound.responses.find(r => r.playerId === playerId);
+    const existingResponse = promptRound.responses.find((r: { playerId: string }) => r.playerId === playerId);
     
     if (existingResponse) {
       await prisma.promptResponse.update({
@@ -121,7 +121,7 @@ async function startVotingPhase(roomCode: string, roundId: string, roomId: strin
   // Invia le risposte anonime (mescolate) per il voto
   const shuffledResponses = responses
     .sort(() => Math.random() - 0.5)
-    .map(r => ({
+    .map((r: { id: string; response: string }) => ({
       id: r.id,
       response: r.response,
       // Non mostriamo chi ha scritto cosa!

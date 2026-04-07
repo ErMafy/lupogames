@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const points = isCorrect ? 200 : 0;
 
     // Crea o aggiorna il voto
-    const existingVote = secretRound.votes.find(v => v.playerId === playerId);
+    const existingVote = secretRound.votes.find((v: { playerId: string }) => v.playerId === playerId);
     
     if (existingVote) {
       await prisma.secretVote.update({
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 🚀 AUTO-ADVANCE: Controlla se tutti hanno votato (escluso il proprietario del segreto)
-    const votingPlayers = room.players.filter(p => p.id !== secretRound.secret.playerId);
+    const votingPlayers = room.players.filter((p: { id: string }) => p.id !== secretRound.secret.playerId);
     const allCompleted = await checkAllPlayersCompleted(
       roomCode,
       'SECRET',
@@ -134,14 +134,14 @@ async function showSecretResults(roomCode: string, roundId: string, roomId: stri
       name: secretRound.secret.player.name,
       avatar: secretRound.secret.player.avatar,
     },
-    votes: secretRound.votes.map(v => ({
+    votes: secretRound.votes.map((v: { playerId: string; player: { name: string; avatar: string | null }; isCorrect: boolean; pointsEarned: number }) => ({
       playerId: v.playerId,
       playerName: v.player.name,
       avatar: v.player.avatar,
       guessedCorrectly: v.isCorrect,
       pointsEarned: v.pointsEarned,
     })),
-    correctGuesses: secretRound.votes.filter(v => v.isCorrect).length,
+    correctGuesses: secretRound.votes.filter((v: { isCorrect: boolean }) => v.isCorrect).length,
     totalVotes: secretRound.votes.length,
   };
 
@@ -240,7 +240,7 @@ async function showSecretResults(roomCode: string, roundId: string, roomId: stri
           data: {
             secret: selectedSecret.content,
             roundId: newSecretRound.id,
-            players: players.map(p => ({
+            players: players.map((p: { id: string; name: string; avatar: string | null; avatarColor: string | null }) => ({
               id: p.id,
               name: p.name,
               avatar: p.avatar,

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Verifica che il giocatore sia nella stanza
-      const player = room.players.find(p => p.id === playerId);
+      const player = room.players.find((p: { id: string }) => p.id === playerId);
       if (!player && playerId) {
         // Se non esiste ma ha un playerId, probabilmente è una riconnessione
         // Lo cerchiamo nel DB

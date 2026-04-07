@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica che il giocatore non abbia già risposto
-    const alreadyAnswered = triviaRound.answers.find(a => a.playerId === playerId);
+    const alreadyAnswered = triviaRound.answers.find((a: { playerId: string }) => a.playerId === playerId);
     if (alreadyAnswered) {
       return NextResponse.json(
         { success: false, error: 'Hai già risposto a questa domanda!' },
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const points = calculateTriviaPoints(isCorrect, responseTimeMs, 15000);
 
     // Determina se è il più veloce tra quelli corretti
-    const correctAnswers = triviaRound.answers.filter(a => a.isCorrect);
+    const correctAnswers = triviaRound.answers.filter((a: { isCorrect: boolean }) => a.isCorrect);
     const isFastest = isCorrect && correctAnswers.length === 0;
 
     // Bonus per il più veloce

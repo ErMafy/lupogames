@@ -153,7 +153,7 @@ async function startGuessingRound(roomCode: string, roomId: string, roundNumber:
     data: {
       secret: selectedSecret.content,
       roundId: secretRound.id,
-      players: players.map(p => ({
+      players: players.map((p: { id: string; name: string; avatar: string | null; avatarColor: string | null }) => ({
         id: p.id,
         name: p.name,
         avatar: p.avatar,

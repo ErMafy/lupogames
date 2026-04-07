@@ -35,13 +35,13 @@ export async function POST(request: NextRequest) {
     if (nextIndex >= gameState.questionIds.length) {
       // Gioco finito!
       await sendToRoom(roomCode, 'game-ended', {
-        finalScores: room.players.map(p => ({
+        finalScores: room.players.map((p: { id: string; name: string; avatar: string | null; score: number; trackPosition: number }) => ({
           playerId: p.id,
           playerName: p.name,
           avatar: p.avatar,
           score: p.score,
           trackPosition: p.trackPosition,
-        })).sort((a, b) => b.score - a.score),
+        })).sort((a: { score: number }, b: { score: number }) => b.score - a.score),
       });
 
       return NextResponse.json({

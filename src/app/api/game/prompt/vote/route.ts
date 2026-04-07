@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica che non stia votando la propria risposta
-    const votedResponse = promptRound.responses.find(r => r.id === responseId);
+    const votedResponse = promptRound.responses.find((r: { id: string; playerId: string }) => r.id === responseId);
     if (votedResponse?.playerId === playerId) {
       return NextResponse.json(
         { success: false, error: 'Non puoi votare la tua risposta, furbetto!' },
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crea o aggiorna il voto
-    const existingVote = promptRound.votes.find(v => v.playerId === playerId);
+    const existingVote = promptRound.votes.find((v: { playerId: string }) => v.playerId === playerId);
     
     if (existingVote) {
       await prisma.promptVote.update({

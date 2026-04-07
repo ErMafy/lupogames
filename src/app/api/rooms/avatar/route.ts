@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica che il giocatore sia nella stanza
-    const player = room.players.find(p => p.id === playerId);
+    const player = room.players.find((p: { id: string }) => p.id === playerId);
     if (!player) {
       return NextResponse.json(
         { success: false, error: 'Non sei in questa stanza' },
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Verifica che l'avatar non sia già preso da un altro
     const avatarTaken = room.players.find(
-      p => p.avatar === avatar && p.id !== playerId
+      (p: { id: string; avatar: string | null }) => p.avatar === avatar && p.id !== playerId
     );
     if (avatarTaken) {
       return NextResponse.json(
@@ -157,11 +157,11 @@ export async function GET(request: NextRequest) {
     // Crea la lista degli avatar con stato
     const takenAvatars = new Map(
       room.players
-        .filter(p => p.avatar)
-        .map(p => [p.avatar!, { playerId: p.id, playerName: p.name }])
+        .filter((p: { avatar: string | null }) => p.avatar)
+        .map((p: { id: string; name: string; avatar: string | null }) => [p.avatar!, { playerId: p.id, playerName: p.name }])
     );
 
-    const avatarsWithStatus = DEFAULT_AVATARS.map(avatar => ({
+    const avatarsWithStatus = DEFAULT_AVATARS.map((avatar: { name: string; emoji: string }) => ({
       name: avatar.name,
       emoji: avatar.emoji,
       isAvailable: !takenAvatars.has(avatar.name),
