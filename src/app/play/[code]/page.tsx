@@ -695,16 +695,16 @@ export default function ControllerPage() {
           </div>
         )}
 
-        {/* Round Results */}
-        {controllerView === 'results' && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center animate-bounce-in">
-            <div className="glass-card p-10">
-              <div className="text-7xl mb-6 animate-bounce">🎉</div>
-              <h2 className="text-3xl font-black text-white mb-4">
+        {/* Round Results — solo se nessun risultato specifico inline */}
+        {controllerView === 'results' && !promptRoundResults && !secretReveal && (
+          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center animate-bounce-in">
+            <div className="glass-card p-8">
+              <div className="text-5xl mb-4 animate-bounce">🎉</div>
+              <h2 className="text-2xl font-black text-white mb-2">
                 Round Completato!
               </h2>
-              <p className="text-purple-200/80 text-lg">
-                Guarda lo schermo grande per i risultati...
+              <p className="text-purple-200/80 text-sm">
+                Prossimo round in arrivo...
               </p>
             </div>
           </div>

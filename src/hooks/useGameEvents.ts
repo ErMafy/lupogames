@@ -214,6 +214,19 @@ export function useGameEvents() {
   // 🎯 EVENT DISPATCHER
   // ============================================
 
+  const handlePhaseChanged = useCallback((data: { gameType: string; phase: string }) => {
+    setState(prev => {
+      let view = prev.controllerView;
+      if (data.gameType === 'CONTINUE_PHRASE') {
+        view = data.phase === 'VOTING' ? 'prompt-vote' : 'prompt-write';
+      }
+      if (data.gameType === 'WHO_WAS_IT') {
+        view = data.phase === 'GUESSING' ? 'secret-vote' : 'secret-write';
+      }
+      return { ...prev, controllerView: view, hasSubmitted: false, canSubmit: true };
+    });
+  }, []);
+
   const handleGameEvent = useCallback((eventName: string, data: unknown) => {
     switch (eventName) {
       case 'game-started':
@@ -225,6 +238,9 @@ export function useGameEvents() {
           gameType: GameType;
           data: TriviaRoundData | PromptRoundData | SecretRoundData;
         });
+        break;
+      case 'phase-changed':
+        handlePhaseChanged(data as { gameType: string; phase: string });
         break;
       case 'timer-tick':
         handleTimerTick(data as { timeRemaining: number });
@@ -239,7 +255,7 @@ export function useGameEvents() {
         handleGameEnded();
         break;
     }
-  }, [handleGameStarted, handleRoundStarted, handleTimerTick, handleShowResults, handleGameEnded]);
+  }, [handleGameStarted, handleRoundStarted, handlePhaseChanged, handleTimerTick, handleShowResults, handleGameEnded]);
 
   return {
     ...state,

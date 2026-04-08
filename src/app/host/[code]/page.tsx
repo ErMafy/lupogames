@@ -9,10 +9,12 @@ import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { useGameEvents } from '@/hooks/useGameEvents';
 import { PromptController } from '@/components/game/PromptController';
 import { SecretController } from '@/components/game/SecretController';
+import { TriviaController } from '@/components/game/TriviaController';
 import type {
   PusherMember,
   AvatarSelectedEvent,
   GameType,
+  TriviaRoundData,
   PromptRoundData,
   SecretRoundData,
 } from '@/types';
@@ -190,18 +192,16 @@ function GameCard({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative overflow-hidden p-8 rounded-3xl text-white text-center transition-all duration-500 ${gradient} disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 shadow-xl shadow-black/30`}
+      className={`group relative overflow-hidden p-4 sm:p-8 rounded-2xl sm:rounded-3xl text-white text-center transition-all duration-500 ${gradient} disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 shadow-xl shadow-black/30 touch-manipulation`}
     >
-      {/* Shine effect */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
       </div>
       
-      {/* Content */}
-      <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-300">
-        <div className="text-6xl mb-4 group-hover:animate-bounce drop-shadow-lg">{emoji}</div>
-        <div className="text-2xl font-black mb-2 tracking-tight">{title}</div>
-        <div className="text-white/90 font-semibold text-sm mb-3">{subtitle}</div>
+      <div className="relative z-10">
+        <div className="text-3xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-lg">{emoji}</div>
+        <div className="text-base sm:text-2xl font-black mb-1 sm:mb-2 tracking-tight">{title}</div>
+        <div className="text-white/90 font-semibold text-xs sm:text-sm mb-2 sm:mb-3">{subtitle}</div>
         {description && (
           <p className="text-white/70 text-sm leading-relaxed text-left px-1 border-t border-white/15 pt-3 mt-2">
             {description}
@@ -265,6 +265,14 @@ export default function HostPage() {
   // Secret game state  
   const [secretData, setSecretData] = useState<SecretData | null>(null);
 
+  // Host trivia result
+  const [hostTriviaResult, setHostTriviaResult] = useState<{
+    isCorrect: boolean;
+    correctAnswer: string;
+    correctAnswerText?: string;
+    pointsEarned: number;
+  } | null>(null);
+
   // Game state hook (tabellone + partecipazione host come giocatore)
   const {
     handleGameEvent,
@@ -273,6 +281,7 @@ export default function HostPage() {
     hasSubmitted,
     markAsSubmitted,
     resetHasSubmitted,
+    timeRemaining,
   } = useGameEvents();
 
   // Carica i dati iniziali
@@ -369,6 +378,7 @@ export default function HostPage() {
         setTotalRoundsNum((eventData.totalRounds as number) || 5);
         setTimeLeft(roundData.timeLimit || 30);
         setShowCorrectAnswer(null);
+        setHostTriviaResult(null);
       }
       
       if (eventData.gameType === 'CONTINUE_PHRASE') {
@@ -594,6 +604,35 @@ export default function HostPage() {
     [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
   );
 
+  const handleHostTriviaAnswer = useCallback(
+    async (answer: 'A' | 'B' | 'C' | 'D', responseTimeMs: number) => {
+      if (!hostPlayer || !roundData || currentGameType !== 'TRIVIA') return;
+      const rd = roundData as TriviaRoundData & { roundId?: string };
+      if (!rd.roundId) return;
+      const res = await fetch('/api/game/trivia/answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode,
+          playerId: hostPlayer.id,
+          roundId: rd.roundId,
+          answer,
+          responseTimeMs,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Risposta non inviata');
+      setHostTriviaResult({
+        isCorrect: data.data.isCorrect,
+        correctAnswer: data.data.correctAnswer as string,
+        correctAnswerText: data.data.correctAnswerText as string | undefined,
+        pointsEarned: data.data.pointsEarned,
+      });
+      markAsSubmitted();
+    },
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+  );
+
   const hostPromptRoundForController: (PromptRoundData & { roundId?: string }) | null =
     promptData &&
     roundData &&
@@ -734,36 +773,34 @@ export default function HostPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[100dvh]">
       <div className="bg-stars" />
       
-      {/* Header Premium */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="text-3xl animate-float">🐺</span>
-            <div>
-              <span className="text-white font-black text-xl">LUPO GAMES</span>
-              <div className="flex items-center gap-2 mt-1">
+      {/* Header — responsive */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <span className="text-xl sm:text-3xl animate-float shrink-0">🐺</span>
+            <div className="min-w-0">
+              <span className="text-white font-black text-sm sm:text-xl block truncate">LUPO GAMES</span>
+              <div className="flex items-center gap-1 sm:gap-2">
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
-                <span className="text-white/60 text-sm">{memberCount} online</span>
+                <span className="text-white/60 text-xs sm:text-sm">{memberCount} online</span>
               </div>
             </div>
           </div>
           
-          {/* Room Code Premium */}
-          <div className="room-code">
+          <div className="room-code text-sm sm:text-base px-2 sm:px-4 py-1 tracking-widest shrink-0">
             {roomCode}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {gamePhase === 'playing' && (
               <button
                 onClick={endGame}
-                className="px-6 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-xl font-bold transition-all hover:scale-105"
+                className="px-3 sm:px-6 py-2 sm:py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-xl font-bold text-xs sm:text-base transition-all"
               >
-                ⏹️ Termina Gioco
+                ⏹️ Stop
               </button>
             )}
           </div>
@@ -771,70 +808,68 @@ export default function HostPage() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-24 pb-8 px-6 relative z-10">
+      <main className="pb-8 px-3 sm:px-6 pt-4 relative z-10">
         
         {/* LOBBY VIEW */}
         {gamePhase === 'lobby' && (
           <div className="max-w-6xl mx-auto animate-slide-up">
             
-            {/* Join Instructions Premium */}
-            <div className="glass-card p-10 mb-10 text-center relative overflow-hidden">
+            {/* Join Instructions */}
+            <div className="glass-card p-4 sm:p-10 mb-4 sm:mb-10 text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10" />
               <div className="relative z-10">
-                <h1 className="text-4xl font-black text-white mb-4">
+                <h1 className="text-xl sm:text-4xl font-black text-white mb-2 sm:mb-4">
                   🎮 Unisciti alla Partita!
                 </h1>
-                <p className="text-purple-200 text-xl mb-6">
-                  Vai su <span className="font-bold text-gradient">lupogames.vercel.app</span> dal telefono
+                <p className="text-purple-200 text-sm sm:text-xl mb-3 sm:mb-6">
+                  Vai su <span className="font-bold text-gradient">lupogames.vercel.app</span>
                 </p>
-                <div className="inline-flex items-center gap-4 bg-black/30 backdrop-blur-sm rounded-2xl p-6">
-                  <span className="text-white/80 text-lg">Inserisci il codice:</span>
-                  <span className="text-5xl font-black text-gradient-gold tracking-wider">{roomCode}</span>
+                <div className="inline-flex items-center gap-2 sm:gap-4 bg-black/30 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-6">
+                  <span className="text-white/80 text-sm sm:text-lg">Codice:</span>
+                  <span className="text-2xl sm:text-5xl font-black text-gradient-gold tracking-wider">{roomCode}</span>
                 </div>
               </div>
             </div>
 
-            {/* Players Grid Premium */}
-            <div className="glass-card p-8 mb-10">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-black text-white flex items-center gap-3">
+            {/* Players Grid */}
+            <div className="glass-card p-4 sm:p-8 mb-4 sm:mb-10">
+              <div className="flex items-center justify-between mb-3 sm:mb-6">
+                <h2 className="text-lg sm:text-2xl font-black text-white flex items-center gap-2">
                   <span>👥</span> Giocatori
                 </h2>
-                <span className="badge">{players.length}/15</span>
+                <span className="badge text-xs sm:text-sm">{players.length}/15</span>
               </div>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
                 {players.map((player) => (
                   <PlayerCard key={player.id} player={player} showScore />
                 ))}
                 
-                {/* Empty slots */}
                 {players.length < 4 && Array.from({ length: 4 - players.length }).map((_, i) => (
                   <div
                     key={`empty-${i}`}
-                    className="glass-card p-4 text-center border-2 border-dashed border-white/20"
+                    className="glass-card p-2 sm:p-4 text-center border-2 border-dashed border-white/20"
                   >
-                    <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-3 bg-white/5">
+                    <div className="w-10 sm:w-16 h-10 sm:h-16 mx-auto rounded-full flex items-center justify-center text-xl sm:text-3xl mb-1 sm:mb-3 bg-white/5">
                       <span className="animate-pulse">⏳</span>
                     </div>
-                    <p className="text-white/40 font-medium">In attesa...</p>
+                    <p className="text-white/40 font-medium text-[10px] sm:text-sm">In attesa...</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Game Selection Premium */}
             {players.length >= 2 && (
-              <div className="glass-card p-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                <h2 className="text-2xl font-black text-white mb-8 text-center flex items-center justify-center gap-3">
+              <div className="glass-card p-4 sm:p-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                <h2 className="text-lg sm:text-2xl font-black text-white mb-4 sm:mb-8 text-center flex items-center justify-center gap-2">
                   <span>🎯</span> Scegli il Gioco
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
                   <GameCard
                     emoji="🧠"
                     title="La Corsa del Sapere"
                     subtitle="Quiz • 10 domande • 30 sec"
-                    description="Rispondi A/B/C/D dal telefono. Punti per correttezza e velocità. Il round passa da solo quando tutti rispondono o allo scadere del tempo."
+                    description="Rispondi A/B/C/D dal telefono."
                     gradient="bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600"
                     onClick={() => startGame('TRIVIA')}
                     disabled={isLoadingGame}
@@ -842,8 +877,8 @@ export default function HostPage() {
                   <GameCard
                     emoji="💬"
                     title="Continua la Frase"
-                    subtitle="5 round • 45 sec scrittura + 45 sec voto"
-                    description="Completa la frase in modo creativo, invia, poi vota la risposta più divertente (anonima). Vince chi raccoglie più voti. I punti restano in classifica anche in lobby."
+                    subtitle="5 round • 45 sec + 45 sec"
+                    description="Scrivi e vota la risposta migliore."
                     gradient="bg-gradient-to-br from-pink-600 via-rose-600 to-red-600"
                     onClick={() => startGame('CONTINUE_PHRASE')}
                     disabled={isLoadingGame}
@@ -851,8 +886,8 @@ export default function HostPage() {
                   <GameCard
                     emoji="🕵️"
                     title="Chi è Stato?"
-                    subtitle="5 round • 45 sec segreti + 45 sec indizio"
-                    description="Ognuno scrive un segreto. A ogni round appare un segreto: indovina chi l’ha scritto tra i giocatori in sala. Più indovinii, più punti. Tutto automatico a tempo."
+                    subtitle="5 round • 45 sec + 45 sec"
+                    description="Indovina chi ha scritto il segreto."
                     gradient="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600"
                     onClick={() => startGame('WHO_WAS_IT')}
                     disabled={isLoadingGame}
@@ -860,10 +895,10 @@ export default function HostPage() {
                 </div>
                 
                 {isLoadingGame && (
-                  <div className="text-center mt-8">
-                    <div className="inline-flex items-center gap-3 bg-white/10 rounded-full px-6 py-3">
-                      <span className="animate-spin text-2xl">🎲</span>
-                      <span className="text-white font-bold">Preparando il gioco...</span>
+                  <div className="text-center mt-4">
+                    <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2">
+                      <span className="animate-spin text-xl">🎲</span>
+                      <span className="text-white font-bold text-sm">Preparando...</span>
                     </div>
                   </div>
                 )}
@@ -871,19 +906,18 @@ export default function HostPage() {
             )}
 
             {players.length < 2 && (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4 animate-bounce">⏳</div>
-                <p className="text-purple-200 text-xl font-medium">
-                  Aspettando almeno <span className="text-gradient font-bold">2 giocatori</span> per iniziare...
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3 animate-bounce">⏳</div>
+                <p className="text-purple-200 text-sm sm:text-xl font-medium">
+                  Aspettando almeno <span className="text-gradient font-bold">2 giocatori</span>...
                 </p>
               </div>
             )}
             
-            {/* Leaderboard (if scores exist) */}
-            {players.some(p => p.score > 0) && (
-              <div className="glass-card p-8 mt-10">
-                <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
-                  <span>🏆</span> Classifica Totale
+                        {players.some(p => p.score > 0) && (
+              <div className="glass-card p-4 sm:p-8 mt-4 sm:mt-10">
+                <h2 className="text-lg sm:text-2xl font-black text-white mb-3 sm:mb-6 flex items-center gap-2">
+                  <span>🏆</span> Classifica
                 </h2>
                 <Leaderboard players={players} />
               </div>
@@ -893,32 +927,50 @@ export default function HostPage() {
 
         {/* TRIVIA PLAYING VIEW */}
         {gamePhase === 'playing' && currentGameType === 'TRIVIA' && currentQuestion && (
-          <div className="max-w-6xl mx-auto">
-            {/* Round Info + Timer */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="badge badge-gold text-lg px-4 py-2">
-                  🧠 Round {currentRoundNum}/{totalRoundsNum}
+          <div className="max-w-4xl mx-auto">
+            {/* HOST TRIVIA CONTROLLER — rispondi dal telefono */}
+            {hostPlayer && roundData && controllerView === 'trivia-answer' && (
+              <div className="glass-card p-3 sm:p-5 mb-4 max-w-2xl mx-auto border-2 border-amber-400/40 bg-amber-500/5">
+                <p className="text-center text-amber-200 font-bold mb-2 text-sm">👑 Rispondi!</p>
+                <TriviaController
+                  roundData={roundData as TriviaRoundData}
+                  onAnswer={handleHostTriviaAnswer}
+                  hasAnswered={hasSubmitted}
+                  timeRemaining={timeRemaining}
+                  result={hostTriviaResult || undefined}
+                  players={players.map(p => ({
+                    playerId: p.id,
+                    playerName: p.name,
+                    avatar: p.avatar,
+                    score: p.score,
+                    trackPosition: p.trackPosition,
+                  }))}
+                  currentPlayerId={hostPlayer.id}
+                />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="badge badge-gold text-sm sm:text-lg px-3 py-1">
+                  🧠 {currentRoundNum}/{totalRoundsNum}
                 </div>
                 {currentQuestion.category && (
-                  <div className="badge">
+                  <div className="badge text-xs sm:text-sm px-2 py-1">
                     📚 {currentQuestion.category}
                   </div>
                 )}
               </div>
-              
               <CircularTimer timeLeft={timeLeft} maxTime={30} />
             </div>
 
-            {/* Question Card */}
-            <div className="glass-card p-10 mb-8 text-center animate-bounce-in">
-              <h2 className="text-4xl font-black text-white leading-relaxed">
+            <div className="glass-card p-4 sm:p-10 mb-4 text-center">
+              <h2 className="text-lg sm:text-4xl font-black text-white leading-snug">
                 {currentQuestion.question}
               </h2>
             </div>
 
-            {/* Options Grid */}
-            <div className="grid grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mb-4">
               {Object.entries(currentQuestion.options).map(([letter, text]) => {
                 const isCorrect = showCorrectAnswer === letter;
                 const colors: Record<string, string> = {
@@ -927,35 +979,25 @@ export default function HostPage() {
                   C: 'from-yellow-500 to-yellow-600',
                   D: 'from-green-600 to-green-700',
                 };
-                
                 return (
                   <div
                     key={letter}
-                    className={`relative p-8 rounded-2xl text-white bg-gradient-to-br ${colors[letter]} transition-all duration-300 ${
-                      isCorrect ? 'ring-4 ring-white scale-105 shadow-2xl shadow-green-500/50' : ''
+                    className={`relative p-3 sm:p-8 rounded-xl sm:rounded-2xl text-white bg-gradient-to-br ${colors[letter]} transition-all duration-300 ${
+                      isCorrect ? 'ring-2 sm:ring-4 ring-white scale-[1.02] shadow-lg shadow-green-500/50' : ''
                     }`}
                   >
-                    {isCorrect && (
-                      <div className="absolute -top-3 -right-3 text-4xl animate-bounce">✅</div>
-                    )}
-                    <div className="flex items-start gap-4">
-                      <span className="text-4xl font-black opacity-80">{letter}</span>
-                      <span className="text-2xl font-bold">{text}</span>
+                    {isCorrect && <div className="absolute -top-2 -right-2 text-xl sm:text-4xl animate-bounce">✅</div>}
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <span className="text-xl sm:text-4xl font-black opacity-80">{letter}</span>
+                      <span className="text-sm sm:text-2xl font-bold leading-snug">{text}</span>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            <div className="text-center mb-8">
-              <p className="text-purple-200/90 text-lg font-medium inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10">
-                ⏱️ Avanzamento automatico — tutti rispondono o tempo scaduto
-              </p>
-            </div>
-
-            {/* Compact Leaderboard */}
-            <div className="glass-card p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <div className="glass-card p-3 sm:p-6">
+              <h3 className="text-sm sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <span>🏆</span> Classifica
               </h3>
               <Leaderboard players={players} compact />
@@ -966,94 +1008,76 @@ export default function HostPage() {
         {/* PROMPT GAME VIEW */}
         {gamePhase === 'playing' && currentGameType === 'CONTINUE_PHRASE' && promptData && (
           <div className="max-w-4xl mx-auto">
-            <div className="badge badge-gold text-lg px-4 py-2 mb-8">
+            {/* HOST CONTROLLER — prima di tutto, ben visibile */}
+            {hostPlayer &&
+              hostPromptRoundForController &&
+              (promptData.phase === 'WRITING' || promptData.phase === 'VOTING') && (
+              <div className="glass-card p-4 sm:p-6 mb-6 max-w-2xl mx-auto border-2 border-amber-400/40 bg-amber-500/5">
+                <p className="text-center text-amber-200 font-bold mb-3 text-base">
+                  👑 La tua risposta / voto
+                </p>
+                <PromptController
+                  roundData={hostPromptRoundForController}
+                  phase={promptData.phase === 'VOTING' ? 'VOTING' : 'WRITING'}
+                  onSubmitResponse={handleHostPromptResponse}
+                  onVote={handleHostPromptVote}
+                  hasSubmitted={hasSubmitted}
+                  responses={(promptData.responses ?? []).map((r) => ({
+                    id: r.id,
+                    response: r.response,
+                  }))}
+                />
+              </div>
+            )}
+
+            <div className="badge badge-gold text-lg px-4 py-2 mb-6">
               💬 Round {currentRoundNum}
             </div>
-            
-            {/* Phrase Card */}
-            <div className="glass-card p-10 mb-8 text-center animate-bounce-in">
-              <p className="text-white/60 text-lg mb-4 uppercase tracking-wider">Completa la frase:</p>
-              <h2 className="text-4xl font-black text-gradient leading-relaxed">
-                "{promptData.phrase}..."
+
+            <div className="glass-card p-6 sm:p-10 mb-6 text-center">
+              <p className="text-white/60 text-sm sm:text-lg mb-2 uppercase tracking-wider">Completa la frase:</p>
+              <h2 className="text-xl sm:text-4xl font-black text-gradient leading-relaxed">
+                &ldquo;{promptData.phrase}...&rdquo;
               </h2>
             </div>
             
-            {/* Phase indicator */}
-            <div className="text-center mb-8">
-              <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${
+            <div className="text-center mb-6">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm ${
                 promptData.phase === 'WRITING' ? 'bg-blue-500/20 text-blue-400' :
                 promptData.phase === 'VOTING' ? 'bg-purple-500/20 text-purple-400' :
                 'bg-green-500/20 text-green-400'
               }`}>
-                <span className="text-2xl">
-                  {promptData.phase === 'WRITING' ? '✍️' : promptData.phase === 'VOTING' ? '🗳️' : '🎉'}
-                </span>
-                <span className="font-bold text-lg">
-                  {promptData.phase === 'WRITING' ? 'Giocatori stanno scrivendo...' :
-                   promptData.phase === 'VOTING' ? 'Votazione in corso!' :
-                   'Risultati!'}
+                <span>{promptData.phase === 'WRITING' ? '✍️' : promptData.phase === 'VOTING' ? '🗳️' : '🎉'}</span>
+                <span className="font-bold">
+                  {promptData.phase === 'WRITING' ? 'Stanno scrivendo…' :
+                   promptData.phase === 'VOTING' ? 'Votazione!' : 'Risultati!'}
                 </span>
               </div>
             </div>
             
-            {/* Responses (if voting or results) */}
             {promptData.responses && promptData.responses.length > 0 && (
-              <div className="space-y-4">
-                {promptData.responses
+              <div className="space-y-3">
+                {[...promptData.responses]
                   .sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0))
                   .map((r, i) => (
-                  <div 
-                    key={r.id}
-                    className={`glass-card p-6 ${i === 0 && promptData.phase === 'RESULTS' ? 'ring-2 ring-yellow-400 bg-yellow-500/10' : ''}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-2xl text-white font-bold mb-2">"{r.response}"</p>
-                        <p className="text-purple-300">— {r.playerName}</p>
+                  <div key={r.id} className={`glass-card p-4 sm:p-6 ${i === 0 && promptData.phase === 'RESULTS' ? 'ring-2 ring-yellow-400 bg-yellow-500/10' : ''}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-base sm:text-2xl text-white font-bold mb-1">&ldquo;{r.response}&rdquo;</p>
+                        <p className="text-purple-300 text-sm">— {r.playerName}</p>
                       </div>
                       {promptData.phase === 'RESULTS' && (
-                        <div className="text-center">
-                          <p className="text-3xl font-black text-gradient-gold">{r.voteCount || 0}</p>
-                          <p className="text-xs text-white/60">voti</p>
+                        <div className="text-center shrink-0">
+                          <p className="text-2xl sm:text-3xl font-black text-gradient-gold">{r.voteCount || 0}</p>
+                          <p className="text-[10px] text-white/60">voti</p>
                         </div>
                       )}
                     </div>
                     {i === 0 && promptData.phase === 'RESULTS' && (
-                      <div className="mt-4 text-center">
-                        <span className="badge badge-gold">🏆 Vincitore!</span>
-                      </div>
+                      <p className="text-center text-xs font-bold text-yellow-400 mt-2">👑 Vincitore!</p>
                     )}
                   </div>
                 ))}
-              </div>
-            )}
-            
-            <div className="text-center mt-8">
-              <p className="text-purple-200/90 font-medium">
-                ⏱️ Round e voti avanzano in automatico (tempo o tutti pronti)
-              </p>
-            </div>
-
-            {hostPlayer &&
-              hostPromptRoundForController &&
-              (controllerView === 'prompt-write' || controllerView === 'prompt-vote') && (
-              <div className="glass-card p-6 mt-10 max-w-2xl mx-auto border border-amber-400/35">
-                <p className="text-center text-amber-200 font-bold mb-4 text-lg">
-                  👑 Anche tu partecipi (host) — scrivi e vota da qui
-                </p>
-                <div className="max-h-[min(70vh,560px)] overflow-y-auto">
-                  <PromptController
-                    roundData={hostPromptRoundForController}
-                    phase={hostPromptRoundForController.phase === 'VOTING' ? 'VOTING' : 'WRITING'}
-                    onSubmitResponse={handleHostPromptResponse}
-                    onVote={handleHostPromptVote}
-                    hasSubmitted={hasSubmitted}
-                    responses={(promptData.responses ?? []).map((r) => ({
-                      id: r.id,
-                      response: r.response,
-                    }))}
-                  />
-                </div>
               </div>
             )}
           </div>
@@ -1062,91 +1086,64 @@ export default function HostPage() {
         {/* SECRET GAME VIEW */}
         {gamePhase === 'playing' && currentGameType === 'WHO_WAS_IT' && secretData && (
           <div className="max-w-4xl mx-auto">
-            <div className="badge badge-gold text-lg px-4 py-2 mb-8">
-              🕵️ Round {currentRoundNum}
-            </div>
-            
-            {/* Phase: Collecting */}
-            {secretData.phase === 'COLLECTING' && (
-              <div className="glass-card p-10 text-center animate-bounce-in">
-                <div className="text-6xl mb-6">🤫</div>
-                <h2 className="text-3xl font-black text-white mb-4">
-                  I giocatori stanno scrivendo i loro segreti...
-                </h2>
-                <p className="text-purple-200 text-lg">
-                  Aspetta che tutti finiscano!
-                </p>
-                <div className="mt-8 flex justify-center">
-                  <div className="animate-spin text-4xl">⏳</div>
-                </div>
-              </div>
-            )}
-            
-            {/* Phase: Guessing */}
-            {secretData.phase === 'GUESSING' && secretData.secretContent && (
-              <>
-                <div className="glass-card p-10 mb-8 text-center animate-bounce-in">
-                  <p className="text-white/60 text-lg mb-4 uppercase tracking-wider">Il segreto è:</p>
-                  <h2 className="text-4xl font-black text-gradient leading-relaxed">
-                    "{secretData.secretContent}"
-                  </h2>
-                </div>
-                
-                <div className="text-center mb-8">
-                  <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-purple-500/20 text-purple-400">
-                    <span className="text-2xl">🔍</span>
-                    <span className="font-bold text-lg">Chi l'ha scritto? I giocatori stanno votando...</span>
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {/* Phase: Reveal */}
-            {secretData.phase === 'REVEAL' && secretData.actualPlayer && (
-              <div className="glass-card p-10 text-center animate-bounce-in">
-                <div className="text-6xl mb-6">🎭</div>
-                <h2 className="text-3xl font-black text-white mb-4">
-                  Era di...
-                </h2>
-                <div className="inline-flex items-center gap-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl px-8 py-4">
-                  <span className="text-4xl">{players.find(p => p.id === secretData.actualPlayer?.id)?.avatar ? getAvatarEmoji(players.find(p => p.id === secretData.actualPlayer?.id)?.avatar || '') : '🐺'}</span>
-                  <span className="text-3xl font-black text-white">{secretData.actualPlayer.name}</span>
-                </div>
-              </div>
-            )}
-            
+            {/* HOST CONTROLLER — prima di tutto, ben visibile */}
             {hostPlayer &&
-              secretData &&
-              (secretData.phase === 'COLLECTING' || secretData.phase === 'GUESSING') &&
-              (controllerView === 'secret-write' || controllerView === 'secret-vote') && (
-              <div className="glass-card p-6 mt-10 max-w-2xl mx-auto border border-amber-400/35">
-                <p className="text-center text-amber-200 font-bold mb-4 text-lg">
-                  👑 Anche tu partecipi (host) — segreto e indizi da qui
+              (secretData.phase === 'COLLECTING' || secretData.phase === 'GUESSING') && (
+              <div className="glass-card p-4 sm:p-6 mb-6 max-w-2xl mx-auto border-2 border-amber-400/40 bg-amber-500/5">
+                <p className="text-center text-amber-200 font-bold mb-3 text-base">
+                  👑 Il tuo segreto / voto
                 </p>
-                <div className="max-h-[min(70vh,560px)] overflow-y-auto">
-                  <SecretController
-                    phase={secretData.phase === 'COLLECTING' ? 'COLLECTING' : 'GUESSING'}
-                    secret={secretData.secretContent}
-                    players={(secretData.players ?? []).map((p) => ({
-                      id: p.id,
-                      name: p.name,
-                      avatar: p.avatar,
-                      avatarColor: p.avatarColor ?? null,
-                    }))}
-                    onSubmitSecret={handleHostSecretSubmit}
-                    onVote={handleHostSecretVote}
-                    hasSubmitted={hasSubmitted}
-                    currentPlayerId={hostPlayer.id}
-                  />
-                </div>
+                <SecretController
+                  phase={secretData.phase === 'COLLECTING' ? 'COLLECTING' : 'GUESSING'}
+                  secret={secretData.secretContent}
+                  players={(secretData.players ?? []).map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    avatar: p.avatar,
+                    avatarColor: p.avatarColor ?? null,
+                  }))}
+                  onSubmitSecret={handleHostSecretSubmit}
+                  onVote={handleHostSecretVote}
+                  hasSubmitted={hasSubmitted}
+                  currentPlayerId={hostPlayer.id}
+                />
               </div>
             )}
 
-            <div className="text-center mt-8">
-              <p className="text-purple-200/90 font-medium">
-                ⏱️ Fasi e reveal avanzano in automatico
-              </p>
+            <div className="badge badge-gold text-lg px-4 py-2 mb-6">
+              🕵️ Round {currentRoundNum}
             </div>
+            
+            {secretData.phase === 'COLLECTING' && (
+              <div className="glass-card p-6 sm:p-10 text-center">
+                <div className="text-4xl mb-4">🤫</div>
+                <h2 className="text-xl sm:text-3xl font-black text-white mb-2">
+                  Stanno scrivendo i segreti...
+                </h2>
+                <div className="animate-spin text-2xl mt-4">⏳</div>
+              </div>
+            )}
+            
+            {secretData.phase === 'GUESSING' && secretData.secretContent && (
+              <div className="glass-card p-6 sm:p-10 mb-6 text-center">
+                <p className="text-white/60 text-sm sm:text-lg mb-2 uppercase tracking-wider">Il segreto è:</p>
+                <h2 className="text-xl sm:text-4xl font-black text-gradient leading-relaxed">
+                  &ldquo;{secretData.secretContent}&rdquo;
+                </h2>
+                <p className="text-purple-300 text-sm mt-4">🔍 Chi l&apos;ha scritto? Vota sopra!</p>
+              </div>
+            )}
+            
+            {secretData.phase === 'REVEAL' && secretData.actualPlayer && (
+              <div className="glass-card p-6 sm:p-10 text-center">
+                <div className="text-4xl mb-4">🎭</div>
+                <h2 className="text-xl sm:text-3xl font-black text-white mb-3">Era di...</h2>
+                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl px-6 py-3">
+                  <span className="text-3xl">{players.find(p => p.id === secretData.actualPlayer?.id)?.avatar ? getAvatarEmoji(players.find(p => p.id === secretData.actualPlayer?.id)?.avatar || '') : '🐺'}</span>
+                  <span className="text-2xl font-black text-white">{secretData.actualPlayer.name}</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
