@@ -274,6 +274,11 @@ export default function HostPage() {
     pointsEarned: number;
   } | null>(null);
 
+  // Round-ID refs to guard against stale markAsSubmitted calls
+  const hostPromptRoundIdRef = useRef<string | null>(null);
+  const hostPromptPhaseRef = useRef<string | null>(null);
+  const hostSecretRoundIdRef = useRef<string | null>(null);
+
   // Game state hook (tabellone + partecipazione host come giocatore)
   const {
     handleGameEvent,
@@ -384,7 +389,7 @@ export default function HostPage() {
       }
       
       if (eventData.gameType === 'CONTINUE_PHRASE') {
-        const roundData = eventData.data as { phraseId: string; phrase: string; phase?: 'WRITING' | 'VOTING' | 'RESULTS' };
+        const roundData = eventData.data as { phraseId: string; phrase: string; phase?: 'WRITING' | 'VOTING' | 'RESULTS'; roundId?: string };
         const phase = (eventData.phase as typeof roundData.phase) || roundData.phase || 'WRITING';
         setPromptData({
           phraseId: roundData.phraseId,
@@ -392,12 +397,15 @@ export default function HostPage() {
           phase,
         });
         setCurrentRoundNum(eventData.roundNumber as number);
+        hostPromptRoundIdRef.current = roundData.roundId ?? null;
+        hostPromptPhaseRef.current = phase ?? 'WRITING';
       }
       
       if (eventData.gameType === 'WHO_WAS_IT') {
         const roundData = eventData.data as {
           secret?: string;
           secretContent?: string;
+          roundId?: string;
           players?: SecretData['players'];
         };
         const ph = (eventData.phase as 'COLLECTING' | 'GUESSING' | 'REVEAL') || 'GUESSING';
@@ -407,12 +415,14 @@ export default function HostPage() {
           players: roundData.players,
         });
         setCurrentRoundNum(eventData.roundNumber as number);
+        hostSecretRoundIdRef.current = roundData.roundId ?? null;
       }
     }
 
     if (eventName === 'phase-changed') {
       const pd = eventData as { gameType: string; phase: string; data?: { responses?: { id: string; response: string }[] } };
       if (pd.gameType === 'CONTINUE_PHRASE' && pd.phase === 'VOTING' && pd.data?.responses) {
+        hostPromptPhaseRef.current = 'VOTING';
         setPromptData((prev) =>
           prev
             ? {
@@ -524,6 +534,7 @@ export default function HostPage() {
       if (!hostPlayer || !roundData || currentGameType !== 'CONTINUE_PHRASE') return;
       const rd = roundData as PromptRoundData & { roundId?: string };
       if (!rd.roundId) return;
+      const sentRoundId = rd.roundId;
       try {
         const res = await fetch('/api/game/prompt/response', {
           method: 'POST',
@@ -531,12 +542,15 @@ export default function HostPage() {
           body: JSON.stringify({
             roomCode,
             playerId: hostPlayer.id,
-            roundId: rd.roundId,
+            roundId: sentRoundId,
             response,
           }),
         });
         const data = await res.json();
-        if (data.success) markAsSubmitted();
+        if (data.success) {
+          if (hostPromptRoundIdRef.current !== sentRoundId || hostPromptPhaseRef.current !== 'WRITING') return;
+          markAsSubmitted();
+        }
       } catch (e) {
         console.error('Host prompt response:', e);
       }
@@ -549,13 +563,14 @@ export default function HostPage() {
       if (!hostPlayer || !roundData || currentGameType !== 'CONTINUE_PHRASE') return;
       const rd = roundData as PromptRoundData & { roundId?: string };
       if (!rd.roundId) return;
+      const sentRoundId = rd.roundId;
       const res = await fetch('/api/game/prompt/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           roomCode,
           playerId: hostPlayer.id,
-          roundId: rd.roundId,
+          roundId: sentRoundId,
           responseId,
         }),
       });
@@ -563,9 +578,9 @@ export default function HostPage() {
       if (!data.success) {
         throw new Error(data.error || 'Voto non registrato');
       }
-      markAsSubmitted();
+      if (hostPromptRoundIdRef.current !== sentRoundId) return;
     },
-    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+    [hostPlayer, roundData, currentGameType, roomCode]
   );
 
   const handleHostSecretSubmit = useCallback(
@@ -595,13 +610,14 @@ export default function HostPage() {
       if (!hostPlayer || !roundData || currentGameType !== 'WHO_WAS_IT') return;
       const rd = roundData as SecretRoundData & { roundId?: string };
       if (!rd.roundId) return;
+      const sentRoundId = rd.roundId;
       const res = await fetch('/api/game/secret/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           roomCode,
           playerId: hostPlayer.id,
-          roundId: rd.roundId,
+          roundId: sentRoundId,
           suspectedPlayerId,
         }),
       });
@@ -609,9 +625,9 @@ export default function HostPage() {
       if (!data.success) {
         throw new Error(data.error || 'Voto non registrato');
       }
-      markAsSubmitted();
+      if (hostSecretRoundIdRef.current !== sentRoundId) return;
     },
-    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+    [hostPlayer, roundData, currentGameType, roomCode]
   );
 
   const handleHostTriviaAnswer = useCallback(

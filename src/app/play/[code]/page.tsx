@@ -56,6 +56,11 @@ export default function ControllerPage() {
   } | null>(null);
   const triviaRoundIdRef = useRef<string | null>(null);
 
+  // Round-ID refs to guard against stale markAsSubmitted calls
+  const promptRoundIdRef = useRef<string | null>(null);
+  const promptPhaseRef = useRef<'WRITING' | 'VOTING'>('WRITING');
+  const secretRoundIdRef = useRef<string | null>(null);
+
   // Stato per "Continua la Frase"
   const [promptPhase, setPromptPhase] = useState<'WRITING' | 'VOTING'>('WRITING');
   const [promptResponses, setPromptResponses] = useState<{ id: string; response: string }[]>([]);
@@ -215,11 +220,13 @@ export default function ControllerPage() {
     if (eventName === 'phase-changed') {
       const phaseData = data as { gameType: string; phase: string; data?: { responses?: { id: string; response: string }[] } };
       if (phaseData.gameType === 'CONTINUE_PHRASE') {
-        setPromptPhase(phaseData.phase as 'WRITING' | 'VOTING');
+        const newPhase = phaseData.phase as 'WRITING' | 'VOTING';
+        setPromptPhase(newPhase);
+        promptPhaseRef.current = newPhase;
         if (phaseData.data?.responses) {
           setPromptResponses(phaseData.data.responses);
         }
-        if (phaseData.phase === 'VOTING') {
+        if (newPhase === 'VOTING') {
           resetHasSubmitted();
         }
       }
@@ -232,10 +239,11 @@ export default function ControllerPage() {
     }
 
     if (eventName === 'round-started') {
-      const roundStartData = data as { gameType: string; phase?: string; data?: { secret?: string; players?: { id: string; name: string; avatar: string | null; avatarColor: string | null }[] } };
+      const roundStartData = data as { gameType: string; phase?: string; data?: { secret?: string; roundId?: string; players?: { id: string; name: string; avatar: string | null; avatarColor: string | null }[] } };
       if (roundStartData.gameType === 'WHO_WAS_IT' && roundStartData.data) {
         setSecretPhase(roundStartData.phase as 'COLLECTING' | 'GUESSING' || 'GUESSING');
         setSecretReveal(null);
+        secretRoundIdRef.current = roundStartData.data.roundId ?? null;
         if (roundStartData.data.secret) {
           setCurrentSecret(roundStartData.data.secret);
         }
@@ -245,6 +253,9 @@ export default function ControllerPage() {
       }
       if (roundStartData.gameType === 'CONTINUE_PHRASE') {
         setPromptRoundResults(null);
+        const rd = (data as { data?: { roundId?: string } }).data;
+        promptRoundIdRef.current = rd?.roundId ?? null;
+        promptPhaseRef.current = 'WRITING';
       }
       if (roundStartData.gameType === 'TRIVIA') {
         setTriviaResult(null);
@@ -428,6 +439,7 @@ export default function ControllerPage() {
 
   const handlePromptResponse = async (response: string) => {
     if (!player || !roundData) return;
+    const sentRoundId = (roundData as PromptRoundData & { roundId: string }).roundId;
 
     try {
       const res = await fetch('/api/game/prompt/response', {
@@ -436,13 +448,14 @@ export default function ControllerPage() {
         body: JSON.stringify({
           roomCode,
           playerId: player.id,
-          roundId: (roundData as PromptRoundData & { roundId: string }).roundId,
+          roundId: sentRoundId,
           response,
         }),
       });
 
       const data = await res.json();
       if (data.success) {
+        if (promptRoundIdRef.current !== sentRoundId || promptPhaseRef.current !== 'WRITING') return;
         markAsSubmitted();
       }
     } catch (err) {
@@ -452,6 +465,7 @@ export default function ControllerPage() {
 
   const handlePromptVote = async (responseId: string) => {
     if (!player || !roundData) return;
+    const sentRoundId = (roundData as PromptRoundData & { roundId: string }).roundId;
 
     const res = await fetch('/api/game/prompt/vote', {
       method: 'POST',
@@ -459,7 +473,7 @@ export default function ControllerPage() {
       body: JSON.stringify({
         roomCode,
         playerId: player.id,
-        roundId: (roundData as PromptRoundData & { roundId: string }).roundId,
+        roundId: sentRoundId,
         responseId,
       }),
     });
@@ -468,7 +482,7 @@ export default function ControllerPage() {
     if (!data.success) {
       throw new Error(data.error || 'Voto non registrato');
     }
-    markAsSubmitted();
+    if (promptRoundIdRef.current !== sentRoundId) return;
   };
 
   const handleSecretSubmit = async (secret: string) => {
@@ -496,6 +510,7 @@ export default function ControllerPage() {
 
   const handleSecretVote = async (suspectedPlayerId: string) => {
     if (!player || !roundData) return;
+    const sentRoundId = (roundData as SecretRoundData & { roundId: string }).roundId;
 
     const res = await fetch('/api/game/secret/vote', {
       method: 'POST',
@@ -503,7 +518,7 @@ export default function ControllerPage() {
       body: JSON.stringify({
         roomCode,
         playerId: player.id,
-        roundId: (roundData as SecretRoundData & { roundId: string }).roundId,
+        roundId: sentRoundId,
         suspectedPlayerId,
       }),
     });
@@ -512,7 +527,7 @@ export default function ControllerPage() {
     if (!data.success) {
       throw new Error(data.error || 'Voto non registrato');
     }
-    markAsSubmitted();
+    if (secretRoundIdRef.current !== sentRoundId) return;
   };
 
   // Loading Premium

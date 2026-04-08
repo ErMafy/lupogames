@@ -214,7 +214,8 @@ export function useGameEvents() {
   // 🎯 EVENT DISPATCHER
   // ============================================
 
-  const handlePhaseChanged = useCallback((data: { gameType: string; phase: string }) => {
+  const handlePhaseChanged = useCallback((data: { gameType: string; phase: string; data?: { timeLimit?: number } }) => {
+    const timeLimit = data.data?.timeLimit;
     setState(prev => {
       let view = prev.controllerView;
       if (data.gameType === 'CONTINUE_PHRASE') {
@@ -223,9 +224,16 @@ export function useGameEvents() {
       if (data.gameType === 'WHO_WAS_IT') {
         view = data.phase === 'GUESSING' ? 'secret-vote' : 'secret-write';
       }
-      return { ...prev, controllerView: view, hasSubmitted: false, canSubmit: true };
+      return {
+        ...prev,
+        controllerView: view,
+        hasSubmitted: false,
+        canSubmit: true,
+        timeRemaining: timeLimit ?? prev.timeRemaining,
+      };
     });
-  }, []);
+    if (timeLimit) startTimer(timeLimit);
+  }, [startTimer]);
 
   const handleGameEvent = useCallback((eventName: string, data: unknown) => {
     switch (eventName) {
@@ -240,7 +248,7 @@ export function useGameEvents() {
         });
         break;
       case 'phase-changed':
-        handlePhaseChanged(data as { gameType: string; phase: string });
+        handlePhaseChanged(data as { gameType: string; phase: string; data?: { timeLimit?: number } });
         break;
       case 'timer-tick':
         handleTimerTick(data as { timeRemaining: number });
