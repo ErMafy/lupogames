@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { useGameEvents } from '@/hooks/useGameEvents';
@@ -265,7 +265,8 @@ export default function HostPage() {
   // Secret game state  
   const [secretData, setSecretData] = useState<SecretData | null>(null);
 
-  // Host trivia result
+  // Host trivia state
+  const hostTriviaRoundIdRef = useRef<string | null>(null);
   const [hostTriviaResult, setHostTriviaResult] = useState<{
     isCorrect: boolean;
     correctAnswer: string;
@@ -367,7 +368,7 @@ export default function HostPage() {
     
     if (eventName === 'round-started') {
       if (eventData.gameType === 'TRIVIA') {
-        const roundData = eventData.data as { questionId: string; question: string; category?: string; options: { A: string; B: string; C: string; D: string }; timeLimit?: number };
+        const roundData = eventData.data as { questionId: string; question: string; category?: string; options: { A: string; B: string; C: string; D: string }; timeLimit?: number; roundId?: string };
         setCurrentQuestion({
           id: roundData.questionId,
           question: roundData.question,
@@ -379,6 +380,7 @@ export default function HostPage() {
         setTimeLeft(roundData.timeLimit || 30);
         setShowCorrectAnswer(null);
         setHostTriviaResult(null);
+        hostTriviaRoundIdRef.current = roundData.roundId ?? null;
       }
       
       if (eventData.gameType === 'CONTINUE_PHRASE') {
@@ -473,6 +475,14 @@ export default function HostPage() {
     
     if (eventName === 'show-results' && eventData.correctAnswer) {
       setShowCorrectAnswer(eventData.correctAnswer as string);
+      setHostTriviaResult((prev) =>
+        prev || {
+          isCorrect: false,
+          correctAnswer: eventData.correctAnswer as string,
+          correctAnswerText: undefined,
+          pointsEarned: 0,
+        }
+      );
     }
     
     if (eventName === 'prompt-responses') {
@@ -609,19 +619,23 @@ export default function HostPage() {
       if (!hostPlayer || !roundData || currentGameType !== 'TRIVIA') return;
       const rd = roundData as TriviaRoundData & { roundId?: string };
       if (!rd.roundId) return;
+      const sentRoundId = rd.roundId;
       const res = await fetch('/api/game/trivia/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           roomCode,
           playerId: hostPlayer.id,
-          roundId: rd.roundId,
+          roundId: sentRoundId,
           answer,
           responseTimeMs,
         }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Risposta non inviata');
+      if (hostTriviaRoundIdRef.current !== null && hostTriviaRoundIdRef.current !== sentRoundId) {
+        return;
+      }
       setHostTriviaResult({
         isCorrect: data.data.isCorrect,
         correctAnswer: data.data.correctAnswer as string,
@@ -929,7 +943,7 @@ export default function HostPage() {
         {gamePhase === 'playing' && currentGameType === 'TRIVIA' && currentQuestion && (
           <div className="max-w-4xl mx-auto">
             {/* HOST TRIVIA CONTROLLER — rispondi dal telefono */}
-            {hostPlayer && roundData && controllerView === 'trivia-answer' && (
+            {hostPlayer && roundData && (controllerView === 'trivia-answer' || (controllerView === 'results' && currentGameType === 'TRIVIA')) && (
               <div className="glass-card p-3 sm:p-5 mb-4 max-w-2xl mx-auto border-2 border-amber-400/40 bg-amber-500/5">
                 <p className="text-center text-amber-200 font-bold mb-2 text-sm">👑 Rispondi!</p>
                 <TriviaController

@@ -54,6 +54,7 @@ export default function ControllerPage() {
     correctAnswerText?: string;
     pointsEarned: number;
   } | null>(null);
+  const triviaRoundIdRef = useRef<string | null>(null);
 
   // Stato per "Continua la Frase"
   const [promptPhase, setPromptPhase] = useState<'WRITING' | 'VOTING'>('WRITING');
@@ -247,6 +248,17 @@ export default function ControllerPage() {
       }
       if (roundStartData.gameType === 'TRIVIA') {
         setTriviaResult(null);
+        const rd = (data as { data?: { roundId?: string } }).data;
+        triviaRoundIdRef.current = rd?.roundId ?? null;
+      }
+    }
+
+    if (eventName === 'show-results') {
+      const sr = data as { correctAnswer?: string };
+      if (sr.correctAnswer) {
+        setTriviaResult((prev) =>
+          prev || { isCorrect: false, correctAnswer: sr.correctAnswer!, pointsEarned: 0 }
+        );
       }
     }
 
@@ -376,6 +388,8 @@ export default function ControllerPage() {
       throw new Error('Sessione non pronta');
     }
 
+    const answerRoundId = (roundData as TriviaRoundData & { roundId: string }).roundId;
+
     try {
       const response = await fetch('/api/game/trivia/answer', {
         method: 'POST',
@@ -383,7 +397,7 @@ export default function ControllerPage() {
         body: JSON.stringify({
           roomCode,
           playerId: player.id,
-          roundId: (roundData as TriviaRoundData & { roundId: string }).roundId,
+          roundId: answerRoundId,
           answer,
           responseTimeMs,
         }),
@@ -393,6 +407,10 @@ export default function ControllerPage() {
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Risposta non inviata');
+      }
+
+      if (triviaRoundIdRef.current !== null && triviaRoundIdRef.current !== answerRoundId) {
+        return;
       }
 
       setTriviaResult({
@@ -529,7 +547,8 @@ export default function ControllerPage() {
     );
   }
 
-  const isTriviaRound = controllerView === 'trivia-answer' && !!roundData;
+  const isTriviaActive = controllerView === 'trivia-answer' || (controllerView === 'results' && currentGame === 'TRIVIA');
+  const isTriviaRound = isTriviaActive && !!roundData;
 
   return (
     <div
@@ -619,8 +638,8 @@ export default function ControllerPage() {
           </div>
         )}
 
-        {/* Trivia Controller */}
-        {controllerView === 'trivia-answer' && roundData && (
+        {/* Trivia Controller — also visible during results dwell */}
+        {isTriviaActive && roundData && (
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             <TriviaController
               roundData={roundData as TriviaRoundData}
@@ -695,8 +714,8 @@ export default function ControllerPage() {
           </div>
         )}
 
-        {/* Round Results — solo se nessun risultato specifico inline */}
-        {controllerView === 'results' && !promptRoundResults && !secretReveal && (
+        {/* Round Results — solo se nessun risultato specifico inline e non trivia */}
+        {controllerView === 'results' && !promptRoundResults && !secretReveal && currentGame !== 'TRIVIA' && (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center animate-bounce-in">
             <div className="glass-card p-8">
               <div className="text-5xl mb-4 animate-bounce">🎉</div>
