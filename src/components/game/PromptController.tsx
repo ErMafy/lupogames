@@ -215,7 +215,7 @@ export function PromptController({
                     }
                   }}
                   disabled={isSubmitting || !canVote}
-                  className="btn-premium w-full text-left rounded-2xl border border-white/12 bg-white/[0.06] hover:bg-white/[0.12] px-4 py-3.5 min-h-[52px] touch-manipulation transition-all disabled:opacity-50 disabled:cursor-default"
+                  className="btn-premium w-full text-left rounded-2xl border border-white/12 bg-white/[0.06] hover:bg-white/[0.12] disabled:hover:bg-white/[0.06] px-4 py-3.5 min-h-[52px] touch-manipulation transition-all disabled:opacity-50 disabled:cursor-default"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <div className="flex items-start gap-3">
