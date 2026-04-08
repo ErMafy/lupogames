@@ -209,11 +209,7 @@ export function PromptController({
               <li key={r.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (canVote) {
-                      void handleVote(r.id);
-                    }
-                  }}
+                  onClick={() => void handleVote(r.id)}
                   disabled={isSubmitting || !canVote}
                   className={[
                     'btn-premium w-full text-left rounded-2xl border border-white/12',
