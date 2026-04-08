@@ -963,11 +963,13 @@ export default function HostPage() {
                   <GameCard
                     emoji="💬"
                     title="Continua la Frase"
-                    subtitle="5 round • 45 sec + 45 sec"
-                    description={`Scrivi e vota la risposta migliore.${players.length < 3 ? ' (min. 3 giocatori)' : ''}`}
+                    subtitle="5 round • 45 sec + fase finale"
+                    description={players.length <= 2
+                      ? 'In 2 si leggono le risposte per 20 secondi.'
+                      : 'Scrivi e vota la risposta migliore.'}
                     gradient="bg-gradient-to-br from-pink-600 via-rose-600 to-red-600"
                     onClick={() => startGame('CONTINUE_PHRASE')}
-                    disabled={isLoadingGame || players.length < 3}
+                    disabled={isLoadingGame || players.length < 2}
                   />
                   <GameCard
                     emoji="🕵️"
@@ -1066,6 +1068,7 @@ export default function HostPage() {
                     id: r.id,
                     response: r.response,
                   }))}
+                  canVote={players.length > 2}
                 />
               </div>
             )}

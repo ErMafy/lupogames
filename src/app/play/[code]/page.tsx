@@ -704,6 +704,7 @@ export default function ControllerPage() {
               timeRemaining={timeRemaining}
               responses={promptResponses}
               roundResults={promptRoundResults ?? undefined}
+              canVote={allPlayers.length > 2}
             />
           </div>
         )}

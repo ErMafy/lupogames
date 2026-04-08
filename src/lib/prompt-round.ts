@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 
 const VOTING_SEC = 45;
+const READ_ONLY_SEC = 20;
 const RESULTS_DWELL_MS = 3000;
 
 export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string) {
@@ -24,10 +25,17 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
     return;
   }
 
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    include: { players: true },
+  });
+  const shouldAllowVoting = (room?.players.length ?? 0) > 2;
+  const phaseTimeSec = shouldAllowVoting ? VOTING_SEC : READ_ONLY_SEC;
+
   await prisma.gameState.update({
     where: { roomId },
     data: {
-      timerEndsAt: new Date(Date.now() + VOTING_SEC * 1000),
+      timerEndsAt: new Date(Date.now() + phaseTimeSec * 1000),
     },
   });
 
@@ -43,7 +51,7 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
     phase: 'VOTING',
     data: {
       responses: shuffledResponses,
-      timeLimit: VOTING_SEC,
+      timeLimit: phaseTimeSec,
     },
   });
 }

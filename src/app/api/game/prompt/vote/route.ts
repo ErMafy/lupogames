@@ -35,6 +35,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (room.players.length <= 2) {
+      return NextResponse.json(
+        { success: false, error: 'Il voto è disponibile solo da 3 giocatori in su' },
+        { status: 400 }
+      );
+    }
+
     // Verifica che non stia votando la propria risposta
     const votedResponse = promptRound.responses.find((r: { id: string; playerId: string }) => r.id === responseId);
     if (votedResponse?.playerId === playerId) {

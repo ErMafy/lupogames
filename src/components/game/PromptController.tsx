@@ -18,6 +18,7 @@ interface PromptControllerProps {
     response: string;
     voteCount: number;
   }>;
+  canVote?: boolean;
 }
 
 export function PromptController({
@@ -29,6 +30,7 @@ export function PromptController({
   timeRemaining = 0,
   responses = [],
   roundResults,
+  canVote = true,
 }: PromptControllerProps) {
   const [response, setResponse] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -187,7 +189,7 @@ export function PromptController({
         <p className="text-white/40 text-xs mt-1.5 line-clamp-1">&ldquo;{roundData.phrase}…&rdquo;</p>
       </div>
 
-      {voted ? (
+      {canVote && voted ? (
         <div className="text-center py-8 animate-success-pop">
           <div className="w-16 h-16 mx-auto rounded-full bg-violet-500/20 flex items-center justify-center mb-3 animate-glow-ring">
             <span className="text-3xl">🗳️</span>
@@ -196,26 +198,37 @@ export function PromptController({
           <p className="text-violet-200/60 text-sm mt-1">Aspetta i risultati…</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
-          {responses.map((r, i) => (
-            <li key={r.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
-              <button
-                type="button"
-                onClick={() => void handleVote(r.id)}
-                disabled={isSubmitting}
-                className="btn-premium w-full text-left rounded-2xl border border-white/12 bg-white/[0.06] hover:bg-white/[0.12] px-4 py-3.5 min-h-[52px] touch-manipulation transition-all disabled:opacity-50"
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="shrink-0 w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600/60 to-fuchsia-600/40 flex items-center justify-center text-white font-black text-sm shadow-inner">
-                    {i + 1}
-                  </span>
-                  <p className="text-white text-sm font-medium leading-snug flex-1 pt-0.5">{r.response}</p>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <>
+          {!canVote && (
+            <p className="text-center text-amber-200/80 text-sm mb-3">
+              In 2 giocatori non si vota: leggete le risposte fino allo scadere del timer.
+            </p>
+          )}
+          <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
+            {responses.map((r, i) => (
+              <li key={r.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (canVote) {
+                      void handleVote(r.id);
+                    }
+                  }}
+                  disabled={isSubmitting || !canVote}
+                  className="btn-premium w-full text-left rounded-2xl border border-white/12 bg-white/[0.06] hover:bg-white/[0.12] px-4 py-3.5 min-h-[52px] touch-manipulation transition-all disabled:opacity-50 disabled:cursor-default"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="shrink-0 w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600/60 to-fuchsia-600/40 flex items-center justify-center text-white font-black text-sm shadow-inner">
+                      {i + 1}
+                    </span>
+                    <p className="text-white text-sm font-medium leading-snug flex-1 pt-0.5">{r.response}</p>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
