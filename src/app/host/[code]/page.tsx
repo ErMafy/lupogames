@@ -964,10 +964,10 @@ export default function HostPage() {
                     emoji="💬"
                     title="Continua la Frase"
                     subtitle="5 round • 45 sec + 45 sec"
-                    description={`Scrivi e vota la risposta migliore.${players.length < 3 ? ' (min. 3 giocatori)' : ''}`}
+                    description={`Scrivi e vota la risposta migliore.${players.length < 2 ? ' (min. 2 giocatori)' : ''}`}
                     gradient="bg-gradient-to-br from-pink-600 via-rose-600 to-red-600"
                     onClick={() => startGame('CONTINUE_PHRASE')}
-                    disabled={isLoadingGame || players.length < 3}
+                    disabled={isLoadingGame || players.length < 2}
                   />
                   <GameCard
                     emoji="🕵️"
