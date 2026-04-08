@@ -40,4 +40,7 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
 
+// Export type for transaction client
+export type PrismaTransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 export default prisma;
