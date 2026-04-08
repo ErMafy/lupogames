@@ -158,7 +158,8 @@ function Leaderboard({ players, compact = false }: { players: Player[]; compact?
 function GameCard({ 
   emoji, 
   title, 
-  subtitle, 
+  subtitle,
+  description,
   gradient, 
   onClick, 
   disabled 
@@ -166,26 +167,33 @@ function GameCard({
   emoji: string;
   title: string;
   subtitle: string;
+  description?: string;
   gradient: string;
   onClick: () => void;
   disabled: boolean;
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative overflow-hidden p-8 rounded-3xl text-white text-center transition-all duration-500 ${gradient} disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`group relative overflow-hidden p-8 rounded-3xl text-white text-center transition-all duration-500 ${gradient} disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 shadow-xl shadow-black/30`}
     >
       {/* Shine effect */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
       </div>
       
       {/* Content */}
-      <div className="relative z-10 transform group-hover:scale-105 transition-transform duration-300">
-        <div className="text-6xl mb-4 group-hover:animate-bounce">{emoji}</div>
-        <div className="text-2xl font-black mb-2">{title}</div>
-        <div className="text-white/80 font-medium">{subtitle}</div>
+      <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-300">
+        <div className="text-6xl mb-4 group-hover:animate-bounce drop-shadow-lg">{emoji}</div>
+        <div className="text-2xl font-black mb-2 tracking-tight">{title}</div>
+        <div className="text-white/90 font-semibold text-sm mb-3">{subtitle}</div>
+        {description && (
+          <p className="text-white/70 text-sm leading-relaxed text-left px-1 border-t border-white/15 pt-3 mt-2">
+            {description}
+          </p>
+        )}
       </div>
       
       {/* Border glow */}
@@ -278,13 +286,21 @@ export default function HostPage() {
     }
   }, [roomCode]);
 
-  // Timer
+  // Timer trivia tabellone (30s)
   useEffect(() => {
     if (gamePhase === 'playing' && timeLeft > 0 && currentGameType === 'TRIVIA') {
-      const timer = setTimeout(() => setTimeLeft(t => t - 1), 1000);
+      const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [gamePhase, timeLeft, currentGameType]);
+
+  useEffect(() => {
+    if (gamePhase !== 'playing' || !roomCode) return;
+    const id = setInterval(() => {
+      void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
+    }, 2500);
+    return () => clearInterval(id);
+  }, [gamePhase, roomCode]);
 
   // Pusher handlers
   const handleMemberAdded = useCallback(() => {
@@ -326,29 +342,90 @@ export default function HostPage() {
           options: roundData.options,
         });
         setCurrentRoundNum(eventData.roundNumber as number);
-        setTotalRoundsNum((eventData.totalRounds as number) || 10);
-        setTimeLeft(roundData.timeLimit || 15);
+        setTotalRoundsNum((eventData.totalRounds as number) || 5);
+        setTimeLeft(roundData.timeLimit || 30);
         setShowCorrectAnswer(null);
       }
       
       if (eventData.gameType === 'CONTINUE_PHRASE') {
-        const roundData = eventData.data as { phraseId: string; phrase: string; phase: 'WRITING' | 'VOTING' | 'RESULTS' };
+        const roundData = eventData.data as { phraseId: string; phrase: string; phase?: 'WRITING' | 'VOTING' | 'RESULTS' };
+        const phase = (eventData.phase as typeof roundData.phase) || roundData.phase || 'WRITING';
         setPromptData({
           phraseId: roundData.phraseId,
           phrase: roundData.phrase,
-          phase: roundData.phase,
+          phase,
         });
         setCurrentRoundNum(eventData.roundNumber as number);
       }
       
       if (eventData.gameType === 'WHO_WAS_IT') {
-        const roundData = eventData.data as { secretContent?: string; phase: 'COLLECTING' | 'GUESSING' | 'REVEAL'; players?: Array<{ id: string; name: string; avatar: string }> };
+        const roundData = eventData.data as { secret?: string; secretContent?: string; players?: Array<{ id: string; name: string; avatar: string }> };
+        const ph = (eventData.phase as 'COLLECTING' | 'GUESSING' | 'REVEAL') || 'GUESSING';
         setSecretData({
-          secretContent: roundData.secretContent,
-          phase: roundData.phase,
+          secretContent: roundData.secret ?? roundData.secretContent,
+          phase: ph,
           players: roundData.players,
         });
         setCurrentRoundNum(eventData.roundNumber as number);
+      }
+    }
+
+    if (eventName === 'phase-changed') {
+      const pd = eventData as { gameType: string; phase: string; data?: { responses?: { id: string; response: string }[] } };
+      if (pd.gameType === 'CONTINUE_PHRASE' && pd.phase === 'VOTING' && pd.data?.responses) {
+        setPromptData((prev) =>
+          prev
+            ? {
+                ...prev,
+                phase: 'VOTING',
+                responses: pd.data!.responses!.map((r) => ({
+                  id: r.id,
+                  playerId: '',
+                  playerName: '???',
+                  response: r.response,
+                })),
+              }
+            : null
+        );
+      }
+    }
+
+    if (eventName === 'round-results') {
+      if (eventData.gameType === 'CONTINUE_PHRASE') {
+        const results = eventData.results as Array<{
+          responseId: string;
+          response: string;
+          playerId: string;
+          playerName: string;
+          voteCount: number;
+        }>;
+        setPromptData((prev) =>
+          prev
+            ? {
+                ...prev,
+                phase: 'RESULTS',
+                responses: results.map((r) => ({
+                  id: r.responseId,
+                  playerId: r.playerId,
+                  playerName: r.playerName,
+                  response: r.response,
+                  voteCount: r.voteCount,
+                })),
+              }
+            : null
+        );
+      }
+      if (eventData.gameType === 'WHO_WAS_IT') {
+        const r = eventData.results as {
+          secret: string;
+          owner: { id: string; name: string; avatar: string | null };
+        };
+        setSecretData((prev) => ({
+          ...prev!,
+          phase: 'REVEAL',
+          secretContent: r.secret,
+          actualPlayer: { id: r.owner.id, name: r.owner.name },
+        }));
       }
     }
     
@@ -414,7 +491,7 @@ export default function HostPage() {
       const response = await fetch(endpoints[gameType], {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode, rounds: 10 }),
+        body: JSON.stringify({ roomCode, rounds: 5 }),
       });
 
       const data = await response.json();
@@ -431,7 +508,7 @@ export default function HostPage() {
           });
           setCurrentRoundNum(data.data.currentRound);
           setTotalRoundsNum(data.data.totalRounds);
-          setTimeLeft(15);
+          setTimeLeft(30);
         }
         
         if (gameType === 'CONTINUE_PHRASE' && data.data.phrase) {
@@ -445,7 +522,6 @@ export default function HostPage() {
         if (gameType === 'WHO_WAS_IT') {
           setSecretData({
             phase: 'COLLECTING',
-            players: data.data.players,
           });
         }
       } else {
@@ -455,33 +531,6 @@ export default function HostPage() {
       setError('Errore nell\'avvio del gioco');
     } finally {
       setIsLoadingGame(false);
-    }
-  };
-
-  // Next round
-  const nextRound = async () => {
-    const endpoints: Record<GameType, string> = {
-      'TRIVIA': '/api/game/trivia/round',
-      'CONTINUE_PHRASE': '/api/game/prompt',
-      'WHO_WAS_IT': '/api/game/secret',
-    };
-    
-    if (!currentGameType) return;
-    
-    const response = await fetch(endpoints[currentGameType], {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomCode }),
-    });
-    const data = await response.json();
-    if (data.success && !data.data.gameEnded) {
-      setTimeLeft(15);
-      setShowCorrectAnswer(null);
-    } else if (data.data?.gameEnded) {
-      setGamePhase('lobby');
-      setCurrentQuestion(null);
-      setPromptData(null);
-      setSecretData(null);
     }
   };
 
@@ -641,7 +690,8 @@ export default function HostPage() {
                   <GameCard
                     emoji="🧠"
                     title="La Corsa del Sapere"
-                    subtitle="Quiz Trivia • 10 domande"
+                    subtitle="Quiz • 5 domande • 30 sec"
+                    description="Rispondi A/B/C/D dal telefono. Punti per correttezza e velocità. Il round passa da solo quando tutti rispondono o allo scadere del tempo."
                     gradient="bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600"
                     onClick={() => startGame('TRIVIA')}
                     disabled={isLoadingGame}
@@ -649,7 +699,8 @@ export default function HostPage() {
                   <GameCard
                     emoji="💬"
                     title="Continua la Frase"
-                    subtitle="Risposte creative • Vota la migliore"
+                    subtitle="5 round • 60 sec scrittura + 60 sec voto"
+                    description="Completa la frase in modo creativo, invia, poi vota la risposta più divertente (anonima). Vince chi raccoglie più voti. I punti restano in classifica anche in lobby."
                     gradient="bg-gradient-to-br from-pink-600 via-rose-600 to-red-600"
                     onClick={() => startGame('CONTINUE_PHRASE')}
                     disabled={isLoadingGame}
@@ -657,7 +708,8 @@ export default function HostPage() {
                   <GameCard
                     emoji="🕵️"
                     title="Chi è Stato?"
-                    subtitle="Segreti anonimi • Indovina chi"
+                    subtitle="5 round • 60 sec segreti + 60 sec indizio"
+                    description="Ognuno scrive un segreto. A ogni round appare un segreto: indovina chi l’ha scritto tra i giocatori in sala. Più indovinii, più punti. Tutto automatico a tempo."
                     gradient="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600"
                     onClick={() => startGame('WHO_WAS_IT')}
                     disabled={isLoadingGame}
@@ -712,7 +764,7 @@ export default function HostPage() {
                 )}
               </div>
               
-              <CircularTimer timeLeft={timeLeft} maxTime={15} />
+              <CircularTimer timeLeft={timeLeft} maxTime={30} />
             </div>
 
             {/* Question Card */}
@@ -752,11 +804,10 @@ export default function HostPage() {
               })}
             </div>
 
-            {/* Next Round Button */}
             <div className="text-center mb-8">
-              <button onClick={nextRound} className="btn-lupo text-xl px-10 py-5">
-                ➡️ Prossima Domanda
-              </button>
+              <p className="text-purple-200/90 text-lg font-medium inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10">
+                ⏱️ Avanzamento automatico — tutti rispondono o tempo scaduto
+              </p>
             </div>
 
             {/* Compact Leaderboard */}
@@ -835,9 +886,9 @@ export default function HostPage() {
             )}
             
             <div className="text-center mt-8">
-              <button onClick={nextRound} className="btn-lupo text-xl px-10 py-5">
-                ➡️ Prossimo Round
-              </button>
+              <p className="text-purple-200/90 font-medium">
+                ⏱️ Round e voti avanzano in automatico (tempo o tutti pronti)
+              </p>
             </div>
           </div>
         )}
@@ -899,9 +950,9 @@ export default function HostPage() {
             )}
             
             <div className="text-center mt-8">
-              <button onClick={nextRound} className="btn-lupo text-xl px-10 py-5">
-                ➡️ Prossimo Round
-              </button>
+              <p className="text-purple-200/90 font-medium">
+                ⏱️ Fasi e reveal avanzano in automatico
+              </p>
             </div>
           </div>
         )}

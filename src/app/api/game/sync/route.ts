@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
               C: q.optionC,
               D: q.optionD,
             },
-            timeLimit: 15,
+            timeLimit: 30,
             roundId: tr.id,
           },
         },
@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
             phase: 'VOTING',
             data: {
               responses: shuffled,
-              timeLimit: 30,
+              timeLimit: 60,
             },
           },
         });
@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
             phase: 'COLLECTING',
             data: {
               instruction: 'Scrivi un segreto o un aneddoto imbarazzante su di te!',
-              timeLimit: 90,
+              timeLimit: 60,
             },
           },
         });
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
                     avatar: p.avatar,
                     avatarColor: p.avatarColor,
                   })),
-                  timeLimit: 30,
+                  timeLimit: 60,
                 },
               },
             });

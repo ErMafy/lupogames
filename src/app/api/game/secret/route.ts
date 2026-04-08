@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           },
           totalRounds: Math.min(rounds, room.players.length),
           currentRound: 0,
-          timerEndsAt: new Date(Date.now() + 90000), // 90 secondi per scrivere segreti
+          timerEndsAt: new Date(Date.now() + 60000),
         },
       }),
       // Elimina vecchi segreti della stanza
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       phase: 'COLLECTING',
       data: {
         instruction: 'Scrivi un segreto o un aneddoto imbarazzante su di te!',
-        timeLimit: 90,
+        timeLimit: 60,
       },
     });
 

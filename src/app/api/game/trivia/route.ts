@@ -10,7 +10,7 @@ import { pickRandom } from '@/lib/utils';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { roomCode, rounds = 15 } = body;
+    const { roomCode, rounds = 5 } = body;
 
     const room = await prisma.room.findUnique({
       where: { code: roomCode.toUpperCase() },
@@ -66,10 +66,10 @@ export async function POST(request: NextRequest) {
           currentRound: 1,
         },
       }),
-      // Reset posizioni giocatori
+      // Solo pista trivia azzerata — i punti totali in lobby restano
       prisma.player.updateMany({
         where: { roomId: room.id },
-        data: { trackPosition: 0, score: 0 },
+        data: { trackPosition: 0 },
       }),
       // Salva lo stato del gioco
       prisma.gameState.update({
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
           },
           totalRounds: rounds,
           currentRound: 1,
-          timerEndsAt: new Date(Date.now() + 15000), // 15 secondi
+          timerEndsAt: new Date(Date.now() + 30000),
         },
       }),
       // Incrementa il contatore di utilizzo
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
           C: firstQuestion.optionC,
           D: firstQuestion.optionD,
         },
-        timeLimit: 15,
+        timeLimit: 30,
         roundId: triviaRound.id,
       },
     });

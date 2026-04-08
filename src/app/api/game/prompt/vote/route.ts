@@ -3,8 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendToRoom } from '@/lib/pusher-server';
 import { checkAllPlayersCompleted } from '@/lib/server-utils';
+import { showPromptRoundResults } from '@/lib/prompt-round';
 
 // POST /api/game/prompt/vote - Vota una risposta
 export async function POST(request: NextRequest) {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     if (allCompleted) {
       console.log(`🐺 Tutti hanno votato! Mostrando risultati...`);
-      await showResults(roomCode, roundId, room.id);
+      await showPromptRoundResults(roomCode, roundId, room.id);
     }
 
     return NextResponse.json({
@@ -88,63 +88,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Mostra i risultati del round
-async function showResults(roomCode: string, roundId: string, roomId: string) {
-  const responses = await prisma.promptResponse.findMany({
-    where: { promptRoundId: roundId },
-    include: { 
-      player: true, 
-      votes: true,
-    },
-  });
-
-  // Calcola i punti (100 per ogni voto ricevuto)
-  const results = await Promise.all(responses.map(async (r: { id: string; response: string; playerId: string; player: { name: string; avatar: string | null }; votes: unknown[] }) => {
-    const points = r.votes.length * 100;
-    
-    // Aggiorna i punti del giocatore
-    await prisma.$transaction([
-      prisma.promptResponse.update({
-        where: { id: r.id },
-        data: { 
-          voteCount: r.votes.length,
-          pointsEarned: points,
-        },
-      }),
-      prisma.player.update({
-        where: { id: r.playerId },
-        data: { score: { increment: points } },
-      }),
-    ]);
-
-    return {
-      responseId: r.id,
-      response: r.response,
-      playerId: r.playerId,
-      playerName: r.player.name,
-      avatar: r.player.avatar,
-      voteCount: r.votes.length,
-      pointsEarned: points,
-    };
-  }));
-
-  // Ordina per voti
-  results.sort((a: { voteCount: number }, b: { voteCount: number }) => b.voteCount - a.voteCount);
-
-  // Aggiorna la fase
-  await prisma.promptRound.update({
-    where: { id: roundId },
-    data: { phase: 'RESULTS', endedAt: new Date() },
-  });
-
-  // Invia i risultati
-  await sendToRoom(roomCode, 'round-results', {
-    gameType: 'CONTINUE_PHRASE',
-    results,
-    winner: results[0],
-  });
-
-  console.log(`🐺 Risultati: Vincitore ${results[0]?.playerName} con ${results[0]?.voteCount} voti`);
 }

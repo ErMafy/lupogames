@@ -43,6 +43,7 @@ export default function ControllerPage() {
     hasSubmitted,
     handleGameEvent,
     markAsSubmitted,
+    resetHasSubmitted,
   } = useGameEvents();
 
   // Stato risultato trivia locale
@@ -150,6 +151,15 @@ export default function ControllerPage() {
     return () => clearInterval(interval);
   }, [roomCode, currentGame, refreshRoomPlayers]);
 
+  // Server tick: avanza fasi su timeout anche se Pusher perde un evento (utile su mobile)
+  useEffect(() => {
+    if (!roomCode || !currentGame) return;
+    const id = setInterval(() => {
+      void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
+    }, 2500);
+    return () => clearInterval(id);
+  }, [roomCode, currentGame]);
+
   const triviaQuestionId =
     currentGame === 'TRIVIA' &&
     roundData &&
@@ -201,9 +211,15 @@ export default function ControllerPage() {
         if (phaseData.data?.responses) {
           setPromptResponses(phaseData.data.responses);
         }
+        if (phaseData.phase === 'VOTING') {
+          resetHasSubmitted();
+        }
       }
       if (phaseData.gameType === 'WHO_WAS_IT') {
         setSecretPhase(phaseData.phase as 'COLLECTING' | 'GUESSING');
+        if (phaseData.phase === 'GUESSING') {
+          resetHasSubmitted();
+        }
       }
     }
 
@@ -270,7 +286,7 @@ export default function ControllerPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [handleAvatarDeselected, handleGameEvent, roomCode, router]);
+  }, [handleAvatarDeselected, handleGameEvent, roomCode, router, resetHasSubmitted]);
 
   const gameEventHandlerRef = useRef(customGameEventHandler);
   gameEventHandlerRef.current = customGameEventHandler;
@@ -389,25 +405,22 @@ export default function ControllerPage() {
   const handlePromptVote = async (responseId: string) => {
     if (!player || !roundData) return;
 
-    try {
-      const res = await fetch('/api/game/prompt/vote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomCode,
-          playerId: player.id,
-          roundId: (roundData as PromptRoundData & { roundId: string }).roundId,
-          responseId,
-        }),
-      });
+    const res = await fetch('/api/game/prompt/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roomCode,
+        playerId: player.id,
+        roundId: (roundData as PromptRoundData & { roundId: string }).roundId,
+        responseId,
+      }),
+    });
 
-      const data = await res.json();
-      if (data.success) {
-        markAsSubmitted();
-      }
-    } catch (err) {
-      console.error('Errore voto prompt:', err);
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Voto non registrato');
     }
+    markAsSubmitted();
   };
 
   const handleSecretSubmit = async (secret: string) => {
@@ -436,25 +449,22 @@ export default function ControllerPage() {
   const handleSecretVote = async (suspectedPlayerId: string) => {
     if (!player || !roundData) return;
 
-    try {
-      const res = await fetch('/api/game/secret/vote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomCode,
-          playerId: player.id,
-          roundId: (roundData as SecretRoundData & { roundId: string }).roundId,
-          suspectedPlayerId,
-        }),
-      });
+    const res = await fetch('/api/game/secret/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roomCode,
+        playerId: player.id,
+        roundId: (roundData as SecretRoundData & { roundId: string }).roundId,
+        suspectedPlayerId,
+      }),
+    });
 
-      const data = await res.json();
-      if (data.success) {
-        markAsSubmitted();
-      }
-    } catch (err) {
-      console.error('Errore voto segreto:', err);
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Voto non registrato');
     }
+    markAsSubmitted();
   };
 
   // Loading Premium

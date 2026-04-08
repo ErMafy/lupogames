@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 import { calculateTriviaPoints } from '@/lib/utils';
 import { checkAllPlayersCompleted } from '@/lib/server-utils';
+import { advanceTriviaRound } from '@/lib/trivia-advance';
 
 // POST /api/game/trivia/answer - Invia una risposta
 export async function POST(request: NextRequest) {
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Calcola se è corretta e i punti
     const isCorrect = answer === triviaRound.question.correctAnswer;
-    const points = calculateTriviaPoints(isCorrect, responseTimeMs, 15000);
+    const points = calculateTriviaPoints(isCorrect, responseTimeMs, 30000);
 
     // Determina se è il più veloce tra quelli corretti
     const correctAnswers = triviaRound.answers.filter((a: { isCorrect: boolean }) => a.isCorrect);
@@ -104,10 +105,10 @@ export async function POST(request: NextRequest) {
 
     if (allCompleted) {
       console.log(`🐺 Tutti hanno risposto! Auto-advancing...`);
-      // Notifica che tutti hanno risposto e il round sta per avanzare
       await sendToRoom(triviaRound.room.code, 'all-players-completed', {
         message: 'Tutti hanno risposto! Prossima domanda in arrivo...',
       });
+      await advanceTriviaRound(triviaRound.room.code, { force: true });
     }
 
     console.log(

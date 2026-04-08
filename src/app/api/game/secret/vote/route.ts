@@ -3,9 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendToRoom } from '@/lib/pusher-server';
-import { pickRandom } from '@/lib/utils';
 import { checkAllPlayersCompleted } from '@/lib/server-utils';
+import { showSecretRoundResults } from '@/lib/secret-game';
 
 // POST /api/game/secret/vote - Vota chi pensi abbia scritto il segreto
 export async function POST(request: NextRequest) {
@@ -82,7 +81,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 🚀 AUTO-ADVANCE: Controlla se tutti hanno votato (escluso il proprietario del segreto)
-    const votingPlayers = room.players.filter((p: { id: string }) => p.id !== secretRound.secret.playerId);
     const allCompleted = await checkAllPlayersCompleted(
       roomCode,
       'SECRET',
@@ -92,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     if (allCompleted) {
       console.log(`🐺 Tutti hanno votato! Mostrando risultati...`);
-      await showSecretResults(roomCode, roundId, room.id);
+      await showSecretRoundResults(roomCode, roundId, room.id);
     }
 
     return NextResponse.json({
@@ -107,149 +105,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Mostra i risultati del round
-async function showSecretResults(roomCode: string, roundId: string, roomId: string) {
-  const secretRound = await prisma.secretRound.findUnique({
-    where: { id: roundId },
-    include: { 
-      secret: { include: { player: true } },
-      votes: { include: { player: true } },
-    },
-  });
-
-  if (!secretRound) return;
-
-  // Aggiorna fase
-  await prisma.secretRound.update({
-    where: { id: roundId },
-    data: { phase: 'REVEAL', endedAt: new Date() },
-  });
-
-  const results = {
-    secret: secretRound.secret.content,
-    owner: {
-      id: secretRound.secret.player.id,
-      name: secretRound.secret.player.name,
-      avatar: secretRound.secret.player.avatar,
-    },
-    votes: secretRound.votes.map((v: { playerId: string; player: { name: string; avatar: string | null }; isCorrect: boolean; pointsEarned: number }) => ({
-      playerId: v.playerId,
-      playerName: v.player.name,
-      avatar: v.player.avatar,
-      guessedCorrectly: v.isCorrect,
-      pointsEarned: v.pointsEarned,
-    })),
-    correctGuesses: secretRound.votes.filter((v: { isCorrect: boolean }) => v.isCorrect).length,
-    totalVotes: secretRound.votes.length,
-  };
-
-  // Invia risultati
-  await sendToRoom(roomCode, 'round-results', {
-    gameType: 'WHO_WAS_IT',
-    results,
-  });
-
-  console.log(`🐺 Segreto di ${results.owner.name}: ${results.correctGuesses}/${results.totalVotes} hanno indovinato`);
-
-  // Dopo 5 secondi, inizia il prossimo round o termina
-  setTimeout(async () => {
-    const gameState = await prisma.gameState.findUnique({
-      where: { roomId },
-    });
-    
-    if (!gameState) return;
-
-    const state = gameState.state as { totalRounds?: number };
-    const nextRound = secretRound.roundNumber + 1;
-
-    if (nextRound > (state.totalRounds || 5)) {
-      // Fine gioco
-      const players = await prisma.player.findMany({
-        where: { roomId },
-        orderBy: { score: 'desc' },
-      });
-
-      await sendToRoom(roomCode, 'game-ended', {
-        gameType: 'WHO_WAS_IT',
-        finalScores: players.map((p: { id: string; name: string; avatar: string | null; score: number }, i: number) => ({
-          rank: i + 1,
-          playerId: p.id,
-          playerName: p.name,
-          avatar: p.avatar,
-          score: p.score,
-        })),
-      });
-    } else {
-      // Prossimo round - pesca un altro segreto
-      const secrets = await prisma.secret.findMany({
-        where: {
-          player: { roomId },
-          isUsed: false,
-        },
-        include: { player: true },
-      });
-
-      if (secrets.length > 0) {
-        const selectedSecret = (pickRandom(secrets, 1) as { id: string; playerId: string; content: string }[])[0];
-
-        const newSecretRound = await prisma.secretRound.create({
-          data: {
-            roomId,
-            secretId: selectedSecret.id,
-            roundNumber: nextRound,
-            phase: 'GUESSING',
-          },
-        });
-
-        await prisma.$transaction([
-          prisma.secret.update({
-            where: { id: selectedSecret.id },
-            data: { isUsed: true },
-          }),
-          prisma.room.update({
-            where: { id: roomId },
-            data: { currentRound: nextRound },
-          }),
-          prisma.gameState.update({
-            where: { roomId },
-            data: {
-              state: {
-                phase: 'GUESSING',
-                currentRoundId: newSecretRound.id,
-                currentSecretId: selectedSecret.id,
-                secretOwnerId: selectedSecret.playerId,
-                totalRounds: state.totalRounds,
-              },
-              currentRound: nextRound,
-              timerEndsAt: new Date(Date.now() + 30000),
-            },
-          }),
-        ]);
-
-        const players = await prisma.player.findMany({
-          where: { roomId },
-          select: { id: true, name: true, avatar: true, avatarColor: true },
-        });
-
-        await sendToRoom(roomCode, 'round-started', {
-          roundNumber: nextRound,
-          gameType: 'WHO_WAS_IT',
-          phase: 'GUESSING',
-          data: {
-            secret: selectedSecret.content,
-            roundId: newSecretRound.id,
-            players: players.map((p: { id: string; name: string; avatar: string | null; avatarColor: string | null }) => ({
-              id: p.id,
-              name: p.name,
-              avatar: p.avatar,
-              avatarColor: p.avatarColor,
-            })),
-            timeLimit: 30,
-          },
-        });
-      }
-    }
-  }, 5000);
 }

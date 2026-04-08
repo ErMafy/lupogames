@@ -4,8 +4,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
-import { pickRandom } from '@/lib/utils';
 import { checkAllPlayersCompleted } from '@/lib/server-utils';
+import { startGuessingRound } from '@/lib/secret-game';
 
 // POST /api/game/secret/submit - Invia un segreto
 export async function POST(request: NextRequest) {
@@ -83,104 +83,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Inizia un round di indovinello
-async function startGuessingRound(roomCode: string, roomId: string, roundNumber: number) {
-  // Pesca un segreto non ancora usato
-  const secrets = await prisma.secret.findMany({
-    where: {
-      player: { roomId },
-      isUsed: false,
-    },
-    include: { player: true },
-  });
-
-  if (secrets.length === 0) {
-    // Tutti i segreti usati - fine gioco
-    await endGame(roomCode, roomId);
-    return;
-  }
-
-  const selectedSecret = (pickRandom(secrets, 1) as { id: string; content: string; playerId: string }[])[0];
-
-  // Crea il round
-  const secretRound = await prisma.secretRound.create({
-    data: {
-      roomId,
-      secretId: selectedSecret.id,
-      roundNumber,
-      phase: 'GUESSING',
-    },
-  });
-
-  // Marca il segreto come usato
-  await prisma.$transaction([
-    prisma.secret.update({
-      where: { id: selectedSecret.id },
-      data: { isUsed: true },
-    }),
-    prisma.room.update({
-      where: { id: roomId },
-      data: { currentRound: roundNumber },
-    }),
-    prisma.gameState.update({
-      where: { roomId },
-      data: {
-        state: {
-          phase: 'GUESSING',
-          currentRoundId: secretRound.id,
-          currentSecretId: selectedSecret.id,
-          secretOwnerId: selectedSecret.playerId,
-        },
-        currentRound: roundNumber,
-        timerEndsAt: new Date(Date.now() + 30000), // 30 secondi per votare
-      },
-    }),
-  ]);
-
-  // Carica i giocatori per il voto
-  const players = await prisma.player.findMany({
-    where: { roomId },
-    select: { id: true, name: true, avatar: true, avatarColor: true },
-  });
-
-  // Invia il segreto a tutti
-  await sendToRoom(roomCode, 'round-started', {
-    roundNumber,
-    gameType: 'WHO_WAS_IT',
-    phase: 'GUESSING',
-    data: {
-      secret: selectedSecret.content,
-      roundId: secretRound.id,
-      players: players.map((p: { id: string; name: string; avatar: string | null; avatarColor: string | null }) => ({
-        id: p.id,
-        name: p.name,
-        avatar: p.avatar,
-        avatarColor: p.avatarColor,
-      })),
-      timeLimit: 30,
-    },
-  });
-
-  console.log(`🐺 Chi è Stato Round ${roundNumber}: "${selectedSecret.content.substring(0, 30)}..."`);
-}
-
-// Termina il gioco
-async function endGame(roomCode: string, roomId: string) {
-  const players = await prisma.player.findMany({
-    where: { roomId },
-    orderBy: { score: 'desc' },
-  });
-
-  await sendToRoom(roomCode, 'game-ended', {
-    gameType: 'WHO_WAS_IT',
-    finalScores: players.map((p: { id: string; name: string; avatar: string | null; score: number }, i: number) => ({
-      rank: i + 1,
-      playerId: p.id,
-      playerName: p.name,
-      avatar: p.avatar,
-      score: p.score,
-    })),
-  });
 }

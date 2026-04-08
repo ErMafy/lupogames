@@ -95,7 +95,7 @@ export function useGameEvents() {
           players,
         } as SecretRoundData;
         view = phase === 'COLLECTING' ? 'secret-write' : 'secret-vote';
-        timeLimit = typeof inner.timeLimit === 'number' ? inner.timeLimit : 30;
+        timeLimit = typeof inner.timeLimit === 'number' ? inner.timeLimit : 60;
         break;
       }
     }
@@ -193,6 +193,15 @@ export function useGameEvents() {
     }));
   }, []);
 
+  /** Dopo scrittura/collezione, la fase successiva (voto/indovina) richiede un nuovo invio */
+  const resetHasSubmitted = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      hasSubmitted: false,
+      canSubmit: true,
+    }));
+  }, []);
+
   const resetForNewRound = useCallback(() => {
     setState(prev => ({
       ...prev,
@@ -223,6 +232,9 @@ export function useGameEvents() {
       case 'show-results':
         handleShowResults();
         break;
+      case 'round-results':
+        handleShowResults();
+        break;
       case 'game-ended':
         handleGameEnded();
         break;
@@ -233,6 +245,7 @@ export function useGameEvents() {
     ...state,
     handleGameEvent,
     markAsSubmitted,
+    resetHasSubmitted,
     resetForNewRound,
   };
 }

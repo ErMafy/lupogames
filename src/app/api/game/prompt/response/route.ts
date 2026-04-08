@@ -3,8 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendToRoom } from '@/lib/pusher-server';
 import { checkAllPlayersCompleted } from '@/lib/server-utils';
+import { startPromptVotingPhase } from '@/lib/prompt-round';
 
 // POST /api/game/prompt/response - Invia una risposta
 export async function POST(request: NextRequest) {
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     if (allCompleted) {
       console.log(`🐺 Tutti hanno scritto! Avvio fase di voto...`);
-      await startVotingPhase(roomCode, roundId, room.id);
+      await startPromptVotingPhase(roomCode, roundId, room.id);
     }
 
     return NextResponse.json({
@@ -95,46 +95,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Funzione helper per avviare la fase di voto
-async function startVotingPhase(roomCode: string, roundId: string, roomId: string) {
-  const responses = await prisma.promptResponse.findMany({
-    where: { promptRoundId: roundId },
-    include: { player: true },
-  });
-
-  // Aggiorna la fase
-  await prisma.$transaction([
-    prisma.promptRound.update({
-      where: { id: roundId },
-      data: { phase: 'VOTING' },
-    }),
-    prisma.gameState.update({
-      where: { roomId },
-      data: {
-        timerEndsAt: new Date(Date.now() + 30000), // 30 secondi per votare
-      },
-    }),
-  ]);
-
-  // Invia le risposte anonime (mescolate) per il voto
-  const shuffledResponses = responses
-    .sort(() => Math.random() - 0.5)
-    .map((r: { id: string; response: string }) => ({
-      id: r.id,
-      response: r.response,
-      // Non mostriamo chi ha scritto cosa!
-    }));
-
-  await sendToRoom(roomCode, 'phase-changed', {
-    gameType: 'CONTINUE_PHRASE',
-    phase: 'VOTING',
-    data: {
-      responses: shuffledResponses,
-      timeLimit: 30,
-    },
-  });
-
-  console.log(`🐺 Fase di voto iniziata con ${responses.length} risposte`);
 }
