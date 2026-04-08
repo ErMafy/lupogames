@@ -27,7 +27,7 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
   const playerCount = await prisma.player.count({
     where: { roomId },
   });
-  if (playerCount <= 2) {
+  if (playerCount === 2) {
     await showPromptRoundResults(roomCode, roundId, roomId);
     return;
   }
