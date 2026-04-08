@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (room.players.length < 2) {
+    if (room.players.length < 3) {
       return NextResponse.json(
-        { success: false, error: 'Servono almeno 2 giocatori!' },
+        { success: false, error: 'Servono almeno 3 giocatori per Continua la Frase!' },
         { status: 400 }
       );
     }
