@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createRoomCode, DEFAULT_AVATARS, AVATAR_COLORS } from '@/lib/utils';
+import type { Prisma } from '@prisma/client';
 
 // POST /api/rooms - Crea una nuova stanza
 export async function POST(request: NextRequest) {
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crea la stanza e l'host in una transazione
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Crea la stanza
       const room = await tx.room.create({
         data: {
