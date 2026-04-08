@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendToRoom } from '@/lib/pusher-server';
 import { checkAllPlayersCompleted } from '@/lib/server-utils';
 import { startPromptVotingPhase } from '@/lib/prompt-round';
 
