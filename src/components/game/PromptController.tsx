@@ -72,7 +72,6 @@ export function PromptController({
   };
 
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 10;
-  const voteButtonClass = 'btn-premium w-full text-left rounded-2xl border border-white/12 bg-white/[0.06] hover:bg-white/[0.12] disabled:hover:bg-white/[0.06] px-4 py-3.5 min-h-[52px] touch-manipulation transition-all disabled:opacity-50 disabled:cursor-default';
 
   if (roundResults && roundResults.length > 0) {
     const sorted = [...roundResults].sort((a, b) => b.voteCount - a.voteCount);
@@ -216,7 +215,12 @@ export function PromptController({
                     }
                   }}
                   disabled={isSubmitting || !canVote}
-                  className={voteButtonClass}
+                  className={[
+                    'btn-premium w-full text-left rounded-2xl border border-white/12',
+                    'bg-white/[0.06] hover:bg-white/[0.12] disabled:hover:bg-white/[0.06]',
+                    'px-4 py-3.5 min-h-[52px] touch-manipulation transition-all',
+                    'disabled:opacity-50 disabled:cursor-default',
+                  ].join(' ')}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <div className="flex items-start gap-3">

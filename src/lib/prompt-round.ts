@@ -29,7 +29,8 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
     where: { id: roomId },
     include: { players: true },
   });
-  const shouldAllowVoting = (room?.players.length ?? 0) > 2;
+  if (!room) return;
+  const shouldAllowVoting = room.players.length > 2;
   const phaseTimeSec = shouldAllowVoting ? VOTING_SEC : READ_ONLY_SEC;
 
   await prisma.gameState.update({
