@@ -55,11 +55,9 @@ export async function GET(request: NextRequest) {
       }
 
       if (pr.phase === 'RESULTS') {
-        const advanced = await tryAdvancePromptIfCooldownDone(code);
-        return NextResponse.json({
-          success: true,
-          data: { action: advanced ? 'prompt_next' : 'idle' },
-        });
+        // tryAdvancePromptIfCooldownDone now advances even without promptAdvanceAt
+        await tryAdvancePromptIfCooldownDone(code);
+        return NextResponse.json({ success: true, data: { action: 'prompt_next' } });
       }
 
       if (pr.phase === 'VOTING') {

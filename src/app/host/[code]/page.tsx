@@ -337,7 +337,7 @@ export default function HostPage() {
     if (gamePhase !== 'playing' || !roomCode) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 4000);
+    }, 3000);
     return () => clearInterval(id);
   }, [gamePhase, roomCode]);
 

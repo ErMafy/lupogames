@@ -170,7 +170,7 @@ export default function ControllerPage() {
     if (!roomCode || !currentGame) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 4000);
+    }, 3000);
     return () => clearInterval(id);
   }, [roomCode, currentGame]);
 

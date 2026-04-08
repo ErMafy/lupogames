@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 
 const VOTING_SEC = 45;
-const RESULTS_DWELL_MS = 4000;
+const RESULTS_DWELL_MS = 3000;
 
 export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string) {
   // Atomic: only transition WRITING → VOTING once
@@ -64,59 +64,69 @@ export async function showPromptRoundResults(roomCode: string, roundId: string, 
   });
   if (transitioned.count === 0) return;
 
-  const responses = await prisma.promptResponse.findMany({
-    where: { promptRoundId: roundId },
-    include: {
-      player: true,
-      votes: true,
-    },
-  });
-
-  const results = await Promise.all(
-    responses.map(
-      async (r: {
-        id: string;
-        response: string;
-        playerId: string;
-        player: { name: string; avatar: string | null };
-        votes: unknown[];
-      }) => {
-        const points = r.votes.length * 100;
-        await prisma.$transaction([
-          prisma.promptResponse.update({
-            where: { id: r.id },
-            data: {
-              voteCount: r.votes.length,
-              pointsEarned: points,
-            },
-          }),
-          prisma.player.update({
-            where: { id: r.playerId },
-            data: { score: { increment: points } },
-          }),
-        ]);
-        return {
-          responseId: r.id,
-          response: r.response,
-          playerId: r.playerId,
-          playerName: r.player.name,
-          avatar: r.player.avatar,
-          voteCount: r.votes.length,
-          pointsEarned: points,
-        };
-      }
-    )
-  );
-
-  results.sort((a, b) => b.voteCount - a.voteCount);
-
-  await sendToRoom(roomCode, 'round-results', {
-    gameType: 'CONTINUE_PHRASE',
-    results,
-    winner: results[0],
-  });
-
+  // Schedule advance FIRST so the game never gets stuck even if scoring fails
   await schedulePromptAdvance(roomCode, roomId);
+
+  try {
+    const responses = await prisma.promptResponse.findMany({
+      where: { promptRoundId: roundId },
+      include: {
+        player: true,
+        votes: true,
+      },
+    });
+
+    const results = await Promise.all(
+      responses.map(
+        async (r: {
+          id: string;
+          response: string;
+          playerId: string;
+          player: { name: string; avatar: string | null };
+          votes: unknown[];
+        }) => {
+          const points = r.votes.length * 100;
+          await prisma.$transaction([
+            prisma.promptResponse.update({
+              where: { id: r.id },
+              data: {
+                voteCount: r.votes.length,
+                pointsEarned: points,
+              },
+            }),
+            prisma.player.update({
+              where: { id: r.playerId },
+              data: { score: { increment: points } },
+            }),
+          ]);
+          return {
+            responseId: r.id,
+            response: r.response,
+            playerId: r.playerId,
+            playerName: r.player.name,
+            avatar: r.player.avatar,
+            voteCount: r.votes.length,
+            pointsEarned: points,
+          };
+        }
+      )
+    );
+
+    results.sort((a, b) => b.voteCount - a.voteCount);
+
+    await sendToRoom(roomCode, 'round-results', {
+      gameType: 'CONTINUE_PHRASE',
+      results,
+      winner: results[0],
+    });
+  } catch (err) {
+    console.error('Prompt scoring/broadcast failed, advance still scheduled:', err);
+    await sendToRoom(roomCode, 'round-results', {
+      gameType: 'CONTINUE_PHRASE',
+      results: [],
+      winner: null,
+    });
+  }
 }
 
 async function schedulePromptAdvance(roomCode: string, roomId: string) {
@@ -289,11 +299,16 @@ export async function tryAdvancePromptIfCooldownDone(roomCode: string): Promise<
 
   const gs = room.gameState;
   const state = (gs.state || {}) as { promptAdvanceAt?: string; currentRoundId?: string };
-  if (!state.promptAdvanceAt) return false;
-  if (new Date(state.promptAdvanceAt).getTime() > Date.now()) return false;
 
+  // If promptAdvanceAt is set, respect the dwell time
+  if (state.promptAdvanceAt && new Date(state.promptAdvanceAt).getTime() > Date.now()) {
+    return false;
+  }
+
+  // If phase is RESULTS, advance (even if promptAdvanceAt is missing — safety net)
+  if (!state.currentRoundId) return false;
   const round = await prisma.promptRound.findUnique({
-    where: { id: state.currentRoundId! },
+    where: { id: state.currentRoundId },
   });
   if (!round || round.phase !== 'RESULTS') return false;
 

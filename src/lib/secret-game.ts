@@ -3,7 +3,7 @@ import { sendToRoom } from '@/lib/pusher-server';
 import { pickRandom } from '@/lib/utils';
 
 const GUESS_SEC = 45;
-const REVEAL_DWELL_MS = 4000;
+const REVEAL_DWELL_MS = 3000;
 
 export async function endSecretGame(roomCode: string, roomId: string) {
   const players = await prisma.player.findMany({
@@ -130,46 +130,7 @@ export async function showSecretRoundResults(roomCode: string, roundId: string, 
   });
   if (transitioned.count === 0) return;
 
-  const secretRound = await prisma.secretRound.findUnique({
-    where: { id: roundId },
-    include: {
-      secret: { include: { player: true } },
-      votes: { include: { player: true } },
-    },
-  });
-
-  if (!secretRound) return;
-
-  const results = {
-    secret: secretRound.secret.content,
-    owner: {
-      id: secretRound.secret.player.id,
-      name: secretRound.secret.player.name,
-      avatar: secretRound.secret.player.avatar,
-    },
-    votes: secretRound.votes.map(
-      (v: {
-        playerId: string;
-        player: { name: string; avatar: string | null };
-        isCorrect: boolean;
-        pointsEarned: number;
-      }) => ({
-        playerId: v.playerId,
-        playerName: v.player.name,
-        avatar: v.player.avatar,
-        guessedCorrectly: v.isCorrect,
-        pointsEarned: v.pointsEarned,
-      })
-    ),
-    correctGuesses: secretRound.votes.filter((v: { isCorrect: boolean }) => v.isCorrect).length,
-    totalVotes: secretRound.votes.length,
-  };
-
-  await sendToRoom(roomCode, 'round-results', {
-    gameType: 'WHO_WAS_IT',
-    results,
-  });
-
+  // Schedule advance FIRST so the game never gets stuck even if scoring fails
   const gs = await prisma.gameState.findUnique({ where: { roomId } });
   const st = (gs?.state || {}) as Record<string, unknown>;
   const until = new Date(Date.now() + REVEAL_DWELL_MS);
@@ -185,10 +146,54 @@ export async function showSecretRoundResults(roomCode: string, roundId: string, 
     },
   });
 
-  await sendToRoom(roomCode, 'secret-reveal', {
-    actualPlayer: results.owner,
-    secretContent: results.secret,
-  });
+  try {
+    const secretRound = await prisma.secretRound.findUnique({
+      where: { id: roundId },
+      include: {
+        secret: { include: { player: true } },
+        votes: { include: { player: true } },
+      },
+    });
+
+    if (!secretRound) return;
+
+    const results = {
+      secret: secretRound.secret.content,
+      owner: {
+        id: secretRound.secret.player.id,
+        name: secretRound.secret.player.name,
+        avatar: secretRound.secret.player.avatar,
+      },
+      votes: secretRound.votes.map(
+        (v: {
+          playerId: string;
+          player: { name: string; avatar: string | null };
+          isCorrect: boolean;
+          pointsEarned: number;
+        }) => ({
+          playerId: v.playerId,
+          playerName: v.player.name,
+          avatar: v.player.avatar,
+          guessedCorrectly: v.isCorrect,
+          pointsEarned: v.pointsEarned,
+        })
+      ),
+      correctGuesses: secretRound.votes.filter((v: { isCorrect: boolean }) => v.isCorrect).length,
+      totalVotes: secretRound.votes.length,
+    };
+
+    await sendToRoom(roomCode, 'round-results', {
+      gameType: 'WHO_WAS_IT',
+      results,
+    });
+
+    await sendToRoom(roomCode, 'secret-reveal', {
+      actualPlayer: results.owner,
+      secretContent: results.secret,
+    });
+  } catch (err) {
+    console.error('Secret scoring/broadcast failed, advance still scheduled:', err);
+  }
 }
 
 export async function advanceSecretAfterReveal(roomCode: string): Promise<boolean> {
@@ -203,9 +208,11 @@ export async function advanceSecretAfterReveal(roomCode: string): Promise<boolea
     secretAdvanceAt?: string;
   };
 
-  if (!state.secretAdvanceAt || new Date(state.secretAdvanceAt).getTime() > Date.now()) {
+  // If secretAdvanceAt is set, respect the dwell time
+  if (state.secretAdvanceAt && new Date(state.secretAdvanceAt).getTime() > Date.now()) {
     return false;
   }
+  // If secretAdvanceAt is missing (scheduling failed), still advance — timer expiry is enough
 
   // Use the reliable DB column, not the JSON field
   const totalRounds = gs.totalRounds || 5;

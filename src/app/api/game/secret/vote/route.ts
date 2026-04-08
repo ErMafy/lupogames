@@ -70,12 +70,15 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Auto-advance: showSecretRoundResults has its own atomic guard
-    const voteCount = await prisma.secretVote.count({
-      where: { secretRoundId: roundId },
-    });
+    // Auto-advance: use active player count (those who submitted secrets)
+    const [voteCount, activePlayerCount] = await Promise.all([
+      prisma.secretVote.count({ where: { secretRoundId: roundId } }),
+      prisma.secret.count({ where: { player: { roomId: room.id } } }),
+    ]);
 
-    if (voteCount >= room.players.length - 1) {
+    // Eligible voters = active players - 1 (secret owner can't vote)
+    const eligibleVoters = Math.max(1, activePlayerCount - 1);
+    if (voteCount >= eligibleVoters) {
       await showSecretRoundResults(roomCode, roundId, room.id);
     }
 
