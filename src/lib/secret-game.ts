@@ -103,6 +103,11 @@ export async function startGuessingRound(roomCode: string, roomId: string, round
     select: { id: true, name: true, avatar: true, avatarColor: true },
   });
 
+  if (players.length <= 2) {
+    await showSecretRoundResults(roomCode, secretRound.id, roomId);
+    return;
+  }
+
   await sendToRoom(roomCode, 'round-started', {
     roundNumber,
     gameType: 'WHO_WAS_IT',
