@@ -48,46 +48,68 @@ export function useGameEvents() {
       totalRounds: data.totalRounds,
       currentRound: 0,
       hasSubmitted: false,
+      controllerView:
+        data.gameType === 'WHO_WAS_IT' ? 'secret-write' : prev.controllerView,
     }));
   }, []);
 
   const handleRoundStarted = useCallback((data: {
     roundNumber: number;
     gameType: GameType;
-    data: TriviaRoundData | PromptRoundData | SecretRoundData;
+    phase?: string;
+    data: TriviaRoundData | PromptRoundData | SecretRoundData | Record<string, unknown>;
   }) => {
-    // Determina la view del controller in base al gioco
     let view: ControllerView = 'waiting';
     let timeLimit = 0;
+    let roundPayload: TriviaRoundData | PromptRoundData | SecretRoundData | Record<string, unknown> =
+      data.data;
 
     switch (data.gameType) {
-      case 'TRIVIA':
+      case 'TRIVIA': {
+        const t = data.data as TriviaRoundData;
         view = 'trivia-answer';
-        timeLimit = (data.data as TriviaRoundData).timeLimit;
+        timeLimit = t.timeLimit;
+        roundPayload = t;
         break;
-      case 'CONTINUE_PHRASE':
-        const promptData = data.data as PromptRoundData;
-        view = promptData.phase === 'WRITING' ? 'prompt-write' : 'prompt-vote';
-        timeLimit = promptData.timeLimit;
+      }
+      case 'CONTINUE_PHRASE': {
+        const inner = data.data as PromptRoundData;
+        const phase = inner.phase ?? (data.phase as PromptRoundData['phase']) ?? 'WRITING';
+        roundPayload = { ...inner, phase };
+        view = phase === 'WRITING' ? 'prompt-write' : 'prompt-vote';
+        timeLimit = inner.timeLimit;
         break;
-      case 'WHO_WAS_IT':
-        const secretData = data.data as SecretRoundData;
-        view = secretData.phase === 'COLLECTING' ? 'secret-write' : 'secret-vote';
-        timeLimit = 30; // Default
+      }
+      case 'WHO_WAS_IT': {
+        const inner = data.data as Record<string, unknown>;
+        const phase =
+          (inner.phase as string) ||
+          (data.phase as string) ||
+          'GUESSING';
+        const secretContent = (inner.secretContent ?? inner.secret ?? '') as string;
+        const players = (inner.players as SecretRoundData['players']) || [];
+        roundPayload = {
+          ...inner,
+          secretContent,
+          phase: phase as SecretRoundData['phase'],
+          players,
+        } as SecretRoundData;
+        view = phase === 'COLLECTING' ? 'secret-write' : 'secret-vote';
+        timeLimit = typeof inner.timeLimit === 'number' ? inner.timeLimit : 30;
         break;
+      }
     }
 
     setState(prev => ({
       ...prev,
       currentRound: data.roundNumber,
-      roundData: data.data,
+      roundData: roundPayload as TriviaRoundData | PromptRoundData | SecretRoundData,
       controllerView: view,
       timeRemaining: timeLimit,
       canSubmit: true,
       hasSubmitted: false,
     }));
 
-    // Avvia il timer locale
     startTimer(timeLimit);
   }, []);
 

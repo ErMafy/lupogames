@@ -100,7 +100,7 @@ export function TriviaController({
 
   return (
     <RotateScreenOverlay required="landscape">
-      <div className="h-screen w-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-3 sm:p-4 overflow-hidden relative">
+      <div className="flex flex-col h-[100dvh] max-h-[100dvh] w-full max-w-[100vw] bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-3 sm:p-4 pt-[max(12px,env(safe-area-inset-top,0px))] pb-[max(12px,env(safe-area-inset-bottom,0px))] pl-[max(12px,env(safe-area-inset-left,0px))] pr-[max(12px,env(safe-area-inset-right,0px))] overflow-hidden relative box-border">
         {/* Stars background */}
         <div className="fixed inset-0 bg-stars pointer-events-none" />
         
@@ -108,7 +108,7 @@ export function TriviaController({
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setShowLeaderboard(!showLeaderboard)}
-          className="fixed top-4 right-4 z-50 w-12 h-12 rounded-full bg-purple-600/80 backdrop-blur-sm border-2 border-purple-400 flex items-center justify-center text-2xl shadow-lg hover:bg-purple-500/80 transition-all"
+          className="fixed z-50 w-12 h-12 rounded-full bg-purple-600/80 backdrop-blur-sm border-2 border-purple-400 flex items-center justify-center text-2xl shadow-lg hover:bg-purple-500/80 transition-all top-[max(1rem,env(safe-area-inset-top,0px))] right-[max(1rem,env(safe-area-inset-right,0px))]"
         >
           {showLeaderboard ? '✖️' : '🏆'}
         </motion.button>
@@ -141,7 +141,7 @@ export function TriviaController({
         </div>
 
         {/* 2x2 Button Grid Premium */}
-        <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4 h-[calc(100%-5rem)]">
+        <div className="relative z-10 grid grid-cols-2 grid-rows-2 gap-2.5 sm:gap-4 flex-1 min-h-0">
           {answerOptions.map(({ key, gradient, hoverGradient, shadow }) => {
             const isSelected = selectedAnswer === key;
             const isCorrect = result?.correctAnswer === key;
@@ -228,7 +228,7 @@ export function TriviaController({
         {/* Result Feedback Premium */}
         {result && (
           <div className={`
-            fixed bottom-6 left-1/2 -translate-x-1/2 z-50
+            fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50
             px-8 py-4 rounded-2xl font-black text-white text-lg sm:text-xl
             shadow-2xl backdrop-blur-sm
             animate-bounce-in

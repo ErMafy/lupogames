@@ -147,6 +147,8 @@ export function usePresenceChannel({
       'game-ended',
       'round-started',
       'round-ended',
+      'phase-changed',
+      'round-results',
       'answer-received',
       'player-advanced',
       'vote-received',
@@ -154,6 +156,13 @@ export function usePresenceChannel({
       'show-results',
       'player-kicked',
       'host-changed',
+      'player-joined',
+      'player-responded',
+      'player-submitted-secret',
+      'all-players-completed',
+      'prompt-responses',
+      'prompt-results',
+      'secret-reveal',
     ];
 
     gameEvents.forEach(eventName => {

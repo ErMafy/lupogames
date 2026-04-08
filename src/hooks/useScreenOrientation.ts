@@ -35,7 +35,7 @@ export function useScreenOrientation({
 }: UseScreenOrientationOptions = {}) {
   const [state, setState] = useState<ScreenOrientationState>({
     current: 'portrait',
-    isCorrect: true,
+    isCorrect: !required,
     isSupported: false,
     isLocked: false,
     angle: 0,

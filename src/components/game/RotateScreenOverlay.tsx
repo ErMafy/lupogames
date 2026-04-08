@@ -28,7 +28,7 @@ export function RotateScreenOverlay({ required, children }: RotateScreenOverlayP
       </div>
 
       {/* Overlay per ruotare */}
-      <div className="fixed inset-0 z-50 bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex flex-col items-center justify-center p-8">
+      <div className="fixed inset-0 z-50 bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex flex-col items-center justify-center p-8 pt-[max(2rem,env(safe-area-inset-top,0px))] pb-[max(2rem,env(safe-area-inset-bottom,0px))]">
         {/* Icona telefono che ruota */}
         <div className="relative mb-8">
           <div 

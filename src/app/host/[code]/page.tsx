@@ -372,8 +372,18 @@ export default function HostPage() {
     }
     
     if (eventName === 'game-ended') {
-      // Torna alla lobby per iniziare un nuovo gioco
-      router.push(`/lobby?room=${roomCode}`);
+      // L'host resta sul tabellone per avviare una nuova partita
+      setGamePhase('lobby');
+      setCurrentQuestion(null);
+      setPromptData(null);
+      setSecretData(null);
+      setCurrentGameType(null);
+      setShowCorrectAnswer(null);
+      fetch(`/api/rooms?code=${roomCode}`)
+        .then((res) => res.json())
+        .then((d) => {
+          if (d.success) setPlayers(d.data.players);
+        });
     }
     
     handleGameEvent(eventName, data);

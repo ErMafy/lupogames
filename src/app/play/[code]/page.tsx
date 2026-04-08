@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { useGameEvents } from '@/hooks/useGameEvents';
@@ -230,7 +230,37 @@ export default function ControllerPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [handleAvatarDeselected, handleGameEvent]);
+  }, [handleAvatarDeselected, handleGameEvent, roomCode, router]);
+
+  const gameEventHandlerRef = useRef(customGameEventHandler);
+  gameEventHandlerRef.current = customGameEventHandler;
+
+  useEffect(() => {
+    if (!roomCode || !player?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/game/sync?code=${roomCode}`);
+        const json = await res.json();
+        if (
+          cancelled ||
+          !json.success ||
+          !json.data?.inGame ||
+          !Array.isArray(json.data.events)
+        ) {
+          return;
+        }
+        for (const ev of json.data.events as { name: string; data: unknown }[]) {
+          gameEventHandlerRef.current(ev.name, ev.data);
+        }
+      } catch (e) {
+        console.error('game sync:', e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [roomCode, player?.id]);
 
   const {
     isConnected,
@@ -418,7 +448,7 @@ export default function ControllerPage() {
       <div className="bg-stars" />
       
       {/* Header Premium Mobile */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10 px-4 py-3">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10 px-4 py-3 pt-[max(12px,env(safe-area-inset-top,0px))]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-2xl animate-float">🐺</span>
@@ -444,7 +474,7 @@ export default function ControllerPage() {
       </header>
 
       {/* Main Content */}
-      <main className="p-4 pb-20 relative z-10">
+      <main className="p-4 pb-[max(5rem,env(safe-area-inset-bottom,0px))] relative z-10">
         
         {/* Lobby - Selezione Avatar */}
         {controllerView === 'waiting' && !currentGame && (
@@ -481,6 +511,15 @@ export default function ControllerPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {currentGame && controllerView === 'waiting' && (
+          <div className="flex min-h-[50vh] flex-col items-center justify-center text-center px-4">
+            <div className="text-5xl mb-4 animate-bounce">🎮</div>
+            <p className="text-white font-bold text-lg animate-pulse">
+              Connessione al round...
+            </p>
           </div>
         )}
 

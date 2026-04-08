@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -61,6 +61,23 @@ function LobbyContent() {
     }
   }, [roomCode, router]);
 
+  const onRealtimeGame = useCallback(
+    (eventName: string) => {
+      if (eventName === 'game-started' && roomCode) {
+        router.push(`/play/${roomCode}`);
+      }
+    },
+    [roomCode, router]
+  );
+
+  usePresenceChannel({
+    roomCode: roomCode ?? '',
+    playerId: player?.id ?? '',
+    playerName: player?.name ?? '',
+    isHost: Boolean(player?.isHost),
+    onGameEvent: onRealtimeGame,
+  });
+
   // Listen for game start
   useEffect(() => {
     if (!roomCode) return;
@@ -76,7 +93,7 @@ function LobbyContent() {
         const response = await fetch(`/api/rooms?code=${roomCode}`);
         const data = await response.json();
         
-        if (data.success && data.data.status === 'PLAYING') {
+        if (data.success && data.data.room?.status === 'PLAYING') {
           handleGameStarted({});
         }
         
