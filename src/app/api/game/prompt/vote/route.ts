@@ -3,7 +3,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { checkAllPlayersCompleted } from '@/lib/server-utils';
 import { showPromptRoundResults } from '@/lib/prompt-round';
 
 // POST /api/game/prompt/vote - Vota una risposta
@@ -63,17 +62,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 🚀 AUTO-ADVANCE: Controlla se tutti hanno votato
-    const allCompleted = await checkAllPlayersCompleted(
-      roomCode,
-      'PROMPT',
-      roundId,
-      'vote'
-    );
+    // 🚀 AUTO-ADVANCE: direct count dopo il salvataggio
+    const voteCount = await prisma.promptVote.count({
+      where: { promptRoundId: roundId },
+    });
 
-    if (allCompleted) {
-      console.log(`🐺 Tutti hanno votato! Mostrando risultati...`);
-      await showPromptRoundResults(roomCode, roundId, room.id);
+    if (voteCount >= room.players.length) {
+      const freshRound = await prisma.promptRound.findUnique({ where: { id: roundId } });
+      if (freshRound?.phase === 'VOTING') {
+        await showPromptRoundResults(roomCode, roundId, room.id);
+      }
     }
 
     return NextResponse.json({

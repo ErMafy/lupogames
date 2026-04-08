@@ -4,7 +4,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
-import { checkAllPlayersCompleted } from '@/lib/server-utils';
 import { startPromptVotingPhase } from '@/lib/prompt-round';
 
 // POST /api/game/prompt/response - Invia una risposta
@@ -71,17 +70,16 @@ export async function POST(request: NextRequest) {
       totalPlayers: room.players.length,
     });
 
-    // 🚀 AUTO-ADVANCE: Controlla se tutti hanno scritto
-    const allCompleted = await checkAllPlayersCompleted(
-      roomCode,
-      'PROMPT',
-      roundId,
-      'write'
-    );
+    // 🚀 AUTO-ADVANCE: direct count dopo il salvataggio
+    const responseCount = await prisma.promptResponse.count({
+      where: { promptRoundId: roundId },
+    });
 
-    if (allCompleted) {
-      console.log(`🐺 Tutti hanno scritto! Avvio fase di voto...`);
-      await startPromptVotingPhase(roomCode, roundId, room.id);
+    if (responseCount >= room.players.length) {
+      const freshRound = await prisma.promptRound.findUnique({ where: { id: roundId } });
+      if (freshRound?.phase === 'WRITING') {
+        await startPromptVotingPhase(roomCode, roundId, room.id);
+      }
     }
 
     return NextResponse.json({

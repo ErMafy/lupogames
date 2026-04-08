@@ -312,7 +312,7 @@ export default function Home() {
         <div className="mt-10 text-center animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <div className="flex items-center justify-center gap-4 text-purple-300/60 text-sm font-medium">
             <span className="flex items-center gap-1">
-              <span>👥</span> 4-15 giocatori
+              <span>👥</span> 2-15 giocatori
             </span>
             <span className="w-1 h-1 bg-purple-500/40 rounded-full" />
             <span className="flex items-center gap-1">
@@ -324,7 +324,7 @@ export default function Home() {
             </span>
           </div>
           <p className="text-purple-400/30 text-xs mt-4 font-medium tracking-wider">
-            LUPO GAMES © {new Date().getFullYear()} • Made with 💜
+            LUPO GAMES © {new Date().getFullYear()} • made by thewolf
           </p>
         </div>
       </div>

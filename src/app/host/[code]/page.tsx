@@ -1039,25 +1039,23 @@ export default function HostPage() {
               </div>
             </div>
             
-            {promptData.responses && promptData.responses.length > 0 && (
+            {promptData.phase === 'RESULTS' && promptData.responses && promptData.responses.length > 0 && (
               <div className="space-y-3">
                 {[...promptData.responses]
                   .sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0))
                   .map((r, i) => (
-                  <div key={r.id} className={`glass-card p-4 sm:p-6 ${i === 0 && promptData.phase === 'RESULTS' ? 'ring-2 ring-yellow-400 bg-yellow-500/10' : ''}`}>
+                  <div key={r.id} className={`glass-card p-4 sm:p-6 ${i === 0 ? 'ring-2 ring-yellow-400 bg-yellow-500/10' : ''}`}>
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <p className="text-base sm:text-2xl text-white font-bold mb-1">&ldquo;{r.response}&rdquo;</p>
                         <p className="text-purple-300 text-sm">— {r.playerName}</p>
                       </div>
-                      {promptData.phase === 'RESULTS' && (
-                        <div className="text-center shrink-0">
-                          <p className="text-2xl sm:text-3xl font-black text-gradient-gold">{r.voteCount || 0}</p>
-                          <p className="text-[10px] text-white/60">voti</p>
-                        </div>
-                      )}
+                      <div className="text-center shrink-0">
+                        <p className="text-2xl sm:text-3xl font-black text-gradient-gold">{r.voteCount || 0}</p>
+                        <p className="text-[10px] text-white/60">voti</p>
+                      </div>
                     </div>
-                    {i === 0 && promptData.phase === 'RESULTS' && (
+                    {i === 0 && (
                       <p className="text-center text-xs font-bold text-yellow-400 mt-2">👑 Vincitore!</p>
                     )}
                   </div>
@@ -1108,13 +1106,13 @@ export default function HostPage() {
               </div>
             )}
             
-            {secretData.phase === 'GUESSING' && secretData.secretContent && (
+            {secretData.phase === 'GUESSING' && secretData.secretContent && !hostPlayer && (
               <div className="glass-card p-6 sm:p-10 mb-6 text-center">
                 <p className="text-white/60 text-sm sm:text-lg mb-2 uppercase tracking-wider">Il segreto è:</p>
                 <h2 className="text-xl sm:text-4xl font-black text-gradient leading-relaxed">
                   &ldquo;{secretData.secretContent}&rdquo;
                 </h2>
-                <p className="text-purple-300 text-sm mt-4">🔍 Chi l&apos;ha scritto? Vota sopra!</p>
+                <p className="text-purple-300 text-sm mt-4">🔍 Chi l&apos;ha scritto?</p>
               </div>
             )}
             

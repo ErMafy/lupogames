@@ -3,7 +3,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { checkAllPlayersCompleted } from '@/lib/server-utils';
 import { showSecretRoundResults } from '@/lib/secret-game';
 
 // POST /api/game/secret/vote - Vota chi pensi abbia scritto il segreto
@@ -80,17 +79,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 🚀 AUTO-ADVANCE: Controlla se tutti hanno votato (escluso il proprietario del segreto)
-    const allCompleted = await checkAllPlayersCompleted(
-      roomCode,
-      'SECRET',
-      roundId,
-      'vote'
-    );
+    // 🚀 AUTO-ADVANCE: direct count (owner escluso, non può votare)
+    const voteCount = await prisma.secretVote.count({
+      where: { secretRoundId: roundId },
+    });
 
-    if (allCompleted) {
-      console.log(`🐺 Tutti hanno votato! Mostrando risultati...`);
-      await showSecretRoundResults(roomCode, roundId, room.id);
+    if (voteCount >= room.players.length - 1) {
+      const freshRound = await prisma.secretRound.findUnique({ where: { id: roundId } });
+      if (freshRound?.phase === 'GUESSING') {
+        await showSecretRoundResults(roomCode, roundId, room.id);
+      }
     }
 
     return NextResponse.json({
