@@ -64,6 +64,7 @@ export default function ControllerPage() {
   // Stato per "Continua la Frase"
   const [promptPhase, setPromptPhase] = useState<'WRITING' | 'VOTING'>('WRITING');
   const [promptResponses, setPromptResponses] = useState<{ id: string; response: string }[]>([]);
+  const [promptSkipVoting, setPromptSkipVoting] = useState(false);
 
   // Stato per "Chi è Stato?"
   const [secretPhase, setSecretPhase] = useState<'COLLECTING' | 'GUESSING'>('COLLECTING');
@@ -219,10 +220,11 @@ export default function ControllerPage() {
     }
     
     if (eventName === 'phase-changed') {
-      const phaseData = data as { gameType: string; phase: string; data?: { responses?: { id: string; response: string }[] } };
+      const phaseData = data as { gameType: string; phase: string; skipVoting?: boolean; data?: { responses?: { id: string; response: string }[] } };
       if (phaseData.gameType === 'CONTINUE_PHRASE') {
         const newPhase = phaseData.phase as 'WRITING' | 'VOTING';
         setPromptPhase(newPhase);
+        setPromptSkipVoting(phaseData.skipVoting || false);
         promptPhaseRef.current = newPhase;
         if (phaseData.data?.responses) {
           setPromptResponses(phaseData.data.responses);
@@ -704,6 +706,7 @@ export default function ControllerPage() {
               timeRemaining={timeRemaining}
               responses={promptResponses}
               roundResults={promptRoundResults ?? undefined}
+              skipVoting={promptSkipVoting}
             />
           </div>
         )}
@@ -718,6 +721,7 @@ export default function ControllerPage() {
               onVote={async () => {}}
               hasSubmitted
               roundResults={promptRoundResults}
+              skipVoting={promptSkipVoting}
             />
           </div>
         )}

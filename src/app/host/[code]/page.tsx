@@ -43,6 +43,7 @@ interface PromptData {
   phrase: string;
   phase: 'WRITING' | 'VOTING' | 'RESULTS';
   responses?: Array<{ id: string; playerId: string; playerName: string; response: string; voteCount?: number }>;
+  skipVoting?: boolean; // Flag per saltare votazione in 2 giocatori
 }
 
 interface SecretData {
@@ -428,7 +429,7 @@ export default function HostPage() {
     }
 
     if (eventName === 'phase-changed') {
-      const pd = eventData as { gameType: string; phase: string; data?: { responses?: { id: string; response: string }[] } };
+      const pd = eventData as { gameType: string; phase: string; skipVoting?: boolean; data?: { responses?: { id: string; response: string }[] } };
       if (pd.gameType === 'CONTINUE_PHRASE' && pd.phase === 'VOTING' && pd.data?.responses) {
         hostPromptPhaseRef.current = 'VOTING';
         setPromptData((prev) =>
@@ -436,6 +437,7 @@ export default function HostPage() {
             ? {
                 ...prev,
                 phase: 'VOTING',
+                skipVoting: pd.skipVoting || false,
                 responses: pd.data!.responses!.map((r) => ({
                   id: r.id,
                   playerId: '',
@@ -1066,6 +1068,7 @@ export default function HostPage() {
                     id: r.id,
                     response: r.response,
                   }))}
+                  skipVoting={promptData.skipVoting}
                 />
               </div>
             )}
