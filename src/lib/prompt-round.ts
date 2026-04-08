@@ -4,9 +4,10 @@ import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 
 const VOTING_SEC = 45;
-const RESULTS_DWELL_MS = 20000;
+const READING_SEC = 20; // Lettura risposte in 2 giocatori
+const RESULTS_DWELL_MS = 3000;
 
-export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string) {
+export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string, skipVoting: boolean = false) {
   // Atomic: only transition WRITING → VOTING once
   const transitioned = await prisma.promptRound.updateMany({
     where: { id: roundId, phase: 'WRITING' },
@@ -24,10 +25,13 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
     return;
   }
 
+  // Usa 20 sec per lettura in 2 giocatori, 45 sec per votazione in 3+
+  const timeLimit = skipVoting ? READING_SEC : VOTING_SEC;
+
   await prisma.gameState.update({
     where: { roomId },
     data: {
-      timerEndsAt: new Date(Date.now() + VOTING_SEC * 1000),
+      timerEndsAt: new Date(Date.now() + timeLimit * 1000),
     },
   });
 
@@ -41,9 +45,10 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
   await sendToRoom(roomCode, 'phase-changed', {
     gameType: 'CONTINUE_PHRASE',
     phase: 'VOTING',
+    skipVoting, // Flag per frontend: no voting buttons se true
     data: {
       responses: shuffledResponses,
-      timeLimit: VOTING_SEC,
+      timeLimit,
     },
   });
 }
@@ -352,11 +357,11 @@ export async function forcePromptWritingTimeout(
   
   const state = (room?.gameState?.state || {}) as { skipVoting?: boolean };
   if (state.skipVoting) {
-    // Skip voting phase and go directly to results
-    await showPromptRoundResultsNoVoting(roomCode, roundId, roomId);
+    // In 2 players: WRITING → VOTING (reading phase, 20 sec, no voting)
+    await startPromptVotingPhase(roomCode, roundId, roomId, true);
   } else {
-    // Normal flow: WRITING → VOTING
-    await startPromptVotingPhase(roomCode, roundId, roomId);
+    // Normal flow: WRITING → VOTING (45 sec with voting)
+    await startPromptVotingPhase(roomCode, roundId, roomId, false);
   }
 }
 
