@@ -7,7 +7,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { useGameEvents } from '@/hooks/useGameEvents';
-import type { PusherMember, AvatarSelectedEvent, LeaderboardEntry, GameType } from '@/types';
+import { PromptController } from '@/components/game/PromptController';
+import { SecretController } from '@/components/game/SecretController';
+import type {
+  PusherMember,
+  AvatarSelectedEvent,
+  GameType,
+  PromptRoundData,
+  SecretRoundData,
+} from '@/types';
 
 interface Player {
   id: string;
@@ -37,7 +45,12 @@ interface PromptData {
 interface SecretData {
   secretContent?: string;
   phase: 'COLLECTING' | 'GUESSING' | 'REVEAL';
-  players?: Array<{ id: string; name: string; avatar: string }>;
+  players?: Array<{
+    id: string;
+    name: string;
+    avatar: string | null;
+    avatarColor?: string | null;
+  }>;
   actualPlayer?: { id: string; name: string };
 }
 
@@ -252,9 +265,14 @@ export default function HostPage() {
   // Secret game state  
   const [secretData, setSecretData] = useState<SecretData | null>(null);
 
-  // Game state hook
+  // Game state hook (tabellone + partecipazione host come giocatore)
   const {
     handleGameEvent,
+    controllerView,
+    roundData,
+    hasSubmitted,
+    markAsSubmitted,
+    resetHasSubmitted,
   } = useGameEvents();
 
   // Carica i dati iniziali
@@ -311,9 +329,15 @@ export default function HostPage() {
       });
   }, [roomCode]);
 
-  const handleMemberRemoved = useCallback((member: PusherMember) => {
-    setPlayers(prev => prev.filter(p => p.id !== member.id));
-  }, []);
+  const handleMemberRemoved = useCallback(() => {
+    // Non usare member.id per togliere dalla lista: è legato alla presence Pusher; quando i telefoni
+    // passano play → lobby si disconnettono un attimo e l'host riceveva member_removed per tutti → lista vuota.
+    fetch(`/api/rooms?code=${roomCode}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setPlayers(data.data.players);
+      });
+  }, [roomCode]);
 
   const handleAvatarSelected = useCallback((event: AvatarSelectedEvent) => {
     setPlayers(prev => prev.map(p => 
@@ -359,7 +383,11 @@ export default function HostPage() {
       }
       
       if (eventData.gameType === 'WHO_WAS_IT') {
-        const roundData = eventData.data as { secret?: string; secretContent?: string; players?: Array<{ id: string; name: string; avatar: string }> };
+        const roundData = eventData.data as {
+          secret?: string;
+          secretContent?: string;
+          players?: SecretData['players'];
+        };
         const ph = (eventData.phase as 'COLLECTING' | 'GUESSING' | 'REVEAL') || 'GUESSING';
         setSecretData({
           secretContent: roundData.secret ?? roundData.secretContent,
@@ -387,6 +415,10 @@ export default function HostPage() {
               }
             : null
         );
+        resetHasSubmitted();
+      }
+      if (pd.gameType === 'WHO_WAS_IT' && pd.phase === 'GUESSING') {
+        resetHasSubmitted();
       }
     }
 
@@ -436,6 +468,7 @@ export default function HostPage() {
     if (eventName === 'prompt-responses') {
       const responses = eventData.responses as Array<{ id: string; playerId: string; playerName: string; response: string; voteCount?: number }>;
       setPromptData(prev => prev ? { ...prev, phase: 'VOTING', responses } : null);
+      resetHasSubmitted();
     }
     
     if (eventName === 'prompt-results') {
@@ -464,7 +497,117 @@ export default function HostPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [roomCode, handleGameEvent]);
+  }, [roomCode, handleGameEvent, resetHasSubmitted]);
+
+  const handleHostPromptResponse = useCallback(
+    async (response: string) => {
+      if (!hostPlayer || !roundData || currentGameType !== 'CONTINUE_PHRASE') return;
+      const rd = roundData as PromptRoundData & { roundId?: string };
+      if (!rd.roundId) return;
+      try {
+        const res = await fetch('/api/game/prompt/response', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomCode,
+            playerId: hostPlayer.id,
+            roundId: rd.roundId,
+            response,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) markAsSubmitted();
+      } catch (e) {
+        console.error('Host prompt response:', e);
+      }
+    },
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+  );
+
+  const handleHostPromptVote = useCallback(
+    async (responseId: string) => {
+      if (!hostPlayer || !roundData || currentGameType !== 'CONTINUE_PHRASE') return;
+      const rd = roundData as PromptRoundData & { roundId?: string };
+      if (!rd.roundId) return;
+      const res = await fetch('/api/game/prompt/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode,
+          playerId: hostPlayer.id,
+          roundId: rd.roundId,
+          responseId,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Voto non registrato');
+      }
+      markAsSubmitted();
+    },
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+  );
+
+  const handleHostSecretSubmit = useCallback(
+    async (secret: string) => {
+      if (!hostPlayer) return;
+      try {
+        const res = await fetch('/api/game/secret/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomCode,
+            playerId: hostPlayer.id,
+            secret,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) markAsSubmitted();
+      } catch (e) {
+        console.error('Host secret submit:', e);
+      }
+    },
+    [hostPlayer, roomCode, markAsSubmitted]
+  );
+
+  const handleHostSecretVote = useCallback(
+    async (suspectedPlayerId: string) => {
+      if (!hostPlayer || !roundData || currentGameType !== 'WHO_WAS_IT') return;
+      const rd = roundData as SecretRoundData & { roundId?: string };
+      if (!rd.roundId) return;
+      const res = await fetch('/api/game/secret/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode,
+          playerId: hostPlayer.id,
+          roundId: rd.roundId,
+          suspectedPlayerId,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Voto non registrato');
+      }
+      markAsSubmitted();
+    },
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+  );
+
+  const hostPromptRoundForController: (PromptRoundData & { roundId?: string }) | null =
+    promptData &&
+    roundData &&
+    currentGameType === 'CONTINUE_PHRASE' &&
+    (promptData.phase === 'WRITING' || promptData.phase === 'VOTING')
+      ? {
+          ...(roundData as PromptRoundData),
+          phrase: promptData.phrase,
+          phraseId: promptData.phraseId,
+          phase: promptData.phase === 'WRITING' ? 'WRITING' : 'VOTING',
+          timeLimit: (roundData as PromptRoundData).timeLimit ?? 60,
+          roundId: (roundData as PromptRoundData & { roundId?: string }).roundId,
+        }
+      : null;
 
   // Pusher connection
   const { isConnected, memberCount } = usePresenceChannel({
@@ -890,6 +1033,29 @@ export default function HostPage() {
                 ⏱️ Round e voti avanzano in automatico (tempo o tutti pronti)
               </p>
             </div>
+
+            {hostPlayer &&
+              hostPromptRoundForController &&
+              (controllerView === 'prompt-write' || controllerView === 'prompt-vote') && (
+              <div className="glass-card p-6 mt-10 max-w-2xl mx-auto border border-amber-400/35">
+                <p className="text-center text-amber-200 font-bold mb-4 text-lg">
+                  👑 Anche tu partecipi (host) — scrivi e vota da qui
+                </p>
+                <div className="max-h-[min(70vh,560px)] overflow-y-auto">
+                  <PromptController
+                    roundData={hostPromptRoundForController}
+                    phase={hostPromptRoundForController.phase === 'VOTING' ? 'VOTING' : 'WRITING'}
+                    onSubmitResponse={handleHostPromptResponse}
+                    onVote={handleHostPromptVote}
+                    hasSubmitted={hasSubmitted}
+                    responses={(promptData.responses ?? []).map((r) => ({
+                      id: r.id,
+                      response: r.response,
+                    }))}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -949,6 +1115,33 @@ export default function HostPage() {
               </div>
             )}
             
+            {hostPlayer &&
+              secretData &&
+              (secretData.phase === 'COLLECTING' || secretData.phase === 'GUESSING') &&
+              (controllerView === 'secret-write' || controllerView === 'secret-vote') && (
+              <div className="glass-card p-6 mt-10 max-w-2xl mx-auto border border-amber-400/35">
+                <p className="text-center text-amber-200 font-bold mb-4 text-lg">
+                  👑 Anche tu partecipi (host) — segreto e indizi da qui
+                </p>
+                <div className="max-h-[min(70vh,560px)] overflow-y-auto">
+                  <SecretController
+                    phase={secretData.phase === 'COLLECTING' ? 'COLLECTING' : 'GUESSING'}
+                    secret={secretData.secretContent}
+                    players={(secretData.players ?? []).map((p) => ({
+                      id: p.id,
+                      name: p.name,
+                      avatar: p.avatar,
+                      avatarColor: p.avatarColor ?? null,
+                    }))}
+                    onSubmitSecret={handleHostSecretSubmit}
+                    onVote={handleHostSecretVote}
+                    hasSubmitted={hasSubmitted}
+                    currentPlayerId={hostPlayer.id}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="text-center mt-8">
               <p className="text-purple-200/90 font-medium">
                 ⏱️ Fasi e reveal avanzano in automatico
