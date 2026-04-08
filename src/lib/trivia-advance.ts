@@ -32,7 +32,7 @@ export async function advanceTriviaRound(
     return { gameEnded: false };
   }
 
-  const gameState = room.gameState.state as TriviaGameState;
+  const gameState = room.gameState.state as unknown as TriviaGameState;
 
   // ── PHASE 2: dwell expired → advance to next question ──
   if (gameState.showingResults) {
