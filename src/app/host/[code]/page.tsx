@@ -964,53 +964,7 @@ export default function HostPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="badge badge-gold text-sm sm:text-lg px-3 py-1">
-                  🧠 {currentRoundNum}/{totalRoundsNum}
-                </div>
-                {currentQuestion.category && (
-                  <div className="badge text-xs sm:text-sm px-2 py-1">
-                    📚 {currentQuestion.category}
-                  </div>
-                )}
-              </div>
-              <CircularTimer timeLeft={timeLeft} maxTime={30} />
-            </div>
-
-            <div className="glass-card p-4 sm:p-10 mb-4 text-center">
-              <h2 className="text-lg sm:text-4xl font-black text-white leading-snug">
-                {currentQuestion.question}
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mb-4">
-              {Object.entries(currentQuestion.options).map(([letter, text]) => {
-                const isCorrect = showCorrectAnswer === letter;
-                const colors: Record<string, string> = {
-                  A: 'from-red-600 to-red-700',
-                  B: 'from-blue-600 to-blue-700',
-                  C: 'from-yellow-500 to-yellow-600',
-                  D: 'from-green-600 to-green-700',
-                };
-                return (
-                  <div
-                    key={letter}
-                    className={`relative p-3 sm:p-8 rounded-xl sm:rounded-2xl text-white bg-gradient-to-br ${colors[letter]} transition-all duration-300 ${
-                      isCorrect ? 'ring-2 sm:ring-4 ring-white scale-[1.02] shadow-lg shadow-green-500/50' : ''
-                    }`}
-                  >
-                    {isCorrect && <div className="absolute -top-2 -right-2 text-xl sm:text-4xl animate-bounce">✅</div>}
-                    <div className="flex items-center gap-2 sm:gap-4">
-                      <span className="text-xl sm:text-4xl font-black opacity-80">{letter}</span>
-                      <span className="text-sm sm:text-2xl font-bold leading-snug">{text}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="glass-card p-3 sm:p-6">
+            <div className="glass-card p-3 sm:p-6 mt-2">
               <h3 className="text-sm sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <span>🏆</span> Classifica
               </h3>
