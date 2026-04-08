@@ -12,6 +12,60 @@ import {
   advanceSecretAfterReveal,
 } from '@/lib/secret-game';
 
+async function checkEarlyAdvance(
+  game: string | null,
+  st: Record<string, unknown>,
+  roomId: string,
+  code: string,
+): Promise<string | null> {
+  const roundId = st.currentRoundId as string | undefined;
+  if (!roundId) return null;
+
+  if (game === 'CONTINUE_PHRASE') {
+    const room = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: { players: true },
+    });
+    const pr = await prisma.promptRound.findUnique({ where: { id: roundId } });
+
+    if (pr?.phase === 'WRITING' && room) {
+      const responseCount = await prisma.promptResponse.count({ where: { promptRoundId: roundId } });
+      if (responseCount >= room.players.length) {
+        await forcePromptWritingTimeout(code, roundId, roomId);
+        return 'prompt_early_voting';
+      }
+    }
+
+    if (pr?.phase === 'VOTING') {
+      const [voteCount, responseCount] = await Promise.all([
+        prisma.promptVote.count({ where: { promptRoundId: roundId } }),
+        prisma.promptResponse.count({ where: { promptRoundId: roundId } }),
+      ]);
+      if (responseCount > 0 && voteCount >= responseCount) {
+        await forcePromptVotingTimeout(code, roundId, roomId);
+        return 'prompt_early_advance';
+      }
+    }
+  }
+
+  if (game === 'WHO_WAS_IT' && st.phase === 'GUESSING') {
+    const sr = await prisma.secretRound.findUnique({ where: { id: roundId } });
+    if (sr?.phase === 'GUESSING') {
+      const [voteCount, activeCount] = await Promise.all([
+        prisma.secretVote.count({ where: { secretRoundId: roundId } }),
+        prisma.secret.count({ where: { player: { roomId } } }),
+      ]);
+      const eligible = Math.max(1, activeCount - 1);
+      if (voteCount >= eligible) {
+        await forceSecretGuessingTimeout(code, roundId, roomId);
+        return 'secret_early_advance';
+      }
+    }
+  }
+
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -30,13 +84,19 @@ export async function GET(request: NextRequest) {
     }
 
     const now = Date.now();
-    if (room.gameState.timerEndsAt.getTime() > now) {
-      return NextResponse.json({ success: true, data: { action: 'idle' } });
-    }
-
     const game = room.currentGame;
     const gs = room.gameState;
     const st = (gs.state || {}) as Record<string, unknown>;
+    const timerExpired = room.gameState.timerEndsAt.getTime() <= now;
+
+    // Early check: if all players voted, advance even before timer expires
+    if (!timerExpired) {
+      const earlyResult = await checkEarlyAdvance(game, st, room.id, code);
+      if (earlyResult) {
+        return NextResponse.json({ success: true, data: { action: earlyResult } });
+      }
+      return NextResponse.json({ success: true, data: { action: 'idle' } });
+    }
 
     if (game === 'TRIVIA') {
       await advanceTriviaRound(code);

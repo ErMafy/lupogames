@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     const isCorrect = suspectedPlayerId === secretRound.secret.playerId;
     const points = isCorrect ? 200 : 0;
 
-    // Atomic upsert + score in transaction
-    await prisma.$transaction(async (tx) => {
+    // Upsert + score + count all in one transaction for read-after-write consistency
+    const { voteCount, eligibleVoters } = await prisma.$transaction(async (tx) => {
       const existing = await tx.secretVote.findUnique({
         where: { playerId_secretRoundId: { playerId, secretRoundId: roundId } },
       });
@@ -68,16 +68,14 @@ export async function POST(request: NextRequest) {
           });
         }
       }
+
+      const [vc, activeCount] = await Promise.all([
+        tx.secretVote.count({ where: { secretRoundId: roundId } }),
+        tx.secret.count({ where: { player: { roomId: room.id } } }),
+      ]);
+      return { voteCount: vc, eligibleVoters: Math.max(1, activeCount - 1) };
     });
 
-    // Auto-advance: use active player count (those who submitted secrets)
-    const [voteCount, activePlayerCount] = await Promise.all([
-      prisma.secretVote.count({ where: { secretRoundId: roundId } }),
-      prisma.secret.count({ where: { player: { roomId: room.id } } }),
-    ]);
-
-    // Eligible voters = active players - 1 (secret owner can't vote)
-    const eligibleVoters = Math.max(1, activePlayerCount - 1);
     if (voteCount >= eligibleVoters) {
       await showSecretRoundResults(roomCode, roundId, room.id);
     }

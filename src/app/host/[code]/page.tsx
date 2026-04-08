@@ -614,6 +614,7 @@ export default function HostPage() {
         throw new Error(data.error || 'Voto non registrato');
       }
       if (hostPromptRoundIdRef.current !== sentRoundId) return;
+      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
     },
     [hostPlayer, roundData, currentGameType, roomCode]
   );
@@ -661,6 +662,7 @@ export default function HostPage() {
         throw new Error(data.error || 'Voto non registrato');
       }
       if (hostSecretRoundIdRef.current !== sentRoundId) return;
+      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
     },
     [hostPlayer, roundData, currentGameType, roomCode]
   );

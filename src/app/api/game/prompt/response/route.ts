@@ -44,35 +44,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Crea o aggiorna la risposta
+    // Crea o aggiorna la risposta + count in one transaction
     const existingResponse = promptRound.responses.find((r: { playerId: string }) => r.playerId === playerId);
-    
-    if (existingResponse) {
-      await prisma.promptResponse.update({
-        where: { id: existingResponse.id },
-        data: { response: response.trim() },
-      });
-    } else {
-      await prisma.promptResponse.create({
-        data: {
-          playerId,
-          promptRoundId: roundId,
-          response: response.trim(),
-        },
-      });
-    }
 
-    // Notifica che qualcuno ha risposto
+    const responseCount = await prisma.$transaction(async (tx) => {
+      if (existingResponse) {
+        await tx.promptResponse.update({
+          where: { id: existingResponse.id },
+          data: { response: response.trim() },
+        });
+      } else {
+        await tx.promptResponse.create({
+          data: {
+            playerId,
+            promptRoundId: roundId,
+            response: response.trim(),
+          },
+        });
+      }
+      return tx.promptResponse.count({ where: { promptRoundId: roundId } });
+    });
+
     await sendToRoom(roomCode, 'player-responded', {
       gameType: 'CONTINUE_PHRASE',
       playerId,
-      totalResponses: promptRound.responses.length + (existingResponse ? 0 : 1),
+      totalResponses: responseCount,
       totalPlayers: room.players.length,
-    });
-
-    // Auto-advance: startPromptVotingPhase has its own atomic guard
-    const responseCount = await prisma.promptResponse.count({
-      where: { promptRoundId: roundId },
     });
 
     if (responseCount >= room.players.length) {

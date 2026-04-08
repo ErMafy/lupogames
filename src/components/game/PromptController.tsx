@@ -58,12 +58,12 @@ export function PromptController({
 
   const handleVote = async (responseId: string) => {
     if (isSubmitting || voted) return;
-    setVoted(true);
     setIsSubmitting(true);
     try {
       await onVote(responseId);
+      setVoted(true);
     } catch {
-      // Don't reset voted — server already recorded the attempt or round moved on
+      // Vote rejected (e.g. self-vote) — allow player to pick another response
     } finally {
       setIsSubmitting(false);
     }

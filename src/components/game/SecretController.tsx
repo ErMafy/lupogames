@@ -62,12 +62,12 @@ export function SecretController({
 
   const handleVote = async (playerId: string) => {
     if (isSubmitting || voted || playerId === currentPlayerId) return;
-    setVoted(true);
     setIsSubmitting(true);
     try {
       await onVote(playerId);
+      setVoted(true);
     } catch {
-      // Don't reset voted — server already recorded the attempt or round moved on
+      // Vote rejected — allow player to pick another option
     } finally {
       setIsSubmitting(false);
     }

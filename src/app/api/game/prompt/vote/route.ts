@@ -39,25 +39,27 @@ export async function POST(request: NextRequest) {
     const votedResponse = promptRound.responses.find((r: { id: string; playerId: string }) => r.id === responseId);
     if (votedResponse?.playerId === playerId) {
       return NextResponse.json(
-        { success: false, error: 'Non puoi votare la tua risposta, furbetto!' },
+        { success: false, error: 'self-vote' },
         { status: 400 }
       );
     }
 
-    // Atomic upsert
-    await prisma.promptVote.upsert({
-      where: { playerId_promptRoundId: { playerId, promptRoundId: roundId } },
-      create: { playerId, promptRoundId: roundId, responseId },
-      update: { responseId },
+    // Upsert + count in a single transaction for read-after-write consistency
+    const { voteCount, responseCount } = await prisma.$transaction(async (tx) => {
+      await tx.promptVote.upsert({
+        where: { playerId_promptRoundId: { playerId, promptRoundId: roundId } },
+        create: { playerId, promptRoundId: roundId, responseId },
+        update: { responseId },
+      });
+
+      const [vc, rc] = await Promise.all([
+        tx.promptVote.count({ where: { promptRoundId: roundId } }),
+        tx.promptResponse.count({ where: { promptRoundId: roundId } }),
+      ]);
+      return { voteCount: vc, responseCount: rc };
     });
 
-    // Auto-advance: count active participants (those who wrote a response)
-    const [voteCount, activePlayerCount] = await Promise.all([
-      prisma.promptVote.count({ where: { promptRoundId: roundId } }),
-      prisma.promptResponse.count({ where: { promptRoundId: roundId } }),
-    ]);
-
-    if (activePlayerCount > 0 && voteCount >= activePlayerCount) {
+    if (responseCount > 0 && voteCount >= responseCount) {
       await showPromptRoundResults(roomCode, roundId, room.id);
     }
 

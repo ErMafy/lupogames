@@ -488,6 +488,9 @@ export default function ControllerPage() {
       throw new Error(data.error || 'Voto non registrato');
     }
     if (promptRoundIdRef.current !== sentRoundId) return;
+
+    // Nudge tick after voting to ensure auto-advance fires
+    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
   };
 
   const handleSecretSubmit = async (secret: string) => {
@@ -533,6 +536,8 @@ export default function ControllerPage() {
       throw new Error(data.error || 'Voto non registrato');
     }
     if (secretRoundIdRef.current !== sentRoundId) return;
+
+    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
   };
 
   // Loading Premium
