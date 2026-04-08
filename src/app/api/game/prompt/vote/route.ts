@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (room.players.length <= 2) {
+    if (room.players.length < 3) {
       return NextResponse.json(
         { success: false, error: 'Il voto è disponibile solo da 3 giocatori in su' },
         { status: 400 }
