@@ -12,6 +12,7 @@ interface SecretControllerProps {
   timeRemaining?: number;
   currentPlayerId: string;
   revealResult?: { ownerName: string; ownerAvatar: string | null };
+  isSecretOwner?: boolean;
 }
 
 const EMOJIS: Record<string, string> = {
@@ -31,6 +32,7 @@ export function SecretController({
   timeRemaining = 0,
   currentPlayerId,
   revealResult,
+  isSecretOwner = false,
 }: SecretControllerProps) {
   const [secretText, setSecretText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -139,6 +141,27 @@ export function SecretController({
             </button>
           </div>
         )}
+      </div>
+    );
+  }
+
+  if (isSecretOwner && phase === 'GUESSING') {
+    return (
+      <div className="max-w-lg mx-auto w-full px-1 text-center py-6">
+        <div className="glass-card-premium p-6">
+          <div className="text-5xl mb-3 animate-float">🤫</div>
+          <h3 className="text-xl font-black text-white mb-2">Questo segreto è tuo!</h3>
+          <p className="text-purple-200/60 text-sm">Aspetta che gli altri indovinino...</p>
+          {timeRemaining > 0 && (
+            <span className={`inline-block mt-3 text-sm font-black px-2.5 py-1 rounded-lg ${
+              timerUrgent
+                ? 'bg-red-600 text-white animate-pulse'
+                : 'bg-white/10 text-amber-300'
+            }`}>
+              {timeRemaining}s
+            </span>
+          )}
+        </div>
       </div>
     );
   }

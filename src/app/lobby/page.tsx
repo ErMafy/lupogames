@@ -115,9 +115,14 @@ function LobbyContent() {
   };
 
   const shareInviteLink = () => {
-    const link = `${window.location.origin}/join/${roomCode}`;
-    navigator.clipboard.writeText(link);
-    alert('Link copiato! Condividilo con i tuoi amici 🐺');
+    const url = `${window.location.origin}/?join=${roomCode}`;
+    if (navigator.share) {
+      navigator.share({ title: 'Lupo Games', text: `Unisciti alla mia stanza su Lupo Games! Codice: ${roomCode}`, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Link copiato! Condividilo con i tuoi amici 🐺');
+      }).catch(() => {});
+    }
   };
 
   if (isLoading) {

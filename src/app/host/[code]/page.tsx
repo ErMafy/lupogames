@@ -10,6 +10,7 @@ import { useGameEvents } from '@/hooks/useGameEvents';
 import { PromptController } from '@/components/game/PromptController';
 import { SecretController } from '@/components/game/SecretController';
 import { TriviaController } from '@/components/game/TriviaController';
+import { TriviaVictoryAnimation } from '@/components/game/TriviaVictoryAnimation';
 import type {
   PusherMember,
   AvatarSelectedEvent,
@@ -264,6 +265,11 @@ export default function HostPage() {
   
   // Secret game state  
   const [secretData, setSecretData] = useState<SecretData | null>(null);
+  const [secretOwnerId, setSecretOwnerId] = useState<string | null>(null);
+  
+  // Victory animation state
+  const [showVictory, setShowVictory] = useState(false);
+  const [victoryWinner, setVictoryWinner] = useState<{ playerId: string; playerName: string; avatar: string; score: number } | null>(null);
 
   // Host trivia state
   const hostTriviaRoundIdRef = useRef<string | null>(null);
@@ -406,6 +412,7 @@ export default function HostPage() {
           secret?: string;
           secretContent?: string;
           roundId?: string;
+          secretOwnerId?: string;
           players?: SecretData['players'];
         };
         const ph = (eventData.phase as 'COLLECTING' | 'GUESSING' | 'REVEAL') || 'GUESSING';
@@ -416,6 +423,7 @@ export default function HostPage() {
         });
         setCurrentRoundNum(eventData.roundNumber as number);
         hostSecretRoundIdRef.current = roundData.roundId ?? null;
+        setSecretOwnerId(roundData.secretOwnerId ?? null);
       }
     }
 
@@ -512,18 +520,45 @@ export default function HostPage() {
     }
     
     if (eventName === 'game-ended') {
-      // L'host resta sul tabellone per avviare una nuova partita
-      setGamePhase('lobby');
-      setCurrentQuestion(null);
-      setPromptData(null);
-      setSecretData(null);
-      setCurrentGameType(null);
-      setShowCorrectAnswer(null);
-      fetch(`/api/rooms?code=${roomCode}`)
-        .then((res) => res.json())
-        .then((d) => {
-          if (d.success) setPlayers(d.data.players);
+      const gameEndedData = eventData as { finalScores?: Array<{ playerId: string; playerName: string; avatar: string; score: number }> };
+      
+      if (gameEndedData.finalScores && gameEndedData.finalScores.length > 0) {
+        const topPlayer = gameEndedData.finalScores[0];
+        setVictoryWinner({
+          playerId: topPlayer.playerId,
+          playerName: topPlayer.playerName,
+          avatar: topPlayer.avatar,
+          score: topPlayer.score,
         });
+        setShowVictory(true);
+        
+        setTimeout(() => {
+          setShowVictory(false);
+          setGamePhase('lobby');
+          setCurrentQuestion(null);
+          setPromptData(null);
+          setSecretData(null);
+          setCurrentGameType(null);
+          setShowCorrectAnswer(null);
+          fetch(`/api/rooms?code=${roomCode}`)
+            .then((res) => res.json())
+            .then((d) => {
+              if (d.success) setPlayers(d.data.players);
+            });
+        }, 5000);
+      } else {
+        setGamePhase('lobby');
+        setCurrentQuestion(null);
+        setPromptData(null);
+        setSecretData(null);
+        setCurrentGameType(null);
+        setShowCorrectAnswer(null);
+        fetch(`/api/rooms?code=${roomCode}`)
+          .then((res) => res.json())
+          .then((d) => {
+            if (d.success) setPlayers(d.data.players);
+          });
+      }
     }
     
     handleGameEvent(eventName, data);
@@ -844,7 +879,7 @@ export default function HostPage() {
         {gamePhase === 'lobby' && (
           <div className="max-w-6xl mx-auto animate-slide-up">
             
-            {/* Join Instructions */}
+            {/* Join Instructions + Share */}
             <div className="glass-card p-4 sm:p-10 mb-4 sm:mb-10 text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10" />
               <div className="relative z-10">
@@ -854,9 +889,28 @@ export default function HostPage() {
                 <p className="text-purple-200 text-sm sm:text-xl mb-3 sm:mb-6">
                   Vai su <span className="font-bold text-gradient">lupogames.vercel.app</span>
                 </p>
-                <div className="inline-flex items-center gap-2 sm:gap-4 bg-black/30 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-6">
+                <div className="inline-flex items-center gap-2 sm:gap-4 bg-black/30 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-6 mb-4">
                   <span className="text-white/80 text-sm sm:text-lg">Codice:</span>
                   <span className="text-2xl sm:text-5xl font-black text-gradient-gold tracking-wider">{roomCode}</span>
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/?join=${roomCode}`;
+                      if (navigator.share) {
+                        navigator.share({ title: 'Lupo Games', text: `Unisciti alla mia stanza su Lupo Games! Codice: ${roomCode}`, url }).catch(() => {});
+                      } else {
+                        navigator.clipboard.writeText(url).then(() => {
+                          const btn = document.getElementById('share-btn-host');
+                          if (btn) { btn.textContent = 'Link copiato!'; setTimeout(() => { btn.textContent = '🔗 Condividi link'; }, 2000); }
+                        }).catch(() => {});
+                      }
+                    }}
+                    id="share-btn-host"
+                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all text-sm sm:text-base"
+                  >
+                    🔗 Condividi link
+                  </button>
                 </div>
               </div>
             </div>
@@ -917,10 +971,10 @@ export default function HostPage() {
                     emoji="🕵️"
                     title="Chi è Stato?"
                     subtitle="5 round • 45 sec + 45 sec"
-                    description="Indovina chi ha scritto il segreto."
+                    description={`Indovina chi ha scritto il segreto.${players.length < 3 ? ' (min. 3 giocatori)' : ''}`}
                     gradient="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600"
                     onClick={() => startGame('WHO_WAS_IT')}
-                    disabled={isLoadingGame}
+                    disabled={isLoadingGame || players.length < 3}
                   />
                 </div>
                 
@@ -1088,6 +1142,7 @@ export default function HostPage() {
                   onVote={handleHostSecretVote}
                   hasSubmitted={hasSubmitted}
                   currentPlayerId={hostPlayer.id}
+                  isSecretOwner={!!secretOwnerId && secretOwnerId === hostPlayer.id}
                 />
               </div>
             )}
@@ -1126,6 +1181,29 @@ export default function HostPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Victory Animation */}
+        {showVictory && victoryWinner && (
+          <div className="fixed inset-0 z-[9999]">
+            <TriviaVictoryAnimation
+              winner={{
+                playerId: victoryWinner.playerId,
+                playerName: victoryWinner.playerName,
+                avatar: victoryWinner.avatar || 'Lupo',
+                score: victoryWinner.score,
+                trackPosition: 15,
+              }}
+              allPlayers={players.map(p => ({
+                playerId: p.id,
+                playerName: p.name,
+                avatar: p.avatar || 'Lupo',
+                score: p.score,
+                trackPosition: p.trackPosition,
+              }))}
+              onComplete={() => {}}
+            />
           </div>
         )}
       </main>

@@ -51,12 +51,13 @@ export async function POST(request: NextRequest) {
       update: { responseId },
     });
 
-    // Auto-advance: showPromptRoundResults has its own atomic guard
-    const voteCount = await prisma.promptVote.count({
-      where: { promptRoundId: roundId },
-    });
+    // Auto-advance: count active participants (those who wrote a response)
+    const [voteCount, activePlayerCount] = await Promise.all([
+      prisma.promptVote.count({ where: { promptRoundId: roundId } }),
+      prisma.promptResponse.count({ where: { promptRoundId: roundId } }),
+    ]);
 
-    if (voteCount >= room.players.length) {
+    if (activePlayerCount > 0 && voteCount >= activePlayerCount) {
       await showPromptRoundResults(roomCode, roundId, room.id);
     }
 

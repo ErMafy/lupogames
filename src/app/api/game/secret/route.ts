@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (room.players.length < 2) {
+    if (room.players.length < 3) {
       return NextResponse.json(
-        { success: false, error: 'Servono almeno 2 giocatori per Chi è Stato!' },
+        { success: false, error: 'Servono almeno 3 giocatori per Chi è Stato!' },
         { status: 400 }
       );
     }

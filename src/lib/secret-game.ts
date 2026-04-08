@@ -110,6 +110,7 @@ export async function startGuessingRound(roomCode: string, roomId: string, round
     data: {
       secret: selectedSecret.content,
       roundId: secretRound.id,
+      secretOwnerId: selectedSecret.playerId,
       players: players.map((p) => ({
         id: p.id,
         name: p.name,
@@ -200,21 +201,16 @@ export async function advanceSecretAfterReveal(roomCode: string): Promise<boolea
   const gs = room.gameState;
   const state = (gs.state || {}) as {
     secretAdvanceAt?: string;
-    totalRounds?: number;
   };
 
   if (!state.secretAdvanceAt || new Date(state.secretAdvanceAt).getTime() > Date.now()) {
     return false;
   }
 
-  const lastRound = await prisma.secretRound.findFirst({
-    where: { roomId: room.id },
-    orderBy: { roundNumber: 'desc' },
-  });
-  if (!lastRound) return false;
-
-  const nextRound = lastRound.roundNumber + 1;
-  const totalRounds = state.totalRounds || 5;
+  // Use the reliable DB column, not the JSON field
+  const totalRounds = gs.totalRounds || 5;
+  const currentRound = room.currentRound || 0;
+  const nextRound = currentRound + 1;
 
   if (nextRound > totalRounds) {
     await endSecretGame(roomCode, room.id);

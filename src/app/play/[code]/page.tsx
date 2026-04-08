@@ -70,6 +70,7 @@ export default function ControllerPage() {
   const [secretPlayers, setSecretPlayers] = useState<{ id: string; name: string; avatar: string | null; avatarColor: string | null }[]>([]);
   const [currentSecret, setCurrentSecret] = useState<string>('');
   const [secretReveal, setSecretReveal] = useState<{ ownerName: string; ownerAvatar: string | null } | null>(null);
+  const [secretOwnerId, setSecretOwnerId] = useState<string | null>(null);
 
   // Risultati round prompt (visibili a tutti)
   const [promptRoundResults, setPromptRoundResults] = useState<Array<{
@@ -244,11 +245,13 @@ export default function ControllerPage() {
         setSecretPhase(roundStartData.phase as 'COLLECTING' | 'GUESSING' || 'GUESSING');
         setSecretReveal(null);
         secretRoundIdRef.current = roundStartData.data.roundId ?? null;
-        if (roundStartData.data.secret) {
-          setCurrentSecret(roundStartData.data.secret);
+        const secretData = roundStartData.data as { secret?: string; secretOwnerId?: string; roundId?: string; players?: typeof secretPlayers };
+        setSecretOwnerId(secretData.secretOwnerId ?? null);
+        if (secretData.secret) {
+          setCurrentSecret(secretData.secret);
         }
-        if (roundStartData.data.players) {
-          setSecretPlayers(roundStartData.data.players);
+        if (secretData.players) {
+          setSecretPlayers(secretData.players);
         }
       }
       if (roundStartData.gameType === 'CONTINUE_PHRASE') {
@@ -583,7 +586,21 @@ export default function ControllerPage() {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/?join=${roomCode}`;
+                if (navigator.share) {
+                  navigator.share({ title: 'Lupo Games', text: `Unisciti! Codice: ${roomCode}`, url }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(url).catch(() => {});
+                }
+              }}
+              className="p-1.5 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 transition-colors text-sm"
+              title="Condividi"
+            >
+              🔗
+            </button>
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
             <span className="text-white font-semibold">{player?.name}</span>
             {player?.isHost && <span className="text-yellow-400 text-sm">👑</span>}
@@ -713,6 +730,7 @@ export default function ControllerPage() {
               timeRemaining={timeRemaining}
               currentPlayerId={player?.id || ''}
               revealResult={secretReveal ?? undefined}
+              isSecretOwner={!!secretOwnerId && secretOwnerId === player?.id}
             />
           </div>
         )}

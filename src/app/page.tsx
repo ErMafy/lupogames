@@ -3,8 +3,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // Particelle decorative animate - valori deterministici per evitare hydration mismatch
 const PARTICLES = [
@@ -65,7 +65,16 @@ function DecorativeRings() {
 }
 
 export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="bg-stars" /><div className="text-7xl animate-bounce relative z-10">🐺</div></div>}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [hostName, setHostName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [playerName, setPlayerName] = useState('');
@@ -77,7 +86,12 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    const joinParam = searchParams.get('join');
+    if (joinParam) {
+      setJoinCode(joinParam.toUpperCase().slice(0, 4));
+      setActiveTab('join');
+    }
+  }, [searchParams]);
 
   const handleCreateRoom = async () => {
     if (!hostName.trim()) {
@@ -147,81 +161,74 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Background effects */}
       <div className="bg-stars" />
       <FloatingParticles />
       <DecorativeRings />
       
       {/* Content */}
-      <div className={`relative z-10 flex flex-col items-center w-full max-w-lg transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+      <div className={`relative z-10 flex flex-col items-center w-full max-w-md transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         
-        {/* Logo Premium */}
-        <div className="text-center mb-10">
+        {/* Logo Premium — più compatto */}
+        <div className="text-center mb-8">
           <div className="relative inline-block animate-float">
-            {/* Glow effect dietro il logo */}
             <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 opacity-30 animate-gradient" />
             
-            <h1 className="relative text-7xl sm:text-9xl font-black text-white drop-shadow-2xl">
+            <h1 className="relative text-7xl sm:text-8xl font-black text-white drop-shadow-2xl">
               <span className="inline-block hover:scale-110 transition-transform cursor-default">🐺</span>
             </h1>
             
-            <h2 className="relative text-5xl sm:text-6xl font-black tracking-tight">
+            <h2 className="relative text-4xl sm:text-5xl font-black tracking-tight leading-none">
               <span className="text-gradient">LUPO</span>
+              <span className="text-gradient-gold ml-3">GAMES</span>
             </h2>
-            
-            <h3 className="relative text-3xl sm:text-4xl font-bold mt-1">
-              <span className="text-gradient-gold">GAMES</span>
-            </h3>
           </div>
           
-          <p className="text-purple-200/80 mt-6 text-lg font-medium tracking-wide">
-            Party games per serate <span className="text-gradient font-bold">LEGGENDARIE</span> 🎮
+          <p className="text-purple-200/70 mt-4 text-base font-medium tracking-wide">
+            Party games per serate <span className="text-gradient font-bold">leggendarie</span>
           </p>
         </div>
 
-        {/* Card Premium */}
-        <div className="glass-card glass-card-hover w-full p-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        {/* Card Premium — glass con bordo luminoso */}
+        <div className="w-full rounded-3xl border border-white/[0.12] bg-white/[0.04] backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-purple-900/40 animate-slide-up" style={{ animationDelay: '0.2s' }}>
           
-          {/* Tab Switcher Premium */}
-          <div className="flex mb-8 p-1.5 bg-white/5 rounded-2xl border border-white/10">
+          {/* Tab Switcher */}
+          <div className="flex mb-6 p-1 bg-white/[0.04] rounded-2xl border border-white/[0.08]">
             <button
               onClick={() => { setActiveTab('join'); setError(null); }}
-              className={`flex-1 py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 ${
+              className={`flex-1 py-3.5 rounded-xl font-bold text-base transition-all duration-300 ${
                 activeTab === 'join'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
-                  : 'text-white/50 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30'
+                  : 'text-white/40 hover:text-white/70'
               }`}
             >
-              <span className="mr-2">🎮</span>
-              Gioca
+              🎮 Gioca
             </button>
             <button
               onClick={() => { setActiveTab('host'); setError(null); }}
-              className={`flex-1 py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 ${
+              className={`flex-1 py-3.5 rounded-xl font-bold text-base transition-all duration-300 ${
                 activeTab === 'host'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
-                  : 'text-white/50 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30'
+                  : 'text-white/40 hover:text-white/70'
               }`}
             >
-              <span className="mr-2">📺</span>
-              Crea Stanza
+              📺 Crea Stanza
             </button>
           </div>
 
-          {/* Errore Animato */}
+          {/* Errore */}
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300 text-center font-medium animate-shake backdrop-blur-sm">
-              <span className="mr-2">⚠️</span>
-              {error}
+            <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/25 rounded-xl text-red-300 text-center text-sm font-medium animate-shake">
+              ⚠️ {error}
             </div>
           )}
 
           {/* Form Join */}
           {activeTab === 'join' && (
-            <div className="space-y-6 animate-slide-up">
+            <div className="space-y-5 animate-slide-up">
               <div>
-                <label className="block text-purple-200/90 text-sm font-semibold mb-3 uppercase tracking-wider">
+                <label className="block text-purple-200/80 text-xs font-semibold mb-2 uppercase tracking-wider">
                   Codice Stanza
                 </label>
                 <input
@@ -234,7 +241,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <label className="block text-purple-200/90 text-sm font-semibold mb-3 uppercase tracking-wider">
+                <label className="block text-purple-200/80 text-xs font-semibold mb-2 uppercase tracking-wider">
                   Il tuo Nome
                 </label>
                 <input
@@ -242,23 +249,22 @@ export default function Home() {
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
                   placeholder="Come ti chiami?"
-                  className="input-lupo text-lg"
+                  className="input-lupo text-base"
                   maxLength={20}
+                  onKeyDown={(e) => e.key === 'Enter' && handleJoinRoom()}
                 />
               </div>
               <button
                 onClick={handleJoinRoom}
                 disabled={isJoining}
-                className="btn-lupo w-full text-xl py-5"
+                className="btn-lupo w-full text-lg py-4"
               >
                 {isJoining ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="animate-spin">⏳</span> Entro...
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    🚀 Entra nella Stanza
-                  </span>
+                  '🚀 Entra nella Stanza'
                 )}
               </button>
             </div>
@@ -266,15 +272,14 @@ export default function Home() {
 
           {/* Form Host */}
           {activeTab === 'host' && (
-            <div className="space-y-6 animate-slide-up">
-              <div className="text-center p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <p className="text-purple-200/90 font-medium">
-                  <span className="text-2xl mr-2">📺</span>
-                  Apri questa pagina sul <span className="text-gradient font-bold">PC o TV</span> per il tabellone!
+            <div className="space-y-5 animate-slide-up">
+              <div className="text-center p-3 bg-purple-500/[0.08] border border-purple-500/15 rounded-xl">
+                <p className="text-purple-200/80 text-sm font-medium">
+                  📺 Apri questa pagina sul <span className="text-gradient font-bold">PC o TV</span> per il tabellone
                 </p>
               </div>
               <div>
-                <label className="block text-purple-200/90 text-sm font-semibold mb-3 uppercase tracking-wider">
+                <label className="block text-purple-200/80 text-xs font-semibold mb-2 uppercase tracking-wider">
                   Il tuo Nome (Host)
                 </label>
                 <input
@@ -282,49 +287,55 @@ export default function Home() {
                   value={hostName}
                   onChange={(e) => setHostName(e.target.value)}
                   placeholder="Tu sei il Game Master!"
-                  className="input-lupo text-lg"
+                  className="input-lupo text-base"
                   maxLength={20}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateRoom()}
                 />
               </div>
               <button
                 onClick={handleCreateRoom}
                 disabled={isCreating}
-                className="btn-lupo w-full text-xl py-5"
+                className="btn-lupo w-full text-lg py-4"
               >
                 {isCreating ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="animate-spin">⏳</span> Creo la Stanza...
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    ✨ Crea Nuova Stanza
-                  </span>
+                  '✨ Crea Nuova Stanza'
                 )}
               </button>
-              <p className="text-purple-300/50 text-sm text-center font-medium">
+              <p className="text-purple-300/40 text-xs text-center font-medium">
                 Riceverai un codice di 4 lettere da condividere 🔐
               </p>
             </div>
           )}
         </div>
 
-        {/* Footer Premium */}
-        <div className="mt-10 text-center animate-slide-up" style={{ animationDelay: '0.4s' }}>
-          <div className="flex items-center justify-center gap-4 text-purple-300/60 text-sm font-medium">
-            <span className="flex items-center gap-1">
-              <span>👥</span> 2-15 giocatori
+        {/* Game features — compact badges */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 animate-slide-up" style={{ animationDelay: '0.35s' }}>
+          {[
+            { icon: '🧠', label: 'Trivia' },
+            { icon: '💬', label: 'Completa la frase' },
+            { icon: '🕵️', label: 'Chi è stato?' },
+          ].map((g) => (
+            <span key={g.label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-purple-200/70 text-xs font-medium">
+              <span>{g.icon}</span>{g.label}
             </span>
-            <span className="w-1 h-1 bg-purple-500/40 rounded-full" />
-            <span className="flex items-center gap-1">
-              <span>📱</span> No app
-            </span>
-            <span className="w-1 h-1 bg-purple-500/40 rounded-full" />
-            <span className="flex items-center gap-1">
-              <span>🎉</span> 100% divertimento
-            </span>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center animate-slide-up" style={{ animationDelay: '0.45s' }}>
+          <div className="flex items-center justify-center gap-3 text-purple-300/50 text-xs font-medium">
+            <span>👥 2-15 giocatori</span>
+            <span className="w-1 h-1 bg-purple-500/30 rounded-full" />
+            <span>📱 No app</span>
+            <span className="w-1 h-1 bg-purple-500/30 rounded-full" />
+            <span>🎉 Gratis</span>
           </div>
-          <p className="text-purple-400/30 text-xs mt-4 font-medium tracking-wider">
-            LUPO GAMES © {new Date().getFullYear()} • made by thewolf
+          <p className="text-purple-400/25 text-[10px] mt-3 font-medium tracking-wider uppercase">
+            Lupo Games © {new Date().getFullYear()} · made by thewolf
           </p>
         </div>
       </div>
