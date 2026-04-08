@@ -1,10 +1,9 @@
-// 🐺 LUPO GAMES - Controller Trivia PREMIUM
-// 4 bottoni GIGANTI per rispondere - ESPERIENZA DA CONSOLE!
+// 🐺 LUPO GAMES - Controller Trivia — mobile-first (portrait ok)
+// Domanda sempre visibile + risposte compatte in colonna
 
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { RotateScreenOverlay } from './RotateScreenOverlay';
 import { LiveLeaderboard } from './LiveLeaderboard';
 import type { TriviaRoundData } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -60,9 +59,9 @@ export function TriviaController({
     : 0;
   const rankLabel =
     sortedForRank.length === 0
-      ? 'Classifica…'
+      ? '…'
       : myRank > 0
-        ? `${myRank}° su ${sortedForRank.length}`
+        ? `${myRank}° / ${sortedForRank.length}`
         : `— / ${sortedForRank.length}`;
 
   useEffect(() => {
@@ -103,251 +102,218 @@ export function TriviaController({
     gradient: string;
     hoverGradient: string;
     shadow: string;
+    letterBg: string;
   }> = [
     {
       key: 'A',
-      gradient: 'from-red-500 via-red-600 to-red-700',
-      hoverGradient: 'hover:from-red-400 hover:via-red-500 hover:to-red-600',
-      shadow: 'shadow-red-500/40',
+      gradient: 'from-red-600 to-red-800',
+      hoverGradient: 'active:from-red-500 active:to-red-700',
+      shadow: 'shadow-red-900/30',
+      letterBg: 'bg-red-950/80',
     },
     {
       key: 'B',
-      gradient: 'from-blue-500 via-blue-600 to-blue-700',
-      hoverGradient: 'hover:from-blue-400 hover:via-blue-500 hover:to-blue-600',
-      shadow: 'shadow-blue-500/40',
+      gradient: 'from-blue-600 to-blue-800',
+      hoverGradient: 'active:from-blue-500 active:to-blue-700',
+      shadow: 'shadow-blue-900/30',
+      letterBg: 'bg-blue-950/80',
     },
     {
       key: 'C',
-      gradient: 'from-yellow-500 via-amber-500 to-orange-500',
-      hoverGradient: 'hover:from-yellow-400 hover:via-amber-400 hover:to-orange-400',
-      shadow: 'shadow-yellow-500/40',
+      gradient: 'from-amber-600 to-orange-700',
+      hoverGradient: 'active:from-amber-500 active:to-orange-600',
+      shadow: 'shadow-amber-900/30',
+      letterBg: 'bg-amber-950/80',
     },
     {
       key: 'D',
-      gradient: 'from-green-500 via-emerald-500 to-teal-500',
-      hoverGradient: 'hover:from-green-400 hover:via-emerald-400 hover:to-teal-400',
-      shadow: 'shadow-green-500/40',
+      gradient: 'from-emerald-600 to-teal-700',
+      hoverGradient: 'active:from-emerald-500 active:to-teal-600',
+      shadow: 'shadow-emerald-900/30',
+      letterBg: 'bg-emerald-950/80',
     },
   ];
 
-  const topSafe = 'max(10px,env(safe-area-inset-top,0px))';
-  const leftSafe = 'max(10px,env(safe-area-inset-left,0px))';
-
   return (
-    <RotateScreenOverlay required="landscape">
-      <div className="flex flex-col h-[100dvh] max-h-[100dvh] w-full max-w-[100vw] bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-3 sm:p-4 pt-[max(12px,env(safe-area-inset-top,0px))] pb-[max(12px,env(safe-area-inset-bottom,0px))] pl-[max(12px,env(safe-area-inset-left,0px))] pr-[max(12px,env(safe-area-inset-right,0px))] overflow-hidden relative box-border">
-        <div className="fixed inset-0 bg-stars pointer-events-none z-0" />
+    <div className="flex h-full min-h-0 w-full max-w-[100vw] flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 box-border px-2 pb-[max(4px,env(safe-area-inset-bottom,0px))] pt-1">
+      <div className="pointer-events-none fixed inset-0 z-0 bg-stars" />
 
-        {/* Classifica: posizione sempre visibile + podio apre pannello sospeso */}
-        <div
-          className="absolute z-50 flex flex-col items-start gap-1.5"
-          style={{ top: topSafe, left: leftSafe }}
-        >
-          <div className="rounded-xl bg-black/45 backdrop-blur-md border border-white/15 px-2.5 py-1.5 shadow-lg">
-            <p className="text-[11px] uppercase tracking-wide text-purple-200/90 font-bold">
-              La tua posizione
-            </p>
-            <p className="text-base sm:text-lg font-black text-amber-300 leading-tight">
-              {rankLabel}
-            </p>
-          </div>
-
-          <div className="relative">
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.92 }}
-              onClick={() => setShowLeaderboard((v) => !v)}
-              className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/90 to-orange-600/90 border-2 border-amber-200/80 shadow-lg flex items-center justify-center text-2xl active:opacity-90 touch-manipulation"
-              aria-expanded={showLeaderboard}
-              aria-label="Apri classifica"
-            >
-              🥇
-            </motion.button>
-
-            <AnimatePresence>
-              {showLeaderboard && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[38] bg-black/35 sm:bg-transparent"
-                    onClick={() => setShowLeaderboard(false)}
-                    aria-hidden
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: -12, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -12, scale: 0.96 }}
-                    transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-                    className="absolute left-0 top-[calc(100%+10px)] z-[48] w-[min(22rem,calc(100vw-2rem))] origin-top-left"
-                  >
-                    <div className="glass-card overflow-hidden shadow-2xl border border-white/20 ring-1 ring-white/10">
-                      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-white/10 bg-black/20">
-                        <span className="text-white font-bold text-sm flex items-center gap-2">
-                          🏆 Classifica live
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setShowLeaderboard(false)}
-                          className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-lg touch-manipulation flex items-center justify-center"
-                          aria-label="Chiudi classifica"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <div className="max-h-[min(55dvh,22rem)] overflow-y-auto overscroll-contain p-2">
-                        {players.length === 0 ? (
-                          <p className="text-purple-200 text-sm text-center py-6 px-2">
-                            Caricamento classifica…
-                          </p>
-                        ) : (
-                          <LiveLeaderboard
-                            bare
-                            players={players}
-                            currentPlayerId={currentPlayerId}
-                            gameType="TRIVIA"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
+      {/* Barra compatta: classifica + podio */}
+      <div className="relative z-50 mb-1 flex shrink-0 items-center justify-between gap-2">
+        <div className="min-w-0 flex-1 rounded-lg border border-white/12 bg-black/40 px-2.5 py-1 backdrop-blur-sm">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-purple-200/80">
+            Posizione
+          </p>
+          <p className="truncate text-sm font-black leading-tight text-amber-300">{rankLabel}</p>
         </div>
 
-        <div className="relative z-10 text-center mb-3 mt-1 px-14 sm:px-16">
-          <div className="inline-block glass-card px-6 py-3 max-w-[80vw]">
-            <p className="text-white text-sm sm:text-lg font-bold line-clamp-3">
-              {roundData.question}
-            </p>
-          </div>
-        </div>
+        <div className="relative shrink-0">
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.92 }}
+            onClick={() => setShowLeaderboard((v) => !v)}
+            className="flex h-9 w-9 touch-manipulation items-center justify-center rounded-xl border border-amber-200/50 bg-gradient-to-br from-amber-500/90 to-orange-600/90 text-lg shadow-md active:opacity-90"
+            aria-expanded={showLeaderboard}
+            aria-label="Apri classifica"
+          >
+            🥇
+          </motion.button>
 
-        <div className="relative z-20 grid grid-cols-2 grid-rows-2 gap-2.5 sm:gap-4 flex-1 min-h-0 isolate">
-          {answerOptions.map(({ key, gradient, hoverGradient, shadow }) => {
-            const isSelected = selectedAnswer === key;
-            const isCorrect = result?.correctAnswer === key;
-            const isWrong = isSelected && result && !result.isCorrect;
-
-            let buttonClasses = `bg-gradient-to-br ${gradient} ${hoverGradient} shadow-2xl ${shadow}`;
-            let extraEffects = '';
-
-            if (result) {
-              if (isCorrect) {
-                buttonClasses =
-                  'bg-gradient-to-br from-green-400 via-emerald-500 to-green-600 shadow-2xl shadow-green-500/60';
-                extraEffects = 'ring-4 ring-green-300 animate-pulse scale-105';
-              } else if (isWrong) {
-                buttonClasses = 'bg-gradient-to-br from-red-800 via-red-900 to-gray-800';
-                extraEffects = 'opacity-50 scale-95';
-              } else if (!isSelected) {
-                buttonClasses = 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900';
-                extraEffects = 'opacity-30 scale-95';
-              }
-            } else if (isSelected) {
-              extraEffects = 'ring-4 ring-white/80 scale-95';
-            }
-
-            return (
-              <button
-                type="button"
-                key={key}
-                onClick={() => void handleAnswer(key)}
-                disabled={hasAnswered || isSubmitting}
-                className={`
-                  ${buttonClasses}
-                  ${extraEffects}
-                  rounded-3xl
-                  flex flex-col items-center justify-center
-                  text-white font-bold
-                  transition-all duration-300 transform
-                  active:scale-90
-                  disabled:cursor-not-allowed
-                  relative overflow-hidden
-                  border border-white/10
-                  touch-manipulation
-                  select-none
-                  min-h-[44px]
-                `}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700 pointer-events-none" />
-
-                <span
-                  className="relative z-[1] text-5xl sm:text-7xl font-black drop-shadow-2xl"
-                  style={{ textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
+          <AnimatePresence>
+            {showLeaderboard && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[38] bg-black/40"
+                  onClick={() => setShowLeaderboard(false)}
+                  aria-hidden
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                  className="absolute right-0 top-[calc(100%+6px)] z-[48] w-[min(20rem,calc(100vw-1.5rem))] origin-top-right"
                 >
-                  {key}
-                </span>
-
-                <span className="relative z-[1] text-xs sm:text-sm px-3 text-center line-clamp-2 leading-tight mt-2 opacity-90">
-                  {roundData.options[key]}
-                </span>
-
-                {isSelected && !result && (
-                  <div className="absolute top-3 right-3 z-[2] pointer-events-none">
-                    <div className="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
-                      {isSubmitting ? (
-                        <span className="animate-spin text-lg">⏳</span>
+                  <div className="glass-card overflow-hidden border border-white/20 shadow-2xl ring-1 ring-white/10">
+                    <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-black/20 px-2.5 py-1.5">
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-white">
+                        🏆 Live
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowLeaderboard(false)}
+                        className="flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg bg-white/10 text-sm font-bold text-white"
+                        aria-label="Chiudi classifica"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="max-h-[min(50dvh,18rem)] overflow-y-auto overscroll-contain p-1.5">
+                      {players.length === 0 ? (
+                        <p className="px-2 py-4 text-center text-xs text-purple-200">
+                          Caricamento…
+                        </p>
                       ) : (
-                        <span className="text-green-600 text-lg font-bold">✓</span>
+                        <LiveLeaderboard
+                          bare
+                          players={players}
+                          currentPlayerId={currentPlayerId}
+                          gameType="TRIVIA"
+                        />
                       )}
                     </div>
                   </div>
-                )}
-
-                {result && isCorrect && (
-                  <div className="absolute top-3 right-3 z-[2] text-4xl animate-bounce pointer-events-none">
-                    ✅
-                  </div>
-                )}
-                {result && isWrong && (
-                  <div className="absolute top-3 right-3 z-[2] text-4xl pointer-events-none">
-                    ❌
-                  </div>
-                )}
-              </button>
-            );
-          })}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
+      </div>
 
-        {result && (
-          <div
-            className={`
-            fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50
-            max-w-[94vw] px-5 py-3 rounded-2xl font-bold text-white text-base sm:text-lg
-            shadow-2xl backdrop-blur-sm text-center
-            animate-bounce-in
+      {/* Domanda: sempre leggibile, scroll se lunga */}
+      <div className="relative z-10 mb-2 min-h-0 shrink-0">
+        <div className="max-h-[min(34vh,220px)] overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 backdrop-blur-sm sm:max-h-[min(30vh,260px)]">
+          <p className="text-left text-[15px] font-bold leading-snug text-white sm:text-base">
+            {roundData.question}
+          </p>
+        </div>
+      </div>
+
+      {/* Risposte: colonna compatta */}
+      <div className="relative z-20 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
+        {answerOptions.map(({ key, gradient, hoverGradient, shadow, letterBg }) => {
+          const isSelected = selectedAnswer === key;
+          const isCorrect = result?.correctAnswer === key;
+          const isWrong = isSelected && result && !result.isCorrect;
+
+          let buttonClasses = `bg-gradient-to-r ${gradient} ${hoverGradient} ${shadow}`;
+          let ringClass = 'ring-1 ring-white/15';
+
+          if (result) {
+            if (isCorrect) {
+              buttonClasses = 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-md shadow-green-900/40';
+              ringClass = 'ring-2 ring-green-300';
+            } else if (isWrong) {
+              buttonClasses = 'bg-gradient-to-r from-red-900/90 to-gray-900';
+              ringClass = 'ring-1 ring-red-500/40 opacity-70';
+            } else if (!isSelected) {
+              buttonClasses = 'bg-gradient-to-r from-gray-800 to-gray-900';
+              ringClass = 'ring-1 ring-white/5 opacity-40';
+            }
+          } else if (isSelected) {
+            ringClass = 'ring-2 ring-white/70';
+          }
+
+          return (
+            <button
+              type="button"
+              key={key}
+              onClick={() => void handleAnswer(key)}
+              disabled={hasAnswered || isSubmitting}
+              className={`
+                ${buttonClasses}
+                ${ringClass}
+                flex w-full shrink-0 flex-row items-center gap-2.5 rounded-xl
+                px-2.5 py-2 text-left text-white transition-transform
+                active:scale-[0.99]
+                disabled:cursor-not-allowed
+                touch-manipulation select-none
+              `}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-black ${letterBg} text-white shadow-inner`}
+              >
+                {key}
+              </span>
+              <span className="min-w-0 flex-1 text-[13px] font-semibold leading-snug sm:text-sm">
+                {roundData.options[key]}
+              </span>
+
+              {isSelected && !result && (
+                <span className="shrink-0 text-base">
+                  {isSubmitting ? <span className="inline-block animate-spin">⏳</span> : '✓'}
+                </span>
+              )}
+              {result && isCorrect && <span className="shrink-0 text-base">✅</span>}
+              {result && isWrong && <span className="shrink-0 text-base">❌</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {result && (
+        <div
+          className={`
+            relative z-50 mt-2 shrink-0 rounded-xl px-3 py-2 text-center text-sm font-bold text-white shadow-lg
             ${
               result.isCorrect
-                ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 shadow-green-500/50'
-                : 'bg-gradient-to-r from-red-500 via-rose-500 to-red-600 shadow-red-500/50'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600'
+                : 'bg-gradient-to-r from-red-600 to-rose-600'
             }
           `}
-          >
-            {result.isCorrect ? (
-              <span className="flex items-center justify-center gap-3 flex-wrap">
-                <span className="text-3xl">🎉</span>
-                Giusto! +{result.pointsEarned} punti
+        >
+          {result.isCorrect ? (
+            <span className="flex flex-wrap items-center justify-center gap-2">
+              <span>🎉</span>
+              <span>Giusto! +{result.pointsEarned} pt</span>
+            </span>
+          ) : (
+            <span className="flex flex-col gap-0.5">
+              <span className="flex items-center justify-center gap-2">
+                <span>😢</span> Sbagliato
               </span>
-            ) : (
-              <span className="flex flex-col items-center gap-1">
-                <span className="flex items-center gap-2">
-                  <span className="text-2xl">😢</span>
-                  <span>Sbagliato!</span>
-                </span>
-                <span className="text-sm sm:text-base font-black text-yellow-100 leading-snug">
-                  Risposta giusta: {wrongExplanation}
-                </span>
+              <span className="text-xs font-bold leading-snug text-yellow-100">
+                {wrongExplanation}
               </span>
-            )}
-          </div>
-        )}
-      </div>
-    </RotateScreenOverlay>
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

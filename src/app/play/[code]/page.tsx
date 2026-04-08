@@ -499,12 +499,16 @@ export default function ControllerPage() {
     );
   }
 
+  const isTriviaRound = controllerView === 'trivia-answer' && !!roundData;
+
   return (
-    <div className={`min-h-screen transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+    <div
+      className={`flex min-h-[100dvh] flex-col transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+    >
       <div className="bg-stars" />
       
       {/* Header Premium Mobile */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10 px-4 py-3 pt-[max(12px,env(safe-area-inset-top,0px))]">
+      <header className="sticky top-0 z-50 shrink-0 backdrop-blur-xl bg-black/40 border-b border-white/10 px-4 py-3 pt-[max(12px,env(safe-area-inset-top,0px))]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-2xl animate-float">🐺</span>
@@ -529,8 +533,14 @@ export default function ControllerPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="p-4 pb-[max(5rem,env(safe-area-inset-bottom,0px))] relative z-10">
+      {/* Main Content — trivia: niente padding, altezza sotto header per evitare scroll doppio */}
+      <main
+        className={`relative z-10 flex min-h-0 flex-1 flex-col ${
+          isTriviaRound
+            ? 'overflow-hidden p-0'
+            : 'p-4 pb-[max(5rem,env(safe-area-inset-bottom,0px))]'
+        }`}
+      >
         
         {/* Lobby - Selezione Avatar */}
         {controllerView === 'waiting' && !currentGame && (
@@ -581,7 +591,7 @@ export default function ControllerPage() {
 
         {/* Trivia Controller */}
         {controllerView === 'trivia-answer' && roundData && (
-          <div className="animate-bounce-in">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <TriviaController
               roundData={roundData as TriviaRoundData}
               onAnswer={handleTriviaAnswer}
