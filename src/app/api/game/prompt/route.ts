@@ -24,12 +24,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (room.players.length < 3) {
+    if (room.players.length < 2) {
       return NextResponse.json(
-        { success: false, error: 'Servono almeno 3 giocatori per Continua la Frase!' },
+        { success: false, error: 'Servono almeno 2 giocatori per Continua la Frase!' },
         { status: 400 }
       );
     }
+
+    // Se sono in 2, skippa la votazione
+    const skipVoting = room.players.length === 2;
 
     // Pesca frasi random
     const phrases = await prisma.promptPhrase.findMany({
@@ -76,6 +79,7 @@ export async function POST(request: NextRequest) {
             phraseIds: selectedPhrases.map((p: { id: string }) => p.id),
             currentPhraseIndex: 1,
             currentRoundId: promptRound.id,
+            skipVoting,
           },
           totalRounds: rounds,
           currentRound: 1,

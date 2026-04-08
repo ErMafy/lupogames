@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 
 const VOTING_SEC = 45;
-const RESULTS_DWELL_MS = 3000;
+const RESULTS_DWELL_MS = 20000;
 
 export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string) {
   // Atomic: only transition WRITING → VOTING once
@@ -121,6 +121,72 @@ export async function showPromptRoundResults(roomCode: string, roundId: string, 
     });
   } catch (err) {
     console.error('Prompt scoring/broadcast failed, advance still scheduled:', err);
+    await sendToRoom(roomCode, 'round-results', {
+      gameType: 'CONTINUE_PHRASE',
+      results: [],
+      winner: null,
+    });
+  }
+}
+
+export async function showPromptRoundResultsNoVoting(roomCode: string, roundId: string, roomId: string) {
+  // Atomic phase transition: WRITING → RESULTS (skip voting)
+  const transitioned = await prisma.promptRound.updateMany({
+    where: { id: roundId, phase: 'WRITING' },
+    data: { phase: 'RESULTS', endedAt: new Date() },
+  });
+  if (transitioned.count === 0) return;
+
+  // Schedule advance FIRST so the game never gets stuck even if scoring fails
+  await schedulePromptAdvance(roomCode, roomId);
+
+  try {
+    const responses = await prisma.promptResponse.findMany({
+      where: { promptRoundId: roundId },
+      include: {
+        player: true,
+      },
+    });
+
+    // For 2-player mode: no voting, so all responses are shown as-is with 0 votes
+    const results = await Promise.all(
+      responses.map(
+        async (r: {
+          id: string;
+          response: string;
+          playerId: string;
+          player: { name: string; avatar: string | null };
+        }) => {
+          const points = 0; // No voting = no points earned
+          await prisma.$transaction([
+            prisma.promptResponse.update({
+              where: { id: r.id },
+              data: {
+                voteCount: 0,
+                pointsEarned: points,
+              },
+            }),
+          ]);
+          return {
+            responseId: r.id,
+            response: r.response,
+            playerId: r.playerId,
+            playerName: r.player.name,
+            avatar: r.player.avatar,
+            voteCount: 0,
+            pointsEarned: points,
+          };
+        }
+      )
+    );
+
+    await sendToRoom(roomCode, 'round-results', {
+      gameType: 'CONTINUE_PHRASE',
+      results,
+      winner: results.length > 0 ? results[0] : null,
+    });
+  } catch (err) {
+    console.error('Prompt scoring/broadcast failed (no-voting mode), advance still scheduled:', err);
     await sendToRoom(roomCode, 'round-results', {
       gameType: 'CONTINUE_PHRASE',
       results: [],
@@ -277,7 +343,21 @@ export async function forcePromptWritingTimeout(
     include: { responses: true },
   });
   if (!pr || pr.phase !== 'WRITING') return;
-  await startPromptVotingPhase(roomCode, roundId, roomId);
+
+  // Check if we should skip voting (2 players)
+  const room = await prisma.room.findUnique({
+    where: { code: roomCode.toUpperCase() },
+    include: { gameState: true },
+  });
+  
+  const state = (room?.gameState?.state || {}) as { skipVoting?: boolean };
+  if (state.skipVoting) {
+    // Skip voting phase and go directly to results
+    await showPromptRoundResultsNoVoting(roomCode, roundId, roomId);
+  } else {
+    // Normal flow: WRITING → VOTING
+    await startPromptVotingPhase(roomCode, roundId, roomId);
+  }
 }
 
 export async function forcePromptVotingTimeout(
