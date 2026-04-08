@@ -253,6 +253,8 @@ export default function ControllerPage() {
       }
       if (roundStartData.gameType === 'CONTINUE_PHRASE') {
         setPromptRoundResults(null);
+        setPromptPhase('WRITING');
+        setPromptResponses([]);
         const rd = (data as { data?: { roundId?: string } }).data;
         promptRoundIdRef.current = rd?.roundId ?? null;
         promptPhaseRef.current = 'WRITING';
