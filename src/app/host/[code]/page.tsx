@@ -316,7 +316,7 @@ export default function HostPage() {
     if (gamePhase !== 'playing' || !roomCode) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 2500);
+    }, 4000);
     return () => clearInterval(id);
   }, [gamePhase, roomCode]);
 
@@ -634,7 +634,7 @@ export default function HostPage() {
       const response = await fetch(endpoints[gameType], {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode, rounds: 5 }),
+        body: JSON.stringify({ roomCode, rounds: gameType === 'TRIVIA' ? 10 : 5 }),
       });
 
       const data = await response.json();
@@ -833,7 +833,7 @@ export default function HostPage() {
                   <GameCard
                     emoji="🧠"
                     title="La Corsa del Sapere"
-                    subtitle="Quiz • 5 domande • 30 sec"
+                    subtitle="Quiz • 10 domande • 30 sec"
                     description="Rispondi A/B/C/D dal telefono. Punti per correttezza e velocità. Il round passa da solo quando tutti rispondono o allo scadere del tempo."
                     gradient="bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600"
                     onClick={() => startGame('TRIVIA')}
@@ -842,7 +842,7 @@ export default function HostPage() {
                   <GameCard
                     emoji="💬"
                     title="Continua la Frase"
-                    subtitle="5 round • 60 sec scrittura + 60 sec voto"
+                    subtitle="5 round • 45 sec scrittura + 45 sec voto"
                     description="Completa la frase in modo creativo, invia, poi vota la risposta più divertente (anonima). Vince chi raccoglie più voti. I punti restano in classifica anche in lobby."
                     gradient="bg-gradient-to-br from-pink-600 via-rose-600 to-red-600"
                     onClick={() => startGame('CONTINUE_PHRASE')}
@@ -851,7 +851,7 @@ export default function HostPage() {
                   <GameCard
                     emoji="🕵️"
                     title="Chi è Stato?"
-                    subtitle="5 round • 60 sec segreti + 60 sec indizio"
+                    subtitle="5 round • 45 sec segreti + 45 sec indizio"
                     description="Ognuno scrive un segreto. A ogni round appare un segreto: indovina chi l’ha scritto tra i giocatori in sala. Più indovinii, più punti. Tutto automatico a tempo."
                     gradient="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600"
                     onClick={() => startGame('WHO_WAS_IT')}

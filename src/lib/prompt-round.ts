@@ -3,8 +3,8 @@
 import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 
-const VOTING_SEC = 60;
-const RESULTS_DWELL_MS = 8000;
+const VOTING_SEC = 45;
+const RESULTS_DWELL_MS = 4000;
 
 export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string) {
   const responses = await prisma.promptResponse.findMany({
@@ -173,7 +173,7 @@ export async function advancePromptToNextOrEnd(roomCode: string): Promise<boolea
     },
   });
 
-  const WRITING_SEC = 60;
+  const WRITING_SEC = 45;
   await prisma.$transaction([
     prisma.room.update({
       where: { id: room.id },

@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (room.players.length < 3) {
+    if (room.players.length < 2) {
       return NextResponse.json(
-        { success: false, error: 'Servono almeno 3 giocatori per Chi è Stato!' },
+        { success: false, error: 'Servono almeno 2 giocatori per Chi è Stato!' },
         { status: 400 }
       );
     }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           },
           totalRounds: Math.min(rounds, room.players.length),
           currentRound: 0,
-          timerEndsAt: new Date(Date.now() + 60000),
+          timerEndsAt: new Date(Date.now() + 45000),
         },
       }),
       // Elimina vecchi segreti della stanza

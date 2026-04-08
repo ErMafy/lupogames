@@ -41,6 +41,7 @@ export default function ControllerPage() {
     controllerView,
     roundData,
     hasSubmitted,
+    timeRemaining,
     handleGameEvent,
     markAsSubmitted,
     resetHasSubmitted,
@@ -62,6 +63,12 @@ export default function ControllerPage() {
   const [secretPhase, setSecretPhase] = useState<'COLLECTING' | 'GUESSING'>('COLLECTING');
   const [secretPlayers, setSecretPlayers] = useState<{ id: string; name: string; avatar: string | null; avatarColor: string | null }[]>([]);
   const [currentSecret, setCurrentSecret] = useState<string>('');
+  const [secretReveal, setSecretReveal] = useState<{ ownerName: string; ownerAvatar: string | null } | null>(null);
+
+  // Risultati round prompt (visibili a tutti)
+  const [promptRoundResults, setPromptRoundResults] = useState<Array<{
+    id: string; playerId: string; playerName: string; response: string; voteCount: number;
+  }> | null>(null);
 
   // Stato per tutti i giocatori (per classifica live)
   const [allPlayers, setAllPlayers] = useState<Array<{
@@ -146,7 +153,7 @@ export default function ControllerPage() {
     if (!roomCode || !currentGame) return;
 
     void refreshRoomPlayers();
-    const interval = setInterval(refreshRoomPlayers, 1200);
+    const interval = setInterval(refreshRoomPlayers, 3000);
 
     return () => clearInterval(interval);
   }, [roomCode, currentGame, refreshRoomPlayers]);
@@ -156,7 +163,7 @@ export default function ControllerPage() {
     if (!roomCode || !currentGame) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 2500);
+    }, 4000);
     return () => clearInterval(id);
   }, [roomCode, currentGame]);
 
@@ -227,6 +234,7 @@ export default function ControllerPage() {
       const roundStartData = data as { gameType: string; phase?: string; data?: { secret?: string; players?: { id: string; name: string; avatar: string | null; avatarColor: string | null }[] } };
       if (roundStartData.gameType === 'WHO_WAS_IT' && roundStartData.data) {
         setSecretPhase(roundStartData.phase as 'COLLECTING' | 'GUESSING' || 'GUESSING');
+        setSecretReveal(null);
         if (roundStartData.data.secret) {
           setCurrentSecret(roundStartData.data.secret);
         }
@@ -234,9 +242,32 @@ export default function ControllerPage() {
           setSecretPlayers(roundStartData.data.players);
         }
       }
+      if (roundStartData.gameType === 'CONTINUE_PHRASE') {
+        setPromptRoundResults(null);
+      }
       if (roundStartData.gameType === 'TRIVIA') {
         setTriviaResult(null);
       }
+    }
+
+    if (eventName === 'round-results') {
+      const rd = data as { gameType?: string; results?: unknown };
+      if (rd.gameType === 'CONTINUE_PHRASE' && Array.isArray(rd.results)) {
+        setPromptRoundResults(
+          (rd.results as Array<{ responseId: string; response: string; playerId: string; playerName: string; voteCount: number }>).map((r) => ({
+            id: r.responseId, playerId: r.playerId, playerName: r.playerName, response: r.response, voteCount: r.voteCount,
+          }))
+        );
+      }
+      if (rd.gameType === 'WHO_WAS_IT' && rd.results) {
+        const sr = rd.results as { owner?: { name: string; avatar: string | null } };
+        if (sr.owner) setSecretReveal({ ownerName: sr.owner.name, ownerAvatar: sr.owner.avatar });
+      }
+    }
+
+    if (eventName === 'secret-reveal') {
+      const sr = data as { actualPlayer?: { name: string }; secretContent?: string };
+      if (sr.actualPlayer) setSecretReveal({ ownerName: sr.actualPlayer.name, ownerAvatar: null });
     }
 
     if (eventName === 'player-advanced') {
@@ -273,11 +304,10 @@ export default function ControllerPage() {
         });
         setShowVictory(true);
         
-        // Dopo 7 secondi, torna alla lobby
         setTimeout(() => {
           setShowVictory(false);
           router.push(`/lobby?room=${roomCode}`);
-        }, 7000);
+        }, 4000);
       } else {
         // Se non ci sono dati, torna subito alla lobby
         router.push(`/lobby?room=${roomCode}`);
@@ -537,8 +567,8 @@ export default function ControllerPage() {
       <main
         className={`relative z-10 flex min-h-0 flex-1 flex-col ${
           isTriviaRound
-            ? 'overflow-hidden p-0'
-            : 'p-4 pb-[max(5rem,env(safe-area-inset-bottom,0px))]'
+            ? 'overflow-y-auto p-0'
+            : 'p-4 pb-[max(5rem,env(safe-area-inset-bottom,0px))] overflow-y-auto'
         }`}
       >
         
@@ -591,11 +621,12 @@ export default function ControllerPage() {
 
         {/* Trivia Controller */}
         {controllerView === 'trivia-answer' && roundData && (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             <TriviaController
               roundData={roundData as TriviaRoundData}
               onAnswer={handleTriviaAnswer}
               hasAnswered={hasSubmitted}
+              timeRemaining={timeRemaining}
               result={triviaResult || undefined}
               players={allPlayers}
               currentPlayerId={player?.id}
@@ -612,7 +643,23 @@ export default function ControllerPage() {
               onSubmitResponse={handlePromptResponse}
               onVote={handlePromptVote}
               hasSubmitted={hasSubmitted}
+              timeRemaining={timeRemaining}
               responses={promptResponses}
+              roundResults={promptRoundResults ?? undefined}
+            />
+          </div>
+        )}
+
+        {/* Prompt round results (shown between rounds too) */}
+        {controllerView === 'results' && promptRoundResults && (
+          <div className="animate-slide-up">
+            <PromptController
+              roundData={(roundData ?? { phraseId: '', phrase: '', timeLimit: 0, phase: 'WRITING' }) as PromptRoundData}
+              phase="WRITING"
+              onSubmitResponse={async () => {}}
+              onVote={async () => {}}
+              hasSubmitted
+              roundResults={promptRoundResults}
             />
           </div>
         )}
@@ -627,7 +674,23 @@ export default function ControllerPage() {
               onSubmitSecret={handleSecretSubmit}
               onVote={handleSecretVote}
               hasSubmitted={hasSubmitted}
+              timeRemaining={timeRemaining}
               currentPlayerId={player?.id || ''}
+              revealResult={secretReveal ?? undefined}
+            />
+          </div>
+        )}
+
+        {/* Secret reveal (shown between rounds too) */}
+        {controllerView === 'results' && secretReveal && (
+          <div className="animate-slide-up">
+            <SecretController
+              phase="GUESSING"
+              onSubmitSecret={async () => {}}
+              onVote={async () => {}}
+              hasSubmitted
+              currentPlayerId=""
+              revealResult={secretReveal}
             />
           </div>
         )}

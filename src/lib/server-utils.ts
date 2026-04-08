@@ -54,7 +54,6 @@ export async function checkAllPlayersCompleted(
       }
       case 'SECRET': {
         if (actionType === 'submit') {
-          // Per la fase COLLECTING, conta i segreti di tutti i player della room
           const secrets = await prisma.secret.count({
             where: { player: { roomId: room.id } }
           });
@@ -62,10 +61,14 @@ export async function checkAllPlayersCompleted(
         } else if (actionType === 'vote') {
           const round = await prisma.secretRound.findUnique({
             where: { id: currentRoundId },
-            include: { votes: true },
+            include: { votes: true, secret: true },
           });
           const uniqueVoters = new Set(round?.votes.map(v => v.playerId) || []);
           completedCount = uniqueVoters.size;
+          // Secret owner can't vote, so they are excluded from the total
+          if (round?.secret?.playerId) {
+            return completedCount >= totalPlayers - 1;
+          }
         }
         break;
       }

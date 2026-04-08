@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
           },
           totalRounds: rounds,
           currentRound: 1,
-          timerEndsAt: new Date(Date.now() + 60000), // 60 secondi per scrivere
+          timerEndsAt: new Date(Date.now() + 45000),
         },
       }),
       prisma.promptPhrase.update({
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       data: {
         phraseId: firstPhrase.id,
         phrase: firstPhrase.phrase,
-        timeLimit: 60,
+        timeLimit: 45,
         roundId: promptRound.id,
       },
     });

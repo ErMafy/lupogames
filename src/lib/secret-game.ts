@@ -2,8 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 import { pickRandom } from '@/lib/utils';
 
-const GUESS_SEC = 60;
-const REVEAL_DWELL_MS = 8000;
+const GUESS_SEC = 45;
+const REVEAL_DWELL_MS = 4000;
 
 export async function endSecretGame(roomCode: string, roomId: string) {
   const players = await prisma.player.findMany({
