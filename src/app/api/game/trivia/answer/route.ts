@@ -82,12 +82,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Notifica tutti del movimento
+    // Notifica tutti del movimento (score = totale aggiornato per classifica live)
     await sendToRoom(triviaRound.room.code, 'player-advanced', {
       playerId,
       playerName: player.name,
       avatar: player.avatar,
       newPosition: player.trackPosition,
+      score: player.score,
       isCorrect,
       isFastest,
       pointsEarned: totalPoints,
@@ -113,6 +114,15 @@ export async function POST(request: NextRequest) {
       `🐺 ${player.name} ha risposto ${answer} (${isCorrect ? '✓' : '✗'}) - ${totalPoints} punti`
     );
 
+    const q = triviaRound.question;
+    const correctLetter = q.correctAnswer as 'A' | 'B' | 'C' | 'D';
+    const optionText: Record<string, string> = {
+      A: q.optionA,
+      B: q.optionB,
+      C: q.optionC,
+      D: q.optionD,
+    };
+
     return NextResponse.json({
       success: true,
       data: {
@@ -120,6 +130,8 @@ export async function POST(request: NextRequest) {
         isFastest,
         pointsEarned: totalPoints,
         newTrackPosition: player.trackPosition,
+        correctAnswer: correctLetter,
+        correctAnswerText: optionText[correctLetter] ?? '',
       },
     });
 

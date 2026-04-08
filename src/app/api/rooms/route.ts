@@ -146,6 +146,7 @@ export async function GET(request: NextRequest) {
             isHost: true,
             isConnected: true,
             score: true,
+            trackPosition: true,
           },
         },
         gameState: true,

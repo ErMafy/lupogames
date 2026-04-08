@@ -49,6 +49,7 @@ export default function ControllerPage() {
   const [triviaResult, setTriviaResult] = useState<{
     isCorrect: boolean;
     correctAnswer: string;
+    correctAnswerText?: string;
     pointsEarned: number;
   } | null>(null);
 
@@ -118,31 +119,50 @@ export default function ControllerPage() {
     }
   }, [roomCode]);
 
-  // Carica periodicamente i dati dei giocatori per la classifica live
-  useEffect(() => {
-    if (!roomCode || !currentGame) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/rooms?code=${roomCode}`);
-        const data = await response.json();
-        
-        if (data.success && data.data.players) {
-          setAllPlayers(data.data.players.map((p: any) => ({
+  const refreshRoomPlayers = useCallback(async () => {
+    if (!roomCode) return;
+    try {
+      const response = await fetch(`/api/rooms?code=${roomCode}`);
+      const data = await response.json();
+      if (data.success && data.data.players) {
+        setAllPlayers(
+          data.data.players.map((p: { id: string; name: string; avatar: string | null; score?: number; trackPosition?: number }) => ({
             playerId: p.id,
             playerName: p.name,
             avatar: p.avatar,
-            score: p.score || 0,
-            trackPosition: p.trackPosition || 0,
-          })));
-        }
-      } catch (err) {
-        console.error('Error loading players:', err);
+            score: p.score ?? 0,
+            trackPosition: p.trackPosition ?? 0,
+          }))
+        );
       }
-    }, 2000); // Update every 2 seconds
+    } catch (err) {
+      console.error('Error loading players:', err);
+    }
+  }, [roomCode]);
+
+  // Classifica live: polling veloce durante il trivia + refresh immediato a ogni domanda
+  useEffect(() => {
+    if (!roomCode || !currentGame) return;
+
+    void refreshRoomPlayers();
+    const interval = setInterval(refreshRoomPlayers, 1200);
 
     return () => clearInterval(interval);
-  }, [roomCode, currentGame]);
+  }, [roomCode, currentGame, refreshRoomPlayers]);
+
+  const triviaQuestionId =
+    currentGame === 'TRIVIA' &&
+    roundData &&
+    typeof roundData === 'object' &&
+    'questionId' in roundData
+      ? (roundData as TriviaRoundData).questionId
+      : null;
+
+  useEffect(() => {
+    if (currentGame === 'TRIVIA' && controllerView === 'trivia-answer') {
+      void refreshRoomPlayers();
+    }
+  }, [currentGame, controllerView, triviaQuestionId, refreshRoomPlayers]);
 
   // Handlers Pusher
   const handleAvatarSelected = useCallback((event: AvatarSelectedEvent) => {
@@ -201,6 +221,26 @@ export default function ControllerPage() {
       if (roundStartData.gameType === 'TRIVIA') {
         setTriviaResult(null);
       }
+    }
+
+    if (eventName === 'player-advanced') {
+      const d = data as {
+        playerId: string;
+        newPosition?: number;
+        score?: number;
+      };
+      setAllPlayers((prev) =>
+        prev.map((p) =>
+          p.playerId === d.playerId
+            ? {
+                ...p,
+                score: typeof d.score === 'number' ? d.score : p.score,
+                trackPosition:
+                  typeof d.newPosition === 'number' ? d.newPosition : p.trackPosition,
+              }
+            : p
+        )
+      );
     }
 
     if (eventName === 'game-ended') {
@@ -286,7 +326,9 @@ export default function ControllerPage() {
   };
 
   const handleTriviaAnswer = async (answer: 'A' | 'B' | 'C' | 'D', responseTimeMs: number) => {
-    if (!player || !roundData) return;
+    if (!player || !roundData) {
+      throw new Error('Sessione non pronta');
+    }
 
     try {
       const response = await fetch('/api/game/trivia/answer', {
@@ -302,17 +344,21 @@ export default function ControllerPage() {
       });
 
       const data = await response.json();
-      
-      if (data.success) {
-        setTriviaResult({
-          isCorrect: data.data.isCorrect,
-          correctAnswer: data.data.correctAnswer || answer,
-          pointsEarned: data.data.pointsEarned,
-        });
-        markAsSubmitted();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Risposta non inviata');
       }
+
+      setTriviaResult({
+        isCorrect: data.data.isCorrect,
+        correctAnswer: data.data.correctAnswer as string,
+        correctAnswerText: data.data.correctAnswerText as string | undefined,
+        pointsEarned: data.data.pointsEarned,
+      });
+      markAsSubmitted();
     } catch (err) {
       console.error('Errore invio risposta:', err);
+      throw err;
     }
   };
 

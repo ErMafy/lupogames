@@ -18,13 +18,16 @@ interface LiveLeaderboardProps {
   currentPlayerId?: string;
   gameType?: 'TRIVIA' | 'PROMPT' | 'SECRET';
   compact?: boolean;
+  /** Nessuna card esterna (es. dentro pannello già incorniciato) */
+  bare?: boolean;
 }
 
 export function LiveLeaderboard({ 
   players, 
   currentPlayerId, 
   gameType = 'TRIVIA',
-  compact = false 
+  compact = false,
+  bare = false,
 }: LiveLeaderboardProps) {
   const sortedPlayers = [...players].sort((a, b) => {
     // Per Trivia, ordina per trackPosition poi per score
@@ -54,26 +57,24 @@ export function LiveLeaderboard({
     );
   }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-4 max-w-sm"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-bold text-lg flex items-center gap-2">
-          🏆 Classifica Live
-        </h3>
-        {currentPlayerRank > 0 && (
-          <div className="glass-card px-3 py-1">
-            <span className="text-yellow-400 font-black text-sm">
-              #{currentPlayerRank}
-            </span>
-          </div>
-        )}
-      </div>
+  const list = (
+    <>
+      {!bare && (
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-bold text-lg flex items-center gap-2">
+            🏆 Classifica Live
+          </h3>
+          {currentPlayerRank > 0 && (
+            <div className="glass-card px-3 py-1">
+              <span className="text-yellow-400 font-black text-sm">
+                #{currentPlayerRank}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
-      <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className={`space-y-2 ${bare ? 'max-h-none' : 'max-h-64'} overflow-y-auto`}>
         {sortedPlayers.map((player, index) => {
           const isCurrentPlayer = player.playerId === currentPlayerId;
           const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
@@ -143,6 +144,20 @@ export function LiveLeaderboard({
           );
         })}
       </div>
+    </>
+  );
+
+  if (bare) {
+    return <div className="p-1">{list}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-card p-4 max-w-sm"
+    >
+      {list}
     </motion.div>
   );
 }
