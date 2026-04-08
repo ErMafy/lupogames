@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
     const selectedQuestions = pickRandom(questions, rounds) as { id: string; question: string; category: string; optionA: string; optionB: string; optionC: string; optionD: string }[];
     const firstQuestion = selectedQuestions[0];
 
-    // Crea il primo round
+    // Cleanup old trivia rounds (cascade-deletes answers)
+    await prisma.triviaRound.deleteMany({ where: { roomId: room.id } });
+
     const triviaRound = await prisma.triviaRound.create({
       data: {
         roomId: room.id,
@@ -56,7 +58,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Aggiorna lo stato della stanza
     await prisma.$transaction([
       prisma.room.update({
         where: { id: room.id },

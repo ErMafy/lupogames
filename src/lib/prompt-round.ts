@@ -7,6 +7,13 @@ const VOTING_SEC = 45;
 const RESULTS_DWELL_MS = 4000;
 
 export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string) {
+  // Atomic: only transition WRITING → VOTING once
+  const transitioned = await prisma.promptRound.updateMany({
+    where: { id: roundId, phase: 'WRITING' },
+    data: { phase: 'VOTING' },
+  });
+  if (transitioned.count === 0) return;
+
   const responses = await prisma.promptResponse.findMany({
     where: { promptRoundId: roundId },
     include: { player: true },
@@ -17,18 +24,12 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
     return;
   }
 
-  await prisma.$transaction([
-    prisma.promptRound.update({
-      where: { id: roundId },
-      data: { phase: 'VOTING' },
-    }),
-    prisma.gameState.update({
-      where: { roomId },
-      data: {
-        timerEndsAt: new Date(Date.now() + VOTING_SEC * 1000),
-      },
-    }),
-  ]);
+  await prisma.gameState.update({
+    where: { roomId },
+    data: {
+      timerEndsAt: new Date(Date.now() + VOTING_SEC * 1000),
+    },
+  });
 
   const shuffledResponses = responses
     .sort(() => Math.random() - 0.5)
@@ -56,6 +57,13 @@ async function skipPromptRoundWithNoResponses(roomCode: string, roomId: string, 
 }
 
 export async function showPromptRoundResults(roomCode: string, roundId: string, roomId: string) {
+  // Atomic phase transition: only one caller can win
+  const transitioned = await prisma.promptRound.updateMany({
+    where: { id: roundId, phase: 'VOTING' },
+    data: { phase: 'RESULTS', endedAt: new Date() },
+  });
+  if (transitioned.count === 0) return;
+
   const responses = await prisma.promptResponse.findMany({
     where: { promptRoundId: roundId },
     include: {
@@ -101,11 +109,6 @@ export async function showPromptRoundResults(roomCode: string, roundId: string, 
   );
 
   results.sort((a, b) => b.voteCount - a.voteCount);
-
-  await prisma.promptRound.update({
-    where: { id: roundId },
-    data: { phase: 'RESULTS', endedAt: new Date() },
-  });
 
   await sendToRoom(roomCode, 'round-results', {
     gameType: 'CONTINUE_PHRASE',

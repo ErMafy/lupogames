@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
     const selectedPhrases = pickRandom(phrases, rounds) as { id: string; phrase: string }[];
     const firstPhrase = selectedPhrases[0];
 
-    // Crea il primo round
+    // Cleanup old rounds first (cascade-deletes responses + votes)
+    await prisma.promptRound.deleteMany({ where: { roomId: room.id } });
+
+    // Create the first round fresh
     const promptRound = await prisma.promptRound.create({
       data: {
         roomId: room.id,
@@ -57,7 +60,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Aggiorna lo stato della stanza
     await prisma.$transaction([
       prisma.room.update({
         where: { id: room.id },

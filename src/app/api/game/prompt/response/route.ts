@@ -70,16 +70,13 @@ export async function POST(request: NextRequest) {
       totalPlayers: room.players.length,
     });
 
-    // 🚀 AUTO-ADVANCE: direct count dopo il salvataggio
+    // Auto-advance: startPromptVotingPhase has its own atomic guard
     const responseCount = await prisma.promptResponse.count({
       where: { promptRoundId: roundId },
     });
 
     if (responseCount >= room.players.length) {
-      const freshRound = await prisma.promptRound.findUnique({ where: { id: roundId } });
-      if (freshRound?.phase === 'WRITING') {
-        await startPromptVotingPhase(roomCode, roundId, room.id);
-      }
+      await startPromptVotingPhase(roomCode, roundId, room.id);
     }
 
     return NextResponse.json({

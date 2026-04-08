@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     const promptRound = await prisma.promptRound.findUnique({
       where: { id: roundId },
-      include: { responses: true, votes: true },
+      include: { responses: true },
     });
 
     if (!promptRound || promptRound.phase !== 'VOTING') {
@@ -44,34 +44,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Crea o aggiorna il voto
-    const existingVote = promptRound.votes.find((v: { playerId: string }) => v.playerId === playerId);
-    
-    if (existingVote) {
-      await prisma.promptVote.update({
-        where: { id: existingVote.id },
-        data: { responseId },
-      });
-    } else {
-      await prisma.promptVote.create({
-        data: {
-          playerId,
-          promptRoundId: roundId,
-          responseId,
-        },
-      });
-    }
+    // Atomic upsert
+    await prisma.promptVote.upsert({
+      where: { playerId_promptRoundId: { playerId, promptRoundId: roundId } },
+      create: { playerId, promptRoundId: roundId, responseId },
+      update: { responseId },
+    });
 
-    // 🚀 AUTO-ADVANCE: direct count dopo il salvataggio
+    // Auto-advance: showPromptRoundResults has its own atomic guard
     const voteCount = await prisma.promptVote.count({
       where: { promptRoundId: roundId },
     });
 
     if (voteCount >= room.players.length) {
-      const freshRound = await prisma.promptRound.findUnique({ where: { id: roundId } });
-      if (freshRound?.phase === 'VOTING') {
-        await showPromptRoundResults(roomCode, roundId, room.id);
-      }
+      await showPromptRoundResults(roomCode, roundId, room.id);
     }
 
     return NextResponse.json({

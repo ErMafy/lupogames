@@ -30,8 +30,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Aggiorna lo stato della stanza - Fase raccolta segreti
+    const totalRounds = Math.min(rounds, room.players.length);
+
+    // Cleanup old data, then set up fresh game state
     await prisma.$transaction([
+      // Cascade-delete old rounds → votes
+      prisma.secretRound.deleteMany({ where: { roomId: room.id } }),
+      prisma.secret.deleteMany({ where: { player: { roomId: room.id } } }),
       prisma.room.update({
         where: { id: room.id },
         data: {
@@ -45,27 +50,21 @@ export async function POST(request: NextRequest) {
         data: {
           state: {
             phase: 'COLLECTING',
-            totalRounds: Math.min(rounds, room.players.length),
+            totalRounds,
           },
-          totalRounds: Math.min(rounds, room.players.length),
+          totalRounds,
           currentRound: 0,
           timerEndsAt: new Date(Date.now() + 45000),
         },
       }),
-      // Elimina vecchi segreti della stanza
-      prisma.secret.deleteMany({
-        where: { player: { roomId: room.id } },
-      }),
     ]);
 
-    // Notifica tutti
     await sendToRoom(roomCode, 'game-started', {
       gameType: 'WHO_WAS_IT',
-      totalRounds: Math.min(rounds, room.players.length),
+      totalRounds,
       playerCount: room.players.length,
     });
 
-    // Chiedi a tutti di scrivere un segreto
     await sendToRoom(roomCode, 'phase-changed', {
       gameType: 'WHO_WAS_IT',
       phase: 'COLLECTING',
@@ -75,14 +74,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log(`🐺 Chi è Stato iniziato - Raccolta segreti`);
+    console.log(`🐺 Chi è Stato iniziato - Raccolta segreti (${totalRounds} round)`);
 
     return NextResponse.json({
       success: true,
       data: {
         gameType: 'WHO_WAS_IT',
         phase: 'COLLECTING',
-        totalRounds: Math.min(rounds, room.players.length),
+        totalRounds,
         instruction: 'Scrivi un segreto o un aneddoto imbarazzante su di te!',
       },
     });

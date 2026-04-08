@@ -122,6 +122,13 @@ export async function startGuessingRound(roomCode: string, roomId: string, round
 }
 
 export async function showSecretRoundResults(roomCode: string, roundId: string, roomId: string) {
+  // Atomic phase transition: only one caller can win
+  const transitioned = await prisma.secretRound.updateMany({
+    where: { id: roundId, phase: 'GUESSING' },
+    data: { phase: 'REVEAL', endedAt: new Date() },
+  });
+  if (transitioned.count === 0) return;
+
   const secretRound = await prisma.secretRound.findUnique({
     where: { id: roundId },
     include: {
@@ -131,11 +138,6 @@ export async function showSecretRoundResults(roomCode: string, roundId: string, 
   });
 
   if (!secretRound) return;
-
-  await prisma.secretRound.update({
-    where: { id: roundId },
-    data: { phase: 'REVEAL', endedAt: new Date() },
-  });
 
   const results = {
     secret: secretRound.secret.content,

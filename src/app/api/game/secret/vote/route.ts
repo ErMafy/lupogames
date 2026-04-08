@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     const secretRound = await prisma.secretRound.findUnique({
       where: { id: roundId },
-      include: { secret: true, votes: true },
+      include: { secret: true },
     });
 
     if (!secretRound || secretRound.phase !== 'GUESSING') {
@@ -43,52 +43,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // L'indovinello è corretto?
     const isCorrect = suspectedPlayerId === secretRound.secret.playerId;
     const points = isCorrect ? 200 : 0;
 
-    // Crea o aggiorna il voto
-    const existingVote = secretRound.votes.find((v: { playerId: string }) => v.playerId === playerId);
-    
-    if (existingVote) {
-      await prisma.secretVote.update({
-        where: { id: existingVote.id },
-        data: { 
-          suspectedPlayerId,
-          isCorrect,
-          pointsEarned: points,
-        },
-      });
-    } else {
-      await prisma.secretVote.create({
-        data: {
-          playerId,
-          secretRoundId: roundId,
-          suspectedPlayerId,
-          isCorrect,
-          pointsEarned: points,
-        },
+    // Atomic upsert + score in transaction
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.secretVote.findUnique({
+        where: { playerId_secretRoundId: { playerId, secretRoundId: roundId } },
       });
 
-      // Aggiorna punteggio giocatore
-      if (points > 0) {
-        await prisma.player.update({
-          where: { id: playerId },
-          data: { score: { increment: points } },
+      if (existing) {
+        await tx.secretVote.update({
+          where: { id: existing.id },
+          data: { suspectedPlayerId, isCorrect, pointsEarned: points },
         });
+      } else {
+        await tx.secretVote.create({
+          data: { playerId, secretRoundId: roundId, suspectedPlayerId, isCorrect, pointsEarned: points },
+        });
+        if (points > 0) {
+          await tx.player.update({
+            where: { id: playerId },
+            data: { score: { increment: points } },
+          });
+        }
       }
-    }
+    });
 
-    // 🚀 AUTO-ADVANCE: direct count (owner escluso, non può votare)
+    // Auto-advance: showSecretRoundResults has its own atomic guard
     const voteCount = await prisma.secretVote.count({
       where: { secretRoundId: roundId },
     });
 
     if (voteCount >= room.players.length - 1) {
-      const freshRound = await prisma.secretRound.findUnique({ where: { id: roundId } });
-      if (freshRound?.phase === 'GUESSING') {
-        await showSecretRoundResults(roomCode, roundId, room.id);
-      }
+      await showSecretRoundResults(roomCode, roundId, room.id);
     }
 
     return NextResponse.json({
