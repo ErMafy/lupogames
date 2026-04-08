@@ -260,6 +260,7 @@ export default function ControllerPage() {
         setPromptRoundResults(null);
         setPromptPhase('WRITING');
         setPromptResponses([]);
+        setPromptSkipVoting(false); // Reset skipping per nuovo round
         const rd = (data as { data?: { roundId?: string } }).data;
         promptRoundIdRef.current = rd?.roundId ?? null;
         promptPhaseRef.current = 'WRITING';

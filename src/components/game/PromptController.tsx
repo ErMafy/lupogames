@@ -39,14 +39,14 @@ export function PromptController({
   const prevPhraseRef = useRef(roundData.phraseId);
 
   useEffect(() => {
-    if (phase !== prevPhaseRef.current || roundData.phraseId !== prevPhraseRef.current) {
+    if (phase !== prevPhaseRef.current || roundData.phraseId !== prevPhraseRef.current || skipVoting) {
       setVoted(false);
       setIsSubmitting(false);
       if (phase === 'WRITING') setResponse('');
       prevPhaseRef.current = phase;
       prevPhraseRef.current = roundData.phraseId;
     }
-  }, [phase, roundData.phraseId]);
+  }, [phase, roundData.phraseId, skipVoting]);
 
   const handleSubmit = async () => {
     if (!response.trim() || isSubmitting) return;
