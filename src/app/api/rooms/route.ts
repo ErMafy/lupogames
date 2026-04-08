@@ -2,7 +2,7 @@
 // Dove nasce la magia (e il caos del sabato sera)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, PrismaTransactionClient } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { createRoomCode, DEFAULT_AVATARS, AVATAR_COLORS } from '@/lib/utils';
 
 // POST /api/rooms - Crea una nuova stanza
@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Crea la stanza e l'host in una transazione
-    const result = await prisma.$transaction(async (tx: PrismaTransactionClient) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await prisma.$transaction(async (tx: any) => {
       // Crea la stanza
       const room = await tx.room.create({
         data: {
