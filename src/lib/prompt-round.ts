@@ -8,6 +8,12 @@ const READ_ONLY_SEC = 20;
 const RESULTS_DWELL_MS = 3000;
 
 export async function startPromptVotingPhase(roomCode: string, roundId: string, roomId: string) {
+  const promptRound = await prisma.promptRound.findUnique({
+    where: { id: roundId },
+    include: { room: { include: { players: true } } },
+  });
+  if (!promptRound || promptRound.phase !== 'WRITING') return;
+
   // Atomic: only transition WRITING → VOTING once
   const transitioned = await prisma.promptRound.updateMany({
     where: { id: roundId, phase: 'WRITING' },
@@ -25,12 +31,7 @@ export async function startPromptVotingPhase(roomCode: string, roundId: string, 
     return;
   }
 
-  const room = await prisma.room.findUnique({
-    where: { id: roomId },
-    include: { players: true },
-  });
-  if (!room) return;
-  const shouldAllowVoting = room.players.length > 2;
+  const shouldAllowVoting = promptRound.room.players.length > 2;
   const phaseTimeSec = shouldAllowVoting ? VOTING_SEC : READ_ONLY_SEC;
 
   await prisma.gameState.update({
