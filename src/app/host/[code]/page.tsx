@@ -388,6 +388,7 @@ export default function HostPage() {
     if (eventName === 'game-started') {
       setGamePhase('playing');
       setCurrentGameType(eventData.gameType as GameType);
+      if (eventData.totalRounds) setTotalRoundsNum(eventData.totalRounds as number);
     }
     
     if (eventName === 'round-started') {
@@ -445,6 +446,7 @@ export default function HostPage() {
         const rd = eventData.data as Record<string, unknown>;
         setNewGameData({ ...rd, gameType: eventData.gameType, phase: eventData.phase || rd.phase || 'ACTIVE' });
         setCurrentRoundNum(eventData.roundNumber as number);
+        setTotalRoundsNum((eventData.totalRounds as number) || 5);
         newGameRoundIdRef.current = (rd.roundId as string) ?? null;
         resetHasSubmitted();
       }

@@ -5,35 +5,88 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 const GAMES = [
-  { emoji: '🧠', name: 'Trivia' },
-  { emoji: '💬', name: 'Completa la Frase' },
-  { emoji: '🕵️', name: 'Chi è Stato?' },
-  { emoji: '🗑️', name: 'Swipe Trash' },
-  { emoji: '⚖️', name: 'Il Tribunale' },
-  { emoji: '💣', name: 'La Bomba' },
-  { emoji: '🌡️', name: 'Termometro' },
-  { emoji: '🐑', name: 'Mente di Gregge' },
-  { emoji: '🦎', name: 'Camaleonte' },
-  { emoji: '⚡', name: 'Spacca-Stanza' },
-  { emoji: '📝', name: 'Colloquio' },
+  { emoji: '🧠', name: 'Trivia', desc: 'Rispondi a domande di cultura generale prima degli altri. Più sei veloce, più punti guadagni. 4 opzioni, 1 risposta giusta, 30 secondi per decidere!' },
+  { emoji: '💬', name: 'Completa la Frase', desc: 'Ti diamo l\'inizio di una frase assurda e tu la completi. Poi tutti votano la risposta più divertente. Creatività e umorismo vincono!' },
+  { emoji: '🕵️', name: 'Chi è Stato?', desc: 'Uno scrive un segreto anonimo. Gli altri devono indovinare chi l\'ha scritto. Bluffa o confessa: a te la scelta!' },
+  { emoji: '🗑️', name: 'Swipe Trash', desc: 'Il termometro dell\'indignazione! Ti mostriamo concetti controversi e voti SÌ o NO. Chi vota con la maggioranza prende punti. Segui l\'istinto della massa!' },
+  { emoji: '⚖️', name: 'Il Tribunale', desc: 'Rovina le amicizie puntando il dito! Una domanda infame, tutti votano in segreto. Chi prende più voti diventa l\'Imputato e deve difendersi. Poi il verdetto finale!' },
+  { emoji: '💣', name: 'La Bomba', desc: 'La patata bollente digitale! Hai la bomba? Scrivi una parola nella categoria e passala velocemente. Chi ce l\'ha quando esplode... perde tutto!' },
+  { emoji: '🌡️', name: 'Termometro', desc: 'Indovina cosa pensa la stanza! Un concetto, uno slider da 0 a 100. Più ti avvicini alla media del gruppo, più punti fai. Conosci i tuoi amici?' },
+  { emoji: '🐑', name: 'Mente di Gregge', desc: 'L\'originalità fa schifo! Una categoria, una risposta. Solo chi scrive la stessa cosa della maggioranza prende punti. Pensa come la massa!' },
+  { emoji: '🦎', name: 'Camaleonte', desc: 'Mimetizzati tra gli innocenti! Tutti conoscono la parola segreta tranne il Camaleonte. Scrivi un indizio senza farti scoprire... o scova chi finge!' },
+  { emoji: '⚡', name: 'Spacca-Stanza', desc: 'Crea dilemmi impossibili! Completa un dilemma e tutti votano SÌ o NO. Fai più punti se spacchi il gruppo esattamente a metà. 50/50 è l\'obiettivo!' },
+  { emoji: '📝', name: 'Colloquio', desc: 'Costruisci frasi rubando le parole degli altri! Prima rispondi a domande rompighiaccio, poi le tue parole vengono mischiate. Crea la frase migliore e vota!' },
 ];
 
-function MarqueeRow({ direction = 'left' }: { direction?: 'left' | 'right' }) {
+function MarqueeRow({ direction = 'left', onGameClick }: { direction?: 'left' | 'right'; onGameClick: (idx: number) => void }) {
   const items = direction === 'left' ? GAMES : [...GAMES].reverse();
   return (
-    <div className="relative overflow-hidden py-1">
+    <div className="relative overflow-hidden py-0.5">
       <div
         className={`flex gap-2 ${
           direction === 'left' ? 'animate-[marquee_35s_linear_infinite]' : 'animate-[marquee-reverse_35s_linear_infinite]'
         }`}
         style={{ width: 'max-content' }}
       >
-        {[...items, ...items].map((g, i) => (
-          <div key={i} className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] shrink-0">
-            <span className="text-sm">{g.emoji}</span>
-            <span className="text-[10px] font-semibold text-white/50 whitespace-nowrap">{g.name}</span>
+        {[...items, ...items].map((g, i) => {
+          const realIdx = direction === 'left'
+            ? i % GAMES.length
+            : (GAMES.length - 1) - (i % GAMES.length);
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onGameClick(realIdx)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] shrink-0 active:bg-white/[0.08] transition-colors"
+            >
+              <span className="text-sm">{g.emoji}</span>
+              <span className="text-[10px] font-semibold text-white/50 whitespace-nowrap">{g.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function GameModal({ game, onClose }: { game: typeof GAMES[number]; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-5" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-sm rounded-[24px] p-[1px] animate-fade-in-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-purple-500/50 via-white/[0.08] to-pink-500/30" />
+        <div className="relative rounded-[23px] bg-[#0c0c20]/97 backdrop-blur-2xl overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+
+          <div className="p-6">
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-white/40 text-sm active:scale-90 transition-transform hover:bg-white/[0.12]"
+            >
+              ✕
+            </button>
+
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/25 to-pink-500/15 border border-white/[0.08] flex items-center justify-center text-3xl mb-4 shadow-lg shadow-purple-500/10">
+              {game.emoji}
+            </div>
+
+            {/* Title */}
+            <h3 className="text-white font-black text-xl mb-3 pr-8">{game.name}</h3>
+
+            {/* Description */}
+            <p className="text-white/55 text-sm leading-relaxed font-medium">
+              {game.desc}
+            </p>
           </div>
-        ))}
+
+          <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-400/15 to-transparent" />
+        </div>
       </div>
     </div>
   );
@@ -63,6 +116,7 @@ function HomeContent() {
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'home' | 'join' | 'host'>('home');
   const [mounted, setMounted] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -119,33 +173,38 @@ function HomeContent() {
       <div className="absolute w-[500px] h-[500px] -top-44 left-1/2 -translate-x-1/2 rounded-full blur-[100px] bg-purple-600/25 pointer-events-none" />
       <div className="absolute w-[300px] h-[300px] bottom-0 -right-20 rounded-full blur-3xl bg-pink-600/10 pointer-events-none" />
 
-      <div className="relative z-10 flex flex-1 flex-col items-center px-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+      {/* Game info modal */}
+      {selectedGame !== null && (
+        <GameModal game={GAMES[selectedGame]} onClose={() => setSelectedGame(null)} />
+      )}
 
-        {/* ── LOGO — big and tight ── */}
-        <div className="relative -mb-2">
+      <div className="relative z-10 flex flex-1 flex-col items-center px-4 pt-[max(0.5rem,env(safe-area-inset-top,0px))] pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+
+        {/* ── LOGO ── */}
+        <div className="relative -mb-4">
           <div className="absolute inset-0 scale-110 blur-3xl bg-purple-500/15 rounded-full animate-pulse pointer-events-none" />
           <Image
             src="/logolupo.png"
             alt="Lupo Games"
-            width={280}
-            height={280}
+            width={260}
+            height={260}
             className="relative drop-shadow-2xl"
             priority
           />
         </div>
 
         {/* ── MARQUEE — tight under logo ── */}
-        <div className="w-screen -mx-4 opacity-40 -mt-1 mb-3">
-          <MarqueeRow direction="left" />
-          <MarqueeRow direction="right" />
+        <div className="w-screen -mx-4 opacity-40 mb-4">
+          <MarqueeRow direction="left" onGameClick={setSelectedGame} />
+          <MarqueeRow direction="right" onGameClick={setSelectedGame} />
         </div>
 
         {/* ── MAIN CONTENT ── */}
-        <div className="w-full max-w-sm flex-1 flex flex-col justify-center -mt-2">
+        <div className="w-full max-w-sm flex-1 flex flex-col justify-center">
 
           {/* HOME — two glass buttons */}
           {view === 'home' && (
-            <div className="space-y-3 animate-fade-in-up">
+            <div className="space-y-2.5 animate-fade-in-up">
 
               {/* ENTRA button */}
               <button
@@ -153,9 +212,7 @@ function HomeContent() {
                 onClick={() => { setView('join'); setError(null); }}
                 className="w-full group relative rounded-[20px] p-[1px] active:scale-[0.97] transition-transform duration-200"
               >
-                {/* Gradient border */}
                 <div className="absolute inset-0 rounded-[20px] bg-gradient-to-r from-purple-500/60 via-pink-500/60 to-purple-500/60 opacity-80 group-active:opacity-100 transition-opacity" />
-                {/* Inner glass */}
                 <div className="relative rounded-[19px] bg-[#0e0e24]/90 backdrop-blur-2xl px-5 py-4 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/5" />
                   <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
