@@ -46,8 +46,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <link rel="apple-touch-icon" href="/logolupo.png" />
+        <link rel="icon" type="image/png" href="/logolupo.png" />
+        <link rel="shortcut icon" type="image/png" href="/logolupo.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/logolupo.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Lupo Games" />
       </head>
       <body className="min-h-full min-h-[100dvh] flex flex-col">
         {children}
