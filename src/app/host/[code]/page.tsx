@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { useGameEvents } from '@/hooks/useGameEvents';
 import { PromptController } from '@/components/game/PromptController';
@@ -179,6 +180,46 @@ function Leaderboard({ players, compact = false }: { players: Player[]; compact?
   );
 }
 
+const GAME_DETAILS: Record<string, string> = {
+  'La Corsa del Sapere': 'Rispondi a domande di cultura generale prima degli altri! 4 opzioni, 1 risposta giusta, 30 secondi per decidere. Più sei veloce, più punti guadagni!',
+  'Continua la Frase': 'Ti diamo l\'inizio di una frase assurda e tu la completi. Poi tutti votano la risposta più divertente. Creatività e umorismo vincono!',
+  'Chi è Stato?': 'Uno scrive un segreto anonimo. Gli altri devono indovinare chi l\'ha scritto. Bluffa o confessa: a te la scelta!',
+  'Swipe Trash': 'Il termometro dell\'indignazione! Ti mostriamo concetti controversi e voti SÌ o NO. Chi vota con la maggioranza prende punti. Segui l\'istinto della massa!',
+  'Il Tribunale del Popolo': 'Rovina le amicizie puntando il dito! Una domanda infame, tutti votano in segreto. Chi prende più voti diventa l\'Imputato e deve difendersi. Poi il verdetto finale!',
+  'La Bomba': 'La patata bollente digitale! Hai la bomba? Scrivi una parola nella categoria e passala velocemente. Chi ce l\'ha quando esplode... perde tutto!',
+  'Il Termometro del Disagio': 'Indovina cosa pensa la stanza! Un concetto, uno slider da 0 a 100. Più ti avvicini alla media del gruppo, più punti fai. Conosci i tuoi amici?',
+  'Mente di Gregge': 'L\'originalità fa schifo! Una categoria, una risposta. Solo chi scrive la stessa cosa della maggioranza prende punti. Pensa come la massa!',
+  'Il Camaleonte': 'Mimetizzati tra gli innocenti! Tutti conoscono la parola segreta tranne il Camaleonte. Scrivi un indizio senza farti scoprire... o scova chi finge!',
+  'Lo Spacca-Stanza': 'Crea dilemmi impossibili! Completa un dilemma e tutti votano SÌ o NO. Fai più punti se spacchi il gruppo esattamente a metà. 50/50 è l\'obiettivo!',
+  'Colloquio Disperato': 'Costruisci frasi rubando le parole degli altri! Prima rispondi a domande rompighiaccio, poi le tue parole vengono mischiate. Crea la frase migliore e vota!',
+};
+
+function GameInfoModal({ title, emoji, onClose }: { title: string; emoji: string; onClose: () => void }) {
+  const detail = GAME_DETAILS[title] || '';
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-5" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="relative w-full max-w-sm rounded-[24px] p-[1px] animate-bounce-in" onClick={e => e.stopPropagation()}>
+        <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-purple-500/50 via-white/[0.08] to-pink-500/30" />
+        <div className="relative rounded-[23px] bg-[#0c0c20]/97 backdrop-blur-2xl overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+          <div className="p-6">
+            <button type="button" onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-white/40 text-sm active:scale-90 transition-transform hover:bg-white/[0.12]">
+              ✕
+            </button>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/25 to-pink-500/15 border border-white/[0.08] flex items-center justify-center text-3xl mb-4 shadow-lg shadow-purple-500/10">
+              {emoji}
+            </div>
+            <h3 className="text-white font-black text-xl mb-3 pr-8">{title}</h3>
+            <p className="text-white/55 text-sm leading-relaxed font-medium">{detail}</p>
+          </div>
+          <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-400/15 to-transparent" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Card Gioco Premium
 function GameCard({ 
   emoji, 
@@ -187,7 +228,8 @@ function GameCard({
   description,
   gradient, 
   onClick, 
-  disabled 
+  disabled,
+  onInfo,
 }: { 
   emoji: string;
   title: string;
@@ -196,33 +238,43 @@ function GameCard({
   gradient: string;
   onClick: () => void;
   disabled: boolean;
+  onInfo: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`group relative overflow-hidden p-4 sm:p-8 rounded-2xl sm:rounded-3xl text-white text-center transition-all duration-500 ${gradient} disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 shadow-xl shadow-black/30 touch-manipulation`}
-    >
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-      </div>
-      
-      <div className="relative z-10">
-        <div className="text-3xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-lg">{emoji}</div>
-        <div className="text-base sm:text-2xl font-black mb-1 sm:mb-2 tracking-tight">{title}</div>
-        <div className="text-white/90 font-semibold text-xs sm:text-sm mb-2 sm:mb-3">{subtitle}</div>
-        {description && (
-          <p className="text-white/70 text-sm leading-relaxed text-left px-1 border-t border-white/15 pt-3 mt-2">
-            {description}
-          </p>
-        )}
-      </div>
-      
-      {/* Border glow */}
-      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-           style={{ boxShadow: 'inset 0 0 30px rgba(255,255,255,0.2)' }} />
-    </button>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={`w-full group relative overflow-hidden p-4 sm:p-8 rounded-2xl sm:rounded-3xl text-white text-center transition-all duration-500 ${gradient} disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 shadow-xl shadow-black/30 touch-manipulation`}
+      >
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+        </div>
+        
+        <div className="relative z-10">
+          <div className="text-3xl sm:text-6xl mb-2 sm:mb-4 drop-shadow-lg">{emoji}</div>
+          <div className="text-base sm:text-2xl font-black mb-1 sm:mb-2 tracking-tight">{title}</div>
+          <div className="text-white/90 font-semibold text-xs sm:text-sm mb-2 sm:mb-3">{subtitle}</div>
+          {description && (
+            <p className="text-white/70 text-sm leading-relaxed text-left px-1 border-t border-white/15 pt-3 mt-2">
+              {description}
+            </p>
+          )}
+        </div>
+        
+        <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+             style={{ boxShadow: 'inset 0 0 30px rgba(255,255,255,0.2)' }} />
+      </button>
+      {/* Info button */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onInfo(); }}
+        className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 text-xs sm:text-sm font-bold z-20 active:scale-90 transition-transform hover:bg-black/60"
+      >
+        ?
+      </button>
+    </div>
   );
 }
 
@@ -283,6 +335,9 @@ export default function HostPage() {
   // Victory animation state
   const [showVictory, setShowVictory] = useState(false);
   const [victoryWinner, setVictoryWinner] = useState<{ playerId: string; playerName: string; avatar: string; score: number } | null>(null);
+
+  // Game info modal
+  const [infoModal, setInfoModal] = useState<{ title: string; emoji: string } | null>(null);
 
   // Host trivia state
   const hostTriviaRoundIdRef = useRef<string | null>(null);
@@ -886,7 +941,7 @@ export default function HostPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="bg-stars" />
         <div className="text-center z-10">
-          <div className="text-8xl animate-bounce mb-6">🐺</div>
+          <Image src="/logolupo.png" alt="Lupo" width={120} height={120} className="mx-auto animate-bounce mb-6 drop-shadow-2xl" />
           <div className="text-white text-2xl font-bold animate-pulse">Caricamento stanza...</div>
           <div className="mt-4 w-48 h-2 bg-white/10 rounded-full overflow-hidden mx-auto">
             <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 animate-shimmer" />
@@ -915,12 +970,17 @@ export default function HostPage() {
   return (
     <div className="min-h-[100dvh]">
       <div className="bg-stars" />
+
+      {/* Game info modal */}
+      {infoModal && (
+        <GameInfoModal title={infoModal.title} emoji={infoModal.emoji} onClose={() => setInfoModal(null)} />
+      )}
       
       {/* Header — responsive */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <span className="text-xl sm:text-3xl animate-float shrink-0">🐺</span>
+            <Image src="/logolupo.png" alt="Lupo" width={36} height={36} className="shrink-0 sm:w-10 sm:h-10 drop-shadow-lg" />
             <div className="min-w-0">
               <span className="text-white font-black text-sm sm:text-xl block truncate">LUPO GAMES</span>
               <div className="flex items-center gap-1 sm:gap-2">
@@ -1032,6 +1092,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600"
                     onClick={() => startGame('TRIVIA')}
                     disabled={isLoadingGame}
+                    onInfo={() => setInfoModal({ title: 'La Corsa del Sapere', emoji: '🧠' })}
                   />
                   <GameCard
                     emoji="💬"
@@ -1041,6 +1102,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-pink-600 via-rose-600 to-red-600"
                     onClick={() => startGame('CONTINUE_PHRASE')}
                     disabled={isLoadingGame || players.length < 2}
+                    onInfo={() => setInfoModal({ title: 'Continua la Frase', emoji: '💬' })}
                   />
                   <GameCard
                     emoji="🕵️"
@@ -1050,6 +1112,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600"
                     onClick={() => startGame('WHO_WAS_IT')}
                     disabled={isLoadingGame || players.length < 3}
+                    onInfo={() => setInfoModal({ title: 'Chi è Stato?', emoji: '🕵️' })}
                   />
                   <GameCard
                     emoji="🗑️"
@@ -1059,6 +1122,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-600"
                     onClick={() => startGame('SWIPE_TRASH')}
                     disabled={isLoadingGame}
+                    onInfo={() => setInfoModal({ title: 'Swipe Trash', emoji: '🗑️' })}
                   />
                   <GameCard
                     emoji="⚖️"
@@ -1068,6 +1132,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-red-700 via-red-600 to-orange-600"
                     onClick={() => startGame('TRIBUNAL')}
                     disabled={isLoadingGame || players.length < 3}
+                    onInfo={() => setInfoModal({ title: 'Il Tribunale del Popolo', emoji: '⚖️' })}
                   />
                   <GameCard
                     emoji="💣"
@@ -1077,6 +1142,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-gray-700 via-gray-600 to-red-700"
                     onClick={() => startGame('BOMB')}
                     disabled={isLoadingGame || players.length < 3}
+                    onInfo={() => setInfoModal({ title: 'La Bomba', emoji: '💣' })}
                   />
                   <GameCard
                     emoji="🌡️"
@@ -1086,6 +1152,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600"
                     onClick={() => startGame('THERMOMETER')}
                     disabled={isLoadingGame}
+                    onInfo={() => setInfoModal({ title: 'Il Termometro del Disagio', emoji: '🌡️' })}
                   />
                   <GameCard
                     emoji="🐑"
@@ -1095,6 +1162,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600"
                     onClick={() => startGame('HERD_MIND')}
                     disabled={isLoadingGame || players.length < 3}
+                    onInfo={() => setInfoModal({ title: 'Mente di Gregge', emoji: '🐑' })}
                   />
                   <GameCard
                     emoji="🦎"
@@ -1104,6 +1172,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-lime-600 via-green-600 to-emerald-700"
                     onClick={() => startGame('CHAMELEON')}
                     disabled={isLoadingGame || players.length < 4}
+                    onInfo={() => setInfoModal({ title: 'Il Camaleonte', emoji: '🦎' })}
                   />
                   <GameCard
                     emoji="⚡"
@@ -1113,6 +1182,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-yellow-600 via-orange-600 to-red-600"
                     onClick={() => startGame('SPLIT_ROOM')}
                     disabled={isLoadingGame || players.length < 3}
+                    onInfo={() => setInfoModal({ title: 'Lo Spacca-Stanza', emoji: '⚡' })}
                   />
                   <GameCard
                     emoji="📝"
@@ -1122,6 +1192,7 @@ export default function HostPage() {
                     gradient="bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600"
                     onClick={() => startGame('INTERVIEW')}
                     disabled={isLoadingGame || players.length < 3}
+                    onInfo={() => setInfoModal({ title: 'Colloquio Disperato', emoji: '📝' })}
                   />
                 </div>
                 

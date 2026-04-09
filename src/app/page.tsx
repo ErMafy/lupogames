@@ -98,7 +98,7 @@ export default function Home() {
     <Suspense fallback={
       <div className="min-h-[100dvh] flex items-center justify-center">
         <div className="bg-stars" />
-        <div className="text-6xl animate-bounce relative z-10">🐺</div>
+        <Image src="/logolupo.png" alt="Lupo" width={80} height={80} className="relative z-10 animate-bounce drop-shadow-2xl" />
       </div>
     }>
       <HomeContent />

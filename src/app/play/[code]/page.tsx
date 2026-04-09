@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { useGameEvents } from '@/hooks/useGameEvents';
 import { AvatarGrid } from '@/components/game/AvatarGrid';
@@ -620,7 +621,7 @@ export default function ControllerPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="bg-stars" />
         <div className="text-center z-10">
-          <div className="text-7xl animate-bounce mb-6">🐺</div>
+          <Image src="/logolupo.png" alt="Lupo" width={100} height={100} className="mx-auto animate-bounce mb-6 drop-shadow-2xl" />
           <div className="text-white text-xl font-bold animate-pulse">Connessione...</div>
           <div className="mt-4 w-32 h-1 bg-white/10 rounded-full overflow-hidden mx-auto">
             <div className="h-full w-full bg-gradient-to-r from-purple-500 to-pink-500 animate-shimmer" />
@@ -659,7 +660,7 @@ export default function ControllerPage() {
       <header className="sticky top-0 z-50 shrink-0 backdrop-blur-xl bg-black/40 border-b border-white/10 px-4 py-3 pt-[max(12px,env(safe-area-inset-top,0px))]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl animate-float">🐺</span>
+            <Image src="/logolupo.png" alt="Lupo" width={28} height={28} className="shrink-0 drop-shadow-lg" />
             <div className="room-code text-sm px-3 py-1 tracking-widest">
               {roomCode}
             </div>

@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 export default function JoinPage() {
@@ -132,9 +133,9 @@ export default function JoinPage() {
               repeat: Infinity,
               repeatDelay: 3,
             }}
-            className="text-7xl mb-4"
+            className="mb-4"
           >
-            🐺
+            <Image src="/logolupo.png" alt="Lupo" width={80} height={80} className="drop-shadow-2xl" />
           </motion.div>
           
           <h1 className="text-4xl font-black text-white mb-2">

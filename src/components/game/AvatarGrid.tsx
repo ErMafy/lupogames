@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { DEFAULT_AVATARS, AVATAR_COLORS } from '@/lib/utils';
 
 interface AvatarGridProps {
@@ -188,7 +189,7 @@ export function AvatarGrid({
       {isSelecting && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="text-center">
-            <div className="text-6xl animate-bounce mb-4">🐺</div>
+            <Image src="/logolupo.png" alt="Lupo" width={72} height={72} className="mx-auto animate-bounce mb-4 drop-shadow-2xl" />
             <p className="text-white font-bold">Selezionando...</p>
           </div>
         </div>

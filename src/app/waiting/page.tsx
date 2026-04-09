@@ -5,6 +5,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 function WaitingContent() {
@@ -39,9 +40,9 @@ function WaitingContent() {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="text-9xl mb-8"
+          className="mb-8"
         >
-          🐺
+          <Image src="/logolupo.png" alt="Lupo" width={120} height={120} className="drop-shadow-2xl" />
         </motion.div>
 
         {/* Titolo */}

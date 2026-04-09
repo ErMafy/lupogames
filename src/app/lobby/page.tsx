@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -164,7 +165,7 @@ function LobbyContent() {
             transition={{ type: "spring", stiffness: 200 }}
             className="inline-block mb-4"
           >
-            <div className="text-7xl">🐺</div>
+            <Image src="/logolupo.png" alt="Lupo" width={80} height={80} className="drop-shadow-2xl" />
           </motion.div>
           
           <h1 className="text-5xl font-black text-white mb-4 drop-shadow-2xl">
