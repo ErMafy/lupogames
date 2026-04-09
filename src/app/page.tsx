@@ -194,7 +194,7 @@ function HomeContent() {
         </div>
 
         {/* ── MARQUEE — tight under logo ── */}
-        <div className="w-screen -mx-4 opacity-40 mb-4">
+        <div className="w-screen -mx-4 opacity-40 mb-1">
           <MarqueeRow direction="left" onGameClick={setSelectedGame} />
           <MarqueeRow direction="right" onGameClick={setSelectedGame} />
         </div>
