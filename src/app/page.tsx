@@ -14,7 +14,6 @@ function useInstallPrompt() {
   const [canInstall, setCanInstall] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [isSafari, setIsSafari] = useState(false);
 
   useEffect(() => {
     const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
@@ -27,11 +26,7 @@ function useInstallPrompt() {
     const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(ios);
 
-    if (ios) {
-      const safari = /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS|BraveB/.test(ua);
-      setIsSafari(safari);
-      return;
-    }
+    if (ios) return;
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -53,7 +48,7 @@ function useInstallPrompt() {
     deferredPrompt.current = null;
   }, []);
 
-  return { canInstall, isInstalled, isIOS, isSafari, install };
+  return { canInstall, isInstalled, isIOS, install };
 }
 
 const GAMES = [
@@ -170,7 +165,7 @@ function HomeContent() {
   const [view, setView] = useState<'home' | 'join' | 'host'>('home');
   const [mounted, setMounted] = useState(false);
   const [selectedGame, setSelectedGame] = useState<number | null>(null);
-  const { canInstall, isInstalled, isIOS, isSafari, install } = useInstallPrompt();
+  const { canInstall, isInstalled, isIOS, install } = useInstallPrompt();
   const [installDismissed, setInstallDismissed] = useState(false);
 
   useEffect(() => {
@@ -409,15 +404,9 @@ function HomeContent() {
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-bold text-xs leading-tight">Installa l&apos;App</p>
                     {isIOS ? (
-                      isSafari ? (
-                        <p className="text-purple-200/40 text-[10px] font-medium leading-snug mt-0.5">
-                          Tap <span className="inline-flex items-center text-white/60"><svg className="w-3 h-3 inline mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></span> <span className="text-white/60">Condividi</span> poi <span className="text-white/60">&quot;Aggiungi a Home&quot;</span>
-                        </p>
-                      ) : (
-                        <p className="text-purple-200/40 text-[10px] font-medium leading-snug mt-0.5">
-                          Apri in <span className="text-white/60">Safari</span>, poi tap <span className="text-white/60">Condividi</span> &gt; <span className="text-white/60">&quot;Aggiungi a Home&quot;</span>
-                        </p>
-                      )
+                      <p className="text-purple-200/40 text-[10px] font-medium leading-snug mt-0.5">
+                        Apri in <span className="text-white/60 font-bold">Safari</span> &gt; tap <span className="inline-flex items-center text-white/60"><svg className="w-3 h-3 inline mx-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></span> &gt; <span className="text-white/60 font-bold">&quot;Aggiungi a Home&quot;</span>
+                      </p>
                     ) : (
                       <p className="text-purple-200/40 text-[10px] font-medium mt-0.5">Aggiungilo alla Home per giocare subito</p>
                     )}
