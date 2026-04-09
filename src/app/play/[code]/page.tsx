@@ -305,6 +305,7 @@ export default function ControllerPage() {
           prev || { isCorrect: false, correctAnswer: sr.correctAnswer!, pointsEarned: 0 }
         );
       }
+      refreshRoomPlayers();
     }
 
     if (eventName === 'round-results') {
@@ -324,6 +325,7 @@ export default function ControllerPage() {
       if (newGameTypes3.includes(rd.gameType as string)) {
         setNewGameData(prev => ({ ...prev, phase: 'RESULTS', results: rd.results }));
       }
+      refreshRoomPlayers();
     }
 
     if (eventName === 'bomb-passed') {
@@ -386,7 +388,7 @@ export default function ControllerPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [handleAvatarDeselected, handleGameEvent, roomCode, router, resetHasSubmitted]);
+  }, [handleAvatarDeselected, handleGameEvent, roomCode, router, resetHasSubmitted, refreshRoomPlayers]);
 
   const gameEventHandlerRef = useRef(customGameEventHandler);
   gameEventHandlerRef.current = customGameEventHandler;

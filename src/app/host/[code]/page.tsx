@@ -581,6 +581,12 @@ export default function HostPage() {
       if (newGameTypes3.includes(eventData.gameType as string)) {
         setNewGameData(prev => ({ ...prev, phase: 'RESULTS', results: eventData.results }));
       }
+
+      // Refresh player scores from DB after every round-results
+      fetch(`/api/rooms?code=${roomCode}`)
+        .then(res => res.json())
+        .then(d => { if (d.success) setPlayers(d.data.players); })
+        .catch(() => {});
     }
     
     if (eventName === 'bomb-passed') {
@@ -602,6 +608,11 @@ export default function HostPage() {
           pointsEarned: 0,
         }
       );
+      // Refresh scores after trivia round results
+      fetch(`/api/rooms?code=${roomCode}`)
+        .then(res => res.json())
+        .then(d => { if (d.success) setPlayers(d.data.players); })
+        .catch(() => {});
     }
     
     if (eventName === 'prompt-responses') {
