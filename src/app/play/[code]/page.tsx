@@ -830,8 +830,8 @@ export default function ControllerPage() {
           </div>
         )}
 
-        {/* NEW GAMES — Player controllers */}
-        {controllerView === 'new-game-play' && newGameData && player && (() => {
+        {/* NEW GAMES — Player controllers (also shown during results phase) */}
+        {(controllerView === 'new-game-play' || (controllerView === 'results' && newGameData && ['SWIPE_TRASH','TRIBUNAL','BOMB','THERMOMETER','HERD_MIND','CHAMELEON','SPLIT_ROOM','INTERVIEW'].includes(currentGame || ''))) && newGameData && player && (() => {
           const gt = currentGame;
           const phase = newGameData.phase as string;
           const results = newGameData.results as any;
@@ -929,8 +929,8 @@ export default function ControllerPage() {
           return null;
         })()}
 
-        {/* Round Results — solo se nessun risultato specifico inline e non trivia */}
-        {controllerView === 'results' && !promptRoundResults && !secretReveal && currentGame !== 'TRIVIA' && (
+        {/* Round Results — solo per giochi senza risultati inline dedicati */}
+        {controllerView === 'results' && !promptRoundResults && !secretReveal && currentGame !== 'TRIVIA' && !['SWIPE_TRASH','TRIBUNAL','BOMB','THERMOMETER','HERD_MIND','CHAMELEON','SPLIT_ROOM','INTERVIEW'].includes(currentGame || '') && (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center animate-bounce-in">
             <div className="glass-card p-8">
               <div className="text-5xl mb-4 animate-bounce">🎉</div>
