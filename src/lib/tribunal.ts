@@ -65,7 +65,9 @@ async function startDefensePhase(roomCode: string, roundId: string, roomId: stri
   const defendantId = Object.entries(voteCounts).sort((a, b) => b[1] - a[1])[0][0];
   const defendant = await prisma.player.findUnique({ where: { id: defendantId } });
 
-  await prisma.gameRound.update({ where: { id: roundId }, data: { state: { ...(await prisma.gameRound.findUnique({ where: { id: roundId } }))?.state as object, defendantId } } });
+  const currentGr = await prisma.gameRound.findUnique({ where: { id: roundId } });
+  const grState = (currentGr?.state || {}) as Record<string, unknown>;
+  await prisma.gameRound.update({ where: { id: roundId }, data: { state: { ...grState, defendantId } } });
   await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: new Date(Date.now() + DEFENSE_SEC * 1000) } });
 
   await sendToRoom(roomCode, 'phase-changed', {

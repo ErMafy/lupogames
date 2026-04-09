@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 import { pickRandom } from '@/lib/utils';
+import type { Prisma } from '@prisma/client';
 
 export async function getContentForGame(gameType: string, count: number) {
   const items = await prisma.gameContent.findMany({
@@ -57,10 +58,11 @@ export async function upsertAction(
   actionType: string,
   data: Record<string, unknown>,
 ) {
+  const jsonData = data as unknown as Prisma.InputJsonValue;
   return prisma.gameAction.upsert({
     where: { roundId_playerId_actionType: { roundId, playerId, actionType } },
-    create: { roundId, playerId, actionType, data },
-    update: { data },
+    create: { roundId, playerId, actionType, data: jsonData },
+    update: { data: jsonData },
   });
 }
 
@@ -70,11 +72,12 @@ export async function upsertActionAndCount(
   actionType: string,
   data: Record<string, unknown>,
 ): Promise<number> {
+  const jsonData = data as unknown as Prisma.InputJsonValue;
   return prisma.$transaction(async (tx) => {
     await tx.gameAction.upsert({
       where: { roundId_playerId_actionType: { roundId, playerId, actionType } },
-      create: { roundId, playerId, actionType, data },
-      update: { data },
+      create: { roundId, playerId, actionType, data: jsonData },
+      update: { data: jsonData },
     });
     return tx.gameAction.count({ where: { roundId, actionType } });
   });
