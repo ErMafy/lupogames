@@ -390,6 +390,7 @@ export default function ControllerPage() {
   const gameEventHandlerRef = useRef(customGameEventHandler);
   gameEventHandlerRef.current = customGameEventHandler;
 
+  // One-time sync on mount
   useEffect(() => {
     if (!roomCode || !player?.id) return;
     let cancelled = false;
@@ -416,6 +417,25 @@ export default function ControllerPage() {
       cancelled = true;
     };
   }, [roomCode, player?.id]);
+
+  // Periodic sync fallback: if no game detected yet, keep polling until one starts
+  useEffect(() => {
+    if (!roomCode || !player?.id || currentGame) return;
+    const id = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/game/sync?code=${roomCode}`);
+        const json = await res.json();
+        if (json.success && json.data?.inGame && Array.isArray(json.data.events)) {
+          for (const ev of json.data.events as { name: string; data: unknown }[]) {
+            gameEventHandlerRef.current(ev.name, ev.data);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }, 2000);
+    return () => clearInterval(id);
+  }, [roomCode, player?.id, currentGame]);
 
   const {
     isConnected,
