@@ -14,7 +14,17 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Lupo Games",
-  description: "Party games in tempo reale",
+  description: "Party games in tempo reale con i tuoi amici!",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Lupo Games",
+  },
+  icons: {
+    icon: "/logolupo.png",
+    apple: "/logolupo.png",
+  },
 };
 
 export const viewport = {
@@ -35,7 +45,24 @@ export default function RootLayout({
       lang="it"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full min-h-[100dvh] flex flex-col">{children}</body>
+      <head>
+        <link rel="apple-touch-icon" href="/logolupo.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
+      <body className="min-h-full min-h-[100dvh] flex flex-col">
+        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').catch(() => {});
+                });
+              }
+            `,
+          }}
+        />
+      </body>
     </html>
   );
 }

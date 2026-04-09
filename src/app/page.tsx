@@ -1,8 +1,48 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+function useInstallPrompt() {
+  const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
+  const [canInstall, setCanInstall] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone) {
+      setIsInstalled(true);
+      return;
+    }
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredPrompt.current = e as BeforeInstallPromptEvent;
+      setCanInstall(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const install = useCallback(async () => {
+    if (!deferredPrompt.current) return;
+    await deferredPrompt.current.prompt();
+    const { outcome } = await deferredPrompt.current.userChoice;
+    if (outcome === 'accepted') {
+      setCanInstall(false);
+      setIsInstalled(true);
+    }
+    deferredPrompt.current = null;
+  }, []);
+
+  return { canInstall, isInstalled, install };
+}
 
 const GAMES = [
   { emoji: '🧠', name: 'Trivia', desc: 'Rispondi a domande di cultura generale prima degli altri. Più sei veloce, più punti guadagni. 4 opzioni, 1 risposta giusta, 30 secondi per decidere!' },
@@ -118,6 +158,8 @@ function HomeContent() {
   const [view, setView] = useState<'home' | 'join' | 'host'>('home');
   const [mounted, setMounted] = useState(false);
   const [selectedGame, setSelectedGame] = useState<number | null>(null);
+  const { canInstall, isInstalled, install } = useInstallPrompt();
+  const [installDismissed, setInstallDismissed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -342,6 +384,39 @@ function HomeContent() {
             </div>
           )}
         </div>
+
+        {/* ── INSTALL PWA BANNER ── */}
+        {view === 'home' && canInstall && !isInstalled && !installDismissed && (
+          <div className="w-full max-w-sm mx-auto animate-fade-in-up">
+            <div className="relative rounded-2xl p-[1px]">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-green-500/40 via-emerald-400/30 to-green-500/40" />
+              <div className="relative rounded-[15px] bg-[#0e0e24]/95 backdrop-blur-2xl px-4 py-3 overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-green-300/20 to-transparent" />
+                <div className="flex items-center gap-3">
+                  <Image src="/logolupo.png" alt="Lupo" width={36} height={36} className="shrink-0 drop-shadow-lg" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-xs leading-tight">Installa Lupo Games</p>
+                    <p className="text-green-200/40 text-[10px] font-medium">Aggiungilo alla Home per giocare subito</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={install}
+                    className="shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white text-[11px] font-black active:scale-95 transition-transform shadow-lg shadow-green-500/20"
+                  >
+                    Installa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInstallDismissed(true)}
+                    className="shrink-0 w-6 h-6 rounded-full bg-white/[0.05] flex items-center justify-center text-white/30 text-[10px] active:scale-90 transition-transform"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── FOOTER ── */}
         <div className="text-center pt-2 pb-0.5">
