@@ -135,7 +135,7 @@ export default function JoinPage() {
             }}
             className="mb-4"
           >
-            <Image src="/logolupo.png" alt="Lupo" width={80} height={80} className="drop-shadow-2xl" />
+            <Image src="/logolupo.png" alt="Lupo" width={120} height={120} className="drop-shadow-2xl" />
           </motion.div>
           
           <h1 className="text-4xl font-black text-white mb-2">

@@ -662,7 +662,7 @@ export default function ControllerPage() {
       <header className="sticky top-0 z-50 shrink-0 backdrop-blur-xl bg-black/40 border-b border-white/10 px-4 py-3 pt-[max(12px,env(safe-area-inset-top,0px))]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Image src="/logolupo.png" alt="Lupo" width={28} height={28} className="shrink-0 drop-shadow-lg" />
+            <Image src="/logolupo.png" alt="Lupo" width={36} height={36} className="shrink-0 drop-shadow-lg" />
             <div className="room-code text-sm px-3 py-1 tracking-widest">
               {roomCode}
             </div>
@@ -730,16 +730,41 @@ export default function ControllerPage() {
             />
 
             {player?.avatar && (
-              <div className="mt-10 text-center animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                <div className="glass-card inline-flex items-center gap-3 px-6 py-4">
-                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <span className="text-2xl animate-pulse">⏳</span>
+              <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+                <div className="glass-card inline-flex items-center gap-3 px-6 py-4 mx-auto w-full justify-center">
+                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <span className="text-xl animate-pulse">⏳</span>
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold">Pronto!</p>
-                    <p className="text-green-300/80 text-sm">In attesa dell'host...</p>
+                    <p className="text-white font-bold text-sm">Pronto!</p>
+                    <p className="text-green-300/80 text-xs">In attesa dell&apos;host...</p>
                   </div>
                 </div>
+
+                {/* Classifica visibile ai giocatori */}
+                {allPlayers.some(p => p.score > 0) && (
+                  <div className="glass-card p-4 mt-4">
+                    <h3 className="text-sm font-black text-white mb-3 flex items-center gap-2">
+                      <span>🏆</span> Classifica
+                    </h3>
+                    <div className="space-y-1.5">
+                      {[...allPlayers].sort((a, b) => b.score - a.score).map((p, i) => (
+                        <div key={p.playerId} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl ${i === 0 ? 'bg-yellow-500/15 border border-yellow-400/20' : 'bg-white/[0.03]'}`}>
+                          <span className="text-xs font-black text-white/40 w-5 text-center">
+                            {i === 0 ? '👑' : `${i + 1}`}
+                          </span>
+                          <span className="text-lg">{p.avatar ? getAvatarEmoji(p.avatar) : '❓'}</span>
+                          <span className={`text-sm font-bold flex-1 text-left truncate ${i === 0 ? 'text-yellow-300' : 'text-white/70'}`}>
+                            {p.playerName}
+                          </span>
+                          <span className={`text-sm font-black ${i === 0 ? 'text-yellow-300' : 'text-white/50'}`}>
+                            {p.score}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

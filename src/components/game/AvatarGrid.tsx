@@ -189,7 +189,7 @@ export function AvatarGrid({
       {isSelecting && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="text-center">
-            <Image src="/logolupo.png" alt="Lupo" width={72} height={72} className="mx-auto animate-bounce mb-4 drop-shadow-2xl" />
+            <Image src="/logolupo.png" alt="Lupo" width={100} height={100} className="mx-auto animate-bounce mb-4 drop-shadow-2xl" />
             <p className="text-white font-bold">Selezionando...</p>
           </div>
         </div>
