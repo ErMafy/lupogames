@@ -190,6 +190,47 @@ export async function GET(request: NextRequest) {
           }
         }
       }
+    } else {
+      // Generic sync for all new games (SWIPE_TRASH, TRIBUNAL, BOMB, etc.)
+      const currentRoundId = state.currentRoundId as string | undefined;
+      const gameType = room.currentGame;
+
+      events.push({
+        name: 'game-started',
+        data: { gameType, totalRounds: gs.totalRounds },
+      });
+
+      if (currentRoundId) {
+        const gr = await prisma.gameRound.findUnique({ where: { id: currentRoundId } });
+        if (gr) {
+          const grState = (gr.state || {}) as Record<string, unknown>;
+          const players = await prisma.player.findMany({
+            where: { roomId: room.id },
+            select: { id: true, name: true, avatar: true },
+          });
+
+          const timeLimits: Record<string, number> = {
+            SWIPE_TRASH: 20, TRIBUNAL: 30, BOMB: 30, THERMOMETER: 25,
+            HERD_MIND: 25, CHAMELEON: 30, SPLIT_ROOM: 30, INTERVIEW: 40,
+          };
+
+          events.push({
+            name: 'round-started',
+            data: {
+              roundNumber: gr.roundNumber,
+              totalRounds: gs.totalRounds,
+              gameType,
+              phase: gr.phase,
+              data: {
+                ...grState,
+                roundId: gr.id,
+                timeLimit: timeLimits[gameType] || 30,
+                players: players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar })),
+              },
+            },
+          });
+        }
+      }
     }
 
     return NextResponse.json({
