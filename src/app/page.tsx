@@ -14,6 +14,7 @@ function useInstallPrompt() {
   const [canInstall, setCanInstall] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isSafari, setIsSafari] = useState(false);
 
   useEffect(() => {
     const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
@@ -26,15 +27,19 @@ function useInstallPrompt() {
     const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(ios);
 
-    if (!ios) {
-      const handler = (e: Event) => {
-        e.preventDefault();
-        deferredPrompt.current = e as BeforeInstallPromptEvent;
-        setCanInstall(true);
-      };
-      window.addEventListener('beforeinstallprompt', handler);
-      return () => window.removeEventListener('beforeinstallprompt', handler);
+    if (ios) {
+      const safari = /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS|BraveB/.test(ua);
+      setIsSafari(safari);
+      return;
     }
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredPrompt.current = e as BeforeInstallPromptEvent;
+      setCanInstall(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const install = useCallback(async () => {
@@ -48,7 +53,7 @@ function useInstallPrompt() {
     deferredPrompt.current = null;
   }, []);
 
-  return { canInstall, isInstalled, isIOS, install };
+  return { canInstall, isInstalled, isIOS, isSafari, install };
 }
 
 const GAMES = [
@@ -165,7 +170,7 @@ function HomeContent() {
   const [view, setView] = useState<'home' | 'join' | 'host'>('home');
   const [mounted, setMounted] = useState(false);
   const [selectedGame, setSelectedGame] = useState<number | null>(null);
-  const { canInstall, isInstalled, isIOS, install } = useInstallPrompt();
+  const { canInstall, isInstalled, isIOS, isSafari, install } = useInstallPrompt();
   const [installDismissed, setInstallDismissed] = useState(false);
 
   useEffect(() => {
@@ -331,7 +336,7 @@ function HomeContent() {
                     <div className="space-y-3">
                       <div>
                         <label className="block text-white/30 text-[10px] font-semibold mb-1 uppercase tracking-widest">Codice Stanza</label>
-                        <input type="text" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 4))} placeholder="ABCD" className="input-lupo text-center text-2xl tracking-[0.35em] font-black uppercase !py-2.5" maxLength={4} autoFocus />
+                        <input type="text" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 4))} placeholder="ABCD" className="input-lupo text-center text-2xl tracking-[0.35em] font-black uppercase !py-2.5" maxLength={4} />
                       </div>
                       <div>
                         <label className="block text-white/30 text-[10px] font-semibold mb-1 uppercase tracking-widest">Il tuo Nome</label>
@@ -376,7 +381,7 @@ function HomeContent() {
                       </div>
                       <div>
                         <label className="block text-white/30 text-[10px] font-semibold mb-1 uppercase tracking-widest">Il tuo Nome</label>
-                        <input type="text" value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="Game Master" className="input-lupo !py-2.5 text-sm" maxLength={20} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleCreateRoom()} />
+                        <input type="text" value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="Game Master" className="input-lupo !py-2.5 text-sm" maxLength={20} onKeyDown={(e) => e.key === 'Enter' && handleCreateRoom()} />
                       </div>
                       <button type="button" onClick={handleCreateRoom} disabled={isCreating} className="btn-lupo w-full text-sm !py-3.5 !rounded-xl">
                         {isCreating ? <span className="flex items-center justify-center gap-2"><span className="animate-spin">⏳</span> Creo...</span> : '👑 Crea la Stanza'}
@@ -396,26 +401,32 @@ function HomeContent() {
         {view === 'home' && !isInstalled && !installDismissed && (canInstall || isIOS) && (
           <div className="w-full max-w-sm mx-auto animate-fade-in-up">
             <div className="relative rounded-2xl p-[1px]">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-green-500/40 via-emerald-400/30 to-green-500/40" />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/40 via-pink-500/30 to-purple-500/40" />
               <div className="relative rounded-[15px] bg-[#0e0e24]/95 backdrop-blur-2xl px-4 py-3 overflow-hidden">
-                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-green-300/20 to-transparent" />
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-300/20 to-transparent" />
                 <div className="flex items-center gap-3">
-                  <Image src="/logolupo.png" alt="Lupo" width={36} height={36} className="shrink-0 drop-shadow-lg rounded-xl" />
+                  <Image src="/icon-192.png" alt="Lupo" width={36} height={36} className="shrink-0 drop-shadow-lg rounded-xl" />
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-bold text-xs leading-tight">Installa l&apos;App</p>
                     {isIOS ? (
-                      <p className="text-green-200/40 text-[10px] font-medium leading-snug mt-0.5">
-                        Tap <span className="inline-flex items-center text-white/60"><svg className="w-3 h-3 inline mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Condividi</span> poi <span className="text-white/60">&quot;Aggiungi a Home&quot;</span>
-                      </p>
+                      isSafari ? (
+                        <p className="text-purple-200/40 text-[10px] font-medium leading-snug mt-0.5">
+                          Tap <span className="inline-flex items-center text-white/60"><svg className="w-3 h-3 inline mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></span> <span className="text-white/60">Condividi</span> poi <span className="text-white/60">&quot;Aggiungi a Home&quot;</span>
+                        </p>
+                      ) : (
+                        <p className="text-purple-200/40 text-[10px] font-medium leading-snug mt-0.5">
+                          Apri in <span className="text-white/60">Safari</span>, poi tap <span className="text-white/60">Condividi</span> &gt; <span className="text-white/60">&quot;Aggiungi a Home&quot;</span>
+                        </p>
+                      )
                     ) : (
-                      <p className="text-green-200/40 text-[10px] font-medium mt-0.5">Aggiungilo alla Home per giocare subito</p>
+                      <p className="text-purple-200/40 text-[10px] font-medium mt-0.5">Aggiungilo alla Home per giocare subito</p>
                     )}
                   </div>
                   {canInstall && (
                     <button
                       type="button"
                       onClick={install}
-                      className="shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white text-[11px] font-black active:scale-95 transition-transform shadow-lg shadow-green-500/20"
+                      className="shrink-0 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[11px] font-black active:scale-95 transition-transform shadow-lg shadow-purple-500/20"
                     >
                       Installa
                     </button>

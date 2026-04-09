@@ -9,13 +9,13 @@
   "theme_color": "#0A0A1B",
   "icons": [
     {
-      "src": "/logolupo.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/logolupo.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

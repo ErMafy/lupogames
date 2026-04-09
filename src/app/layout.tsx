@@ -22,8 +22,8 @@ export const metadata: Metadata = {
     title: "Lupo Games",
   },
   icons: {
-    icon: "/logolupo.png",
-    apple: "/logolupo.png",
+    icon: "/icon-192.png",
+    apple: "/icon-512.png",
   },
 };
 
@@ -46,9 +46,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <link rel="icon" type="image/png" href="/logolupo.png" />
-        <link rel="shortcut icon" type="image/png" href="/logolupo.png" />
-        <link rel="apple-touch-icon" sizes="512x512" href="/logolupo.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="shortcut icon" type="image/png" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
