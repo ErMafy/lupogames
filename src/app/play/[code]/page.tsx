@@ -12,6 +12,14 @@ import { TriviaController } from '@/components/game/TriviaController';
 import { PromptController } from '@/components/game/PromptController';
 import { SecretController } from '@/components/game/SecretController';
 import { TriviaVictoryAnimation } from '@/components/game/TriviaVictoryAnimation';
+import { SwipeTrashController } from '@/components/game/SwipeTrashController';
+import { TribunaleController } from '@/components/game/TribunaleController';
+import { BombController } from '@/components/game/BombController';
+import { ThermometerController } from '@/components/game/ThermometerController';
+import { HerdMindController } from '@/components/game/HerdMindController';
+import { ChameleonController } from '@/components/game/ChameleonController';
+import { SplitRoomController } from '@/components/game/SplitRoomController';
+import { InterviewController } from '@/components/game/InterviewController';
 import type { PusherMember, AvatarSelectedEvent, TriviaRoundData, PromptRoundData, SecretRoundData } from '@/types';
 
 interface Player {
@@ -72,6 +80,10 @@ export default function ControllerPage() {
   const [currentSecret, setCurrentSecret] = useState<string>('');
   const [secretReveal, setSecretReveal] = useState<{ ownerName: string; ownerAvatar: string | null } | null>(null);
   const [secretOwnerId, setSecretOwnerId] = useState<string | null>(null);
+
+  // New games state
+  const [newGameData, setNewGameData] = useState<Record<string, unknown> | null>(null);
+  const newGameRoundIdRef = useRef<string | null>(null);
 
   // Risultati round prompt (visibili a tutti)
   const [promptRoundResults, setPromptRoundResults] = useState<Array<{
@@ -239,6 +251,11 @@ export default function ControllerPage() {
           resetHasSubmitted();
         }
       }
+      const newGameTypes2 = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
+      if (newGameTypes2.includes(phaseData.gameType)) {
+        setNewGameData(prev => ({ ...prev, ...((phaseData as any).data || {}), phase: phaseData.phase, gameType: phaseData.gameType }));
+        resetHasSubmitted();
+      }
     }
 
     if (eventName === 'round-started') {
@@ -264,6 +281,14 @@ export default function ControllerPage() {
         const rd = (data as { data?: { roundId?: string } }).data;
         promptRoundIdRef.current = rd?.roundId ?? null;
         promptPhaseRef.current = 'WRITING';
+      }
+      // New games
+      const newGameTypes = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
+      if (newGameTypes.includes(roundStartData.gameType)) {
+        const rd = roundStartData.data as Record<string, unknown>;
+        setNewGameData({ ...rd, gameType: roundStartData.gameType, phase: (roundStartData as any).phase || rd?.phase || 'ACTIVE' });
+        newGameRoundIdRef.current = (rd?.roundId as string) ?? null;
+        resetHasSubmitted();
       }
       if (roundStartData.gameType === 'TRIVIA') {
         setTriviaResult(null);
@@ -294,6 +319,19 @@ export default function ControllerPage() {
         const sr = rd.results as { owner?: { name: string; avatar: string | null } };
         if (sr.owner) setSecretReveal({ ownerName: sr.owner.name, ownerAvatar: sr.owner.avatar });
       }
+      const newGameTypes3 = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
+      if (newGameTypes3.includes(rd.gameType as string)) {
+        setNewGameData(prev => ({ ...prev, phase: 'RESULTS', results: rd.results }));
+      }
+    }
+
+    if (eventName === 'bomb-passed') {
+      const bp = data as { newBombHolderId: string; word: string; remainingMs: number };
+      setNewGameData(prev => ({
+        ...prev,
+        bombHolderId: bp.newBombHolderId,
+        words: [...((prev?.words as string[]) || []), bp.word],
+      }));
     }
 
     if (eventName === 'secret-reveal') {
@@ -543,6 +581,19 @@ export default function ControllerPage() {
     setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
   };
 
+  const handleNewGameAction = async (endpoint: string, body: Record<string, unknown>) => {
+    if (!player) return;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomCode, playerId: player.id, roundId: newGameRoundIdRef.current, ...body }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Azione non riuscita');
+    markAsSubmitted();
+    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
+  };
+
   // Loading Premium
   if (isLoading) {
     return (
@@ -758,6 +809,105 @@ export default function ControllerPage() {
             />
           </div>
         )}
+
+        {/* NEW GAMES — Player controllers */}
+        {controllerView === 'new-game-play' && newGameData && player && (() => {
+          const gt = currentGame;
+          const phase = newGameData.phase as string;
+          const results = newGameData.results as any;
+          const isResults = phase === 'RESULTS' || phase === 'EXPLODED';
+
+          if (gt === 'SWIPE_TRASH') return (
+            <div className="animate-slide-up">
+              <SwipeTrashController concept={(newGameData.concept as string) || ''} roundId={newGameRoundIdRef.current || ''}
+                onVote={async (v) => { await handleNewGameAction('/api/game/swipe/vote', { vote: v }); }}
+                hasVoted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
+            </div>
+          );
+
+          if (gt === 'TRIBUNAL') return (
+            <div className="animate-slide-up">
+              <TribunaleController
+                phase={(phase as any) || 'ACCUSING'}
+                accusation={(newGameData.accusation as string) || ''} players={(newGameData.players as any) || []}
+                currentPlayerId={player.id} defendantId={newGameData.defendantId as string}
+                defendantName={newGameData.defendantName as string} defense={newGameData.defense as string}
+                roundId={newGameRoundIdRef.current || ''}
+                onAccuse={async (id) => { await handleNewGameAction('/api/game/tribunal/action', { action: 'accuse', accusedPlayerId: id }); }}
+                onDefense={async (d) => { await handleNewGameAction('/api/game/tribunal/action', { action: 'defense', defense: d }); }}
+                onVerdict={async (v) => { await handleNewGameAction('/api/game/tribunal/action', { action: 'verdict', verdict: v }); }}
+                hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
+            </div>
+          );
+
+          if (gt === 'BOMB') return (
+            <div className="animate-slide-up">
+              <BombController category={(newGameData.category as string) || ''} bombHolderId={(newGameData.bombHolderId as string) || ''}
+                currentPlayerId={player.id} roundId={newGameRoundIdRef.current || ''}
+                onPass={async (w) => { await handleNewGameAction('/api/game/bomb/pass', { word: w }); }}
+                timeRemaining={timeRemaining} words={(newGameData.words as string[]) || []}
+                results={isResults ? results : undefined} />
+            </div>
+          );
+
+          if (gt === 'THERMOMETER') return (
+            <div className="animate-slide-up">
+              <ThermometerController concept={(newGameData.concept as string) || ''} roundId={newGameRoundIdRef.current || ''}
+                onVote={async (v) => { await handleNewGameAction('/api/game/thermometer/vote', { value: v }); }}
+                hasVoted={hasSubmitted} timeRemaining={timeRemaining} currentPlayerId={player.id}
+                results={isResults ? results : undefined} />
+            </div>
+          );
+
+          if (gt === 'HERD_MIND') return (
+            <div className="animate-slide-up">
+              <HerdMindController question={(newGameData.question as string) || ''} roundId={newGameRoundIdRef.current || ''}
+                onAnswer={async (a) => { await handleNewGameAction('/api/game/herd/answer', { answer: a }); }}
+                hasAnswered={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
+            </div>
+          );
+
+          if (gt === 'CHAMELEON') return (
+            <div className="animate-slide-up">
+              <ChameleonController phase={(phase as any) || 'HINTING'}
+                secretWord={player.id === (newGameData.chameleonId as string) ? null : (newGameData.secretWord as string)}
+                chameleonId={(newGameData.chameleonId as string) || ''} currentPlayerId={player.id}
+                players={(newGameData.players as any) || []}
+                roundId={newGameRoundIdRef.current || ''} hints={(newGameData.hints as any)}
+                onHint={async (h) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'hint', hint: h }); }}
+                onVote={async (id) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'vote', suspectedId: id }); }}
+                hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
+            </div>
+          );
+
+          if (gt === 'SPLIT_ROOM') return (
+            <div className="animate-slide-up">
+              <SplitRoomController phase={(phase as any) || 'WRITING'}
+                dilemmaStart={(newGameData.dilemmaStart as string)} dilemma={(newGameData.dilemma as string)}
+                authorId={(newGameData.authorId as string)} currentPlayerId={player.id}
+                roundId={newGameRoundIdRef.current || ''}
+                onWrite={async (c) => { await handleNewGameAction('/api/game/split/action', { action: 'write', completion: c }); }}
+                onVote={async (v) => { await handleNewGameAction('/api/game/split/action', { action: 'vote', vote: v }); }}
+                hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
+            </div>
+          );
+
+          if (gt === 'INTERVIEW') return (
+            <div className="animate-slide-up">
+              <InterviewController phase={(phase as any) || 'COLLECTING'}
+                questions={(newGameData.questions as string[])} prompt={(newGameData.prompt as string)}
+                words={(newGameData.playerWords as Record<string, string[]>)?.[player.id] || (newGameData.words as string[]) || []}
+                sentences={(newGameData.sentences as any)} currentPlayerId={player.id}
+                roundId={newGameRoundIdRef.current || ''}
+                onCollect={async (a) => { await handleNewGameAction('/api/game/interview/action', { action: 'collect', answers: a }); }}
+                onBuild={async (s) => { await handleNewGameAction('/api/game/interview/action', { action: 'build', sentence: s }); }}
+                onVote={async (id) => { await handleNewGameAction('/api/game/interview/action', { action: 'vote', votedPlayerId: id }); }}
+                hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
+            </div>
+          );
+
+          return null;
+        })()}
 
         {/* Round Results — solo se nessun risultato specifico inline e non trivia */}
         {controllerView === 'results' && !promptRoundResults && !secretReveal && currentGame !== 'TRIVIA' && (

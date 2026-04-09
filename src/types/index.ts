@@ -7,7 +7,9 @@ import type { Room, Player, RoomStatus } from '@prisma/client';
 export type { Room, Player, RoomStatus } from '@prisma/client';
 
 // GameType locale (evita dipendenza da Prisma nel client)
-export type GameType = 'TRIVIA' | 'CONTINUE_PHRASE' | 'WHO_WAS_IT';
+export type GameType = 'TRIVIA' | 'CONTINUE_PHRASE' | 'WHO_WAS_IT'
+  | 'SWIPE_TRASH' | 'TRIBUNAL' | 'BOMB' | 'THERMOMETER'
+  | 'HERD_MIND' | 'CHAMELEON' | 'SPLIT_ROOM' | 'INTERVIEW';
 
 // ============================================
 // 🎮 EVENTI PUSHER
@@ -242,6 +244,7 @@ export type ControllerView =
   | 'prompt-vote'       // Vota la migliore
   | 'secret-write'      // Scrivi il tuo segreto
   | 'secret-vote'       // Chi sarà stato?
+  | 'new-game-play'     // Controller generico per i nuovi giochi
   | 'results'           // Guarda i risultati
   | 'final-scores';     // Classifica finale
 

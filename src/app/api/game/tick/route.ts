@@ -11,6 +11,14 @@ import {
   forceSecretGuessingTimeout,
   advanceSecretAfterReveal,
 } from '@/lib/secret-game';
+import { forceSwipeTimeout, advanceSwipeTrash } from '@/lib/swipe-trash';
+import { forceTribunalTimeout, advanceTribunal } from '@/lib/tribunal';
+import { advanceBomb } from '@/lib/bomb-game';
+import { forceThermometerTimeout, advanceThermometer } from '@/lib/thermometer';
+import { forceHerdTimeout, advanceHerdMind } from '@/lib/herd-mind';
+import { forceChameleonTimeout, advanceChameleon } from '@/lib/chameleon';
+import { forceSplitTimeout, advanceSplitRoom } from '@/lib/split-room';
+import { advanceInterview } from '@/lib/interview';
 
 async function checkEarlyAdvance(
   game: string | null,
@@ -151,6 +159,37 @@ export async function GET(request: NextRequest) {
         await advanceSecretAfterReveal(code);
         return NextResponse.json({ success: true, data: { action: 'secret_next' } });
       }
+    }
+
+    // === NEW GAMES: generic round-based timeout handling ===
+    const roundId = st.currentRoundId as string | undefined;
+    const newGameTypes = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'] as const;
+    if (game && newGameTypes.includes(game as any)) {
+      if (roundId) {
+        const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
+        if (gr && gr.phase !== 'RESULTS') {
+          // Force timeout for active phases
+          if (game === 'SWIPE_TRASH') await forceSwipeTimeout(code, roundId, room.id);
+          if (game === 'TRIBUNAL') await forceTribunalTimeout(code, roundId, room.id);
+          if (game === 'BOMB') { await advanceBomb(code); return NextResponse.json({ success: true, data: { action: 'bomb_tick' } }); }
+          if (game === 'THERMOMETER') await forceThermometerTimeout(code, roundId, room.id);
+          if (game === 'HERD_MIND') await forceHerdTimeout(code, roundId, room.id);
+          if (game === 'CHAMELEON') await forceChameleonTimeout(code, roundId, room.id);
+          if (game === 'SPLIT_ROOM') await forceSplitTimeout(code, roundId, room.id);
+          if (game === 'INTERVIEW') { await advanceInterview(code); return NextResponse.json({ success: true, data: { action: 'interview_tick' } }); }
+          return NextResponse.json({ success: true, data: { action: `${game}_timeout` } });
+        }
+      }
+      // Advance to next round if in RESULTS
+      if (game === 'SWIPE_TRASH') await advanceSwipeTrash(code);
+      if (game === 'TRIBUNAL') await advanceTribunal(code);
+      if (game === 'BOMB') await advanceBomb(code);
+      if (game === 'THERMOMETER') await advanceThermometer(code);
+      if (game === 'HERD_MIND') await advanceHerdMind(code);
+      if (game === 'CHAMELEON') await advanceChameleon(code);
+      if (game === 'SPLIT_ROOM') await advanceSplitRoom(code);
+      if (game === 'INTERVIEW') await advanceInterview(code);
+      return NextResponse.json({ success: true, data: { action: `${game}_advanced` } });
     }
 
     return NextResponse.json({ success: true, data: { action: 'idle' } });

@@ -163,6 +163,7 @@ export function usePresenceChannel({
       'prompt-responses',
       'prompt-results',
       'secret-reveal',
+      'bomb-passed',
     ];
 
     gameEvents.forEach(eventName => {

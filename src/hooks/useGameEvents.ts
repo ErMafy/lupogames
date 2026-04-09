@@ -98,6 +98,14 @@ export function useGameEvents() {
         timeLimit = typeof inner.timeLimit === 'number' ? inner.timeLimit : 60;
         break;
       }
+      default: {
+        // All new games use 'new-game-play' controller view
+        const inner = data.data as Record<string, unknown>;
+        view = 'new-game-play';
+        timeLimit = typeof inner.timeLimit === 'number' ? inner.timeLimit : 30;
+        roundPayload = { ...inner, gameType: data.gameType } as unknown as TriviaRoundData;
+        break;
+      }
     }
 
     setState(prev => ({
@@ -220,9 +228,10 @@ export function useGameEvents() {
       let view = prev.controllerView;
       if (data.gameType === 'CONTINUE_PHRASE') {
         view = data.phase === 'VOTING' ? 'prompt-vote' : 'prompt-write';
-      }
-      if (data.gameType === 'WHO_WAS_IT') {
+      } else if (data.gameType === 'WHO_WAS_IT') {
         view = data.phase === 'GUESSING' ? 'secret-vote' : 'secret-write';
+      } else {
+        view = 'new-game-play';
       }
       return {
         ...prev,
@@ -230,6 +239,7 @@ export function useGameEvents() {
         hasSubmitted: false,
         canSubmit: true,
         timeRemaining: timeLimit ?? prev.timeRemaining,
+        roundData: data.data ? { ...prev.roundData, ...(data.data as object), phase: data.phase, gameType: data.gameType } as unknown as typeof prev.roundData : prev.roundData,
       };
     });
     if (timeLimit) startTimer(timeLimit);

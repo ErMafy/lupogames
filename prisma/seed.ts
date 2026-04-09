@@ -225,6 +225,49 @@ async function main() {
   console.log(`   📊 Categorie rilevate: ${Array.from(phraseCategories).join(', ')}\n`);
 
   // ============================================
+  // 🎲 CONTENUTI NUOVI GIOCHI (8 minigiochi)
+  // ============================================
+  console.log('🎲 Caricando contenuti per i nuovi minigiochi...');
+
+  const gameFiles: Array<{ file: string; gameType: string; key: string }> = [
+    { file: 'swipe_trash.json', gameType: 'SWIPE_TRASH', key: 'concetto' },
+    { file: 'tribunale.json', gameType: 'TRIBUNAL', key: 'accusa' },
+    { file: 'la_bomba.json', gameType: 'BOMB', key: 'categoria' },
+    { file: 'termometro.json', gameType: 'THERMOMETER', key: 'concetto' },
+    { file: 'gregge.json', gameType: 'HERD_MIND', key: 'domanda' },
+    { file: 'camaleonte.json', gameType: 'CHAMELEON', key: 'parola_segreta' },
+    { file: 'spacca_stanza.json', gameType: 'SPLIT_ROOM', key: 'dilemma' },
+    { file: 'colloquio.json', gameType: 'INTERVIEW', key: 'domanda' },
+  ];
+
+  let totalNewContent = 0;
+  for (const gf of gameFiles) {
+    try {
+      const raw = readFileSync(join(process.cwd(), gf.file), 'utf-8');
+      const items: Record<string, string>[] = JSON.parse(raw);
+      let created = 0;
+      for (const item of items) {
+        const content = item[gf.key];
+        if (!content) continue;
+        const existing = await prisma.gameContent.findFirst({
+          where: { gameType: gf.gameType as any, content },
+        });
+        if (!existing) {
+          await prisma.gameContent.create({
+            data: { gameType: gf.gameType as any, content },
+          });
+          created++;
+        }
+      }
+      totalNewContent += created;
+      console.log(`   ✓ ${gf.gameType}: ${created} nuovi / ${items.length} totali`);
+    } catch (e) {
+      console.log(`   ⚠️  ${gf.file} non trovato o errore, skip`);
+    }
+  }
+  console.log(`   📦 Totale nuovi contenuti: ${totalNewContent}\n`);
+
+  // ============================================
   // 📊 RIEPILOGO FINALE
   // ============================================
   console.log('═'.repeat(50));
@@ -233,6 +276,7 @@ async function main() {
   console.log(`   🎨 Avatar:   ${avatars.length}`);
   console.log(`   🧠 Domande:  ${createdQuestions}`);
   console.log(`   💬 Frasi:    ${createdPhrases}`);
+  console.log(`   🎲 Nuovi contenuti: ${totalNewContent}`);
   console.log('═'.repeat(50));
   
   // Statistiche domande per categoria

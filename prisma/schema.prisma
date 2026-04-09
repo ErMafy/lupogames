@@ -34,6 +34,7 @@ model Room {
   triviaRounds TriviaRound[]
   promptRounds PromptRound[]
   secretRounds SecretRound[]
+  gameRounds   GameRound[]
   
   @@index([code])
   @@index([status])
@@ -50,6 +51,14 @@ enum GameType {
   TRIVIA          // La Corsa del Sapere
   CONTINUE_PHRASE // Continua la Frase
   WHO_WAS_IT      // Chi è Stato?
+  SWIPE_TRASH     // Swipe Trash
+  TRIBUNAL        // Il Tribunale del Popolo
+  BOMB            // La Bomba
+  THERMOMETER     // Il Termometro del Disagio
+  HERD_MIND       // Mente di Gregge
+  CHAMELEON       // Il Camaleonte
+  SPLIT_ROOM      // Lo Spacca-Stanza
+  INTERVIEW       // Colloquio Disperato
 }
 
 // ============================================
@@ -88,6 +97,7 @@ model Player {
   promptVotes      PromptVote[]
   secrets          Secret[]
   secretVotes      SecretVote[]
+  gameActions      GameAction[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -395,4 +405,53 @@ model Avatar {
   sortOrder   Int      @default(0)
   
   isActive    Boolean  @default(true)
+}
+
+// ============================================
+// 🎲 CONTENUTI GENERICI PER NUOVI GIOCHI
+// ============================================
+
+model GameContent {
+  id        String   @id @default(cuid())
+  gameType  GameType
+  content   String   @db.Text
+  timesUsed Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([gameType, timesUsed])
+}
+
+// ============================================
+// 🔄 ROUND E AZIONI GENERICI (Nuovi giochi)
+// ============================================
+
+model GameRound {
+  id          String    @id @default(cuid())
+  roomId      String
+  room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  gameType    GameType
+  roundNumber Int
+  phase       String    @default("ACTIVE")
+  state       Json      @default("{}")
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+
+  actions     GameAction[]
+
+  @@unique([roomId, gameType, roundNumber])
+  @@index([roomId])
+}
+
+model GameAction {
+  id         String    @id @default(cuid())
+  roundId    String
+  round      GameRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  playerId   String
+  player     Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  actionType String
+  data       Json      @default("{}")
+  createdAt  DateTime  @default(now())
+
+  @@unique([roundId, playerId, actionType])
+  @@index([roundId])
 }
