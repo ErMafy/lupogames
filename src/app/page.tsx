@@ -21,9 +21,9 @@ const GAMES = [
 function MarqueeRow({ direction = 'left', onGameClick }: { direction?: 'left' | 'right'; onGameClick: (idx: number) => void }) {
   const items = direction === 'left' ? GAMES : [...GAMES].reverse();
   return (
-    <div className="relative overflow-hidden py-0.5">
+    <div className="relative overflow-hidden py-1">
       <div
-        className={`flex gap-2 ${
+        className={`flex gap-2.5 ${
           direction === 'left' ? 'animate-[marquee_35s_linear_infinite]' : 'animate-[marquee-reverse_35s_linear_infinite]'
         }`}
         style={{ width: 'max-content' }}
@@ -37,10 +37,11 @@ function MarqueeRow({ direction = 'left', onGameClick }: { direction?: 'left' | 
               key={i}
               type="button"
               onClick={() => onGameClick(realIdx)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/[0.06] bg-white/[0.03] shrink-0 active:bg-white/[0.08] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] shrink-0 active:bg-white/[0.12] transition-colors"
             >
-              <span className="text-sm">{g.emoji}</span>
-              <span className="text-[10px] font-semibold text-white/50 whitespace-nowrap">{g.name}</span>
+              <span className="text-lg">{g.emoji}</span>
+              <span className="text-xs font-bold text-white/55 whitespace-nowrap">{g.name}</span>
+              <span className="text-[9px] text-purple-300/40 font-medium">info</span>
             </button>
           );
         })}
