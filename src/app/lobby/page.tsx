@@ -152,11 +152,11 @@ function LobbyContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-4 pt-[max(1rem,env(safe-area-inset-top,0px))]">
       {/* Stars background */}
       <div className="fixed inset-0 bg-stars pointer-events-none opacity-50" />
       
-      <div className="relative z-10 max-w-4xl mx-auto pt-8">
+      <div className="relative z-10 max-w-4xl mx-auto pt-6">
         {/* Header */}
         <div className="text-center mb-8">
           <motion.div

@@ -988,7 +988,7 @@ export default function HostPage() {
       )}
       
       {/* Header — responsive */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10 pt-[env(safe-area-inset-top,0px)]">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <Image src="/logolupo.png" alt="Lupo" width={44} height={44} className="shrink-0 sm:w-12 sm:h-12 drop-shadow-lg" />
