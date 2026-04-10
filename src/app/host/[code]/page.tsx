@@ -605,6 +605,7 @@ export default function HostPage() {
         bombHolderId: bp.newBombHolderId,
         words: [...((prev?.words as string[]) || []), bp.word],
       }));
+      resetHasSubmitted();
     }
     
     if (eventName === 'show-results' && eventData.correctAnswer) {

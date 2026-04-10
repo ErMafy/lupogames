@@ -245,6 +245,14 @@ export function useGameEvents() {
     if (timeLimit) startTimer(timeLimit);
   }, [startTimer]);
 
+  const handleBombPassed = useCallback((data: { remainingMs?: number }) => {
+    if (typeof data.remainingMs === 'number' && data.remainingMs > 0) {
+      const newSeconds = Math.ceil(data.remainingMs / 1000);
+      setState(prev => ({ ...prev, timeRemaining: newSeconds, hasSubmitted: false, canSubmit: true }));
+      startTimer(newSeconds);
+    }
+  }, [startTimer]);
+
   const handleGameEvent = useCallback((eventName: string, data: unknown) => {
     switch (eventName) {
       case 'game-started':
@@ -263,6 +271,9 @@ export function useGameEvents() {
       case 'timer-tick':
         handleTimerTick(data as { timeRemaining: number });
         break;
+      case 'bomb-passed':
+        handleBombPassed(data as { remainingMs?: number });
+        break;
       case 'show-results':
         handleShowResults();
         break;
@@ -273,7 +284,7 @@ export function useGameEvents() {
         handleGameEnded();
         break;
     }
-  }, [handleGameStarted, handleRoundStarted, handlePhaseChanged, handleTimerTick, handleShowResults, handleGameEnded]);
+  }, [handleGameStarted, handleRoundStarted, handlePhaseChanged, handleTimerTick, handleBombPassed, handleShowResults, handleGameEnded]);
 
   return {
     ...state,

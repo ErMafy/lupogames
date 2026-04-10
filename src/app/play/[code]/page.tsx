@@ -367,12 +367,14 @@ export default function ControllerPage() {
     }
 
     if (eventName === 'bomb-passed') {
-      const bp = data as { newBombHolderId: string; word: string; remainingMs: number };
+      const bp = data as { newBombHolderId: string; word: string; remainingMs: number; previousHolder: string };
       setNewGameData(prev => ({
         ...prev,
         bombHolderId: bp.newBombHolderId,
         words: [...((prev?.words as string[]) || []), bp.word],
       }));
+      // Reset submission state so the new bomb holder can pass
+      resetHasSubmitted();
     }
 
     if (eventName === 'secret-reveal') {

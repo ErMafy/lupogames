@@ -184,17 +184,31 @@ export async function advanceTribunal(roomCode: string): Promise<boolean> {
 }
 
 export async function forceTribunalTimeout(roomCode: string, roundId: string, roomId: string) {
-  const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
+  // Re-read both round AND gameState to avoid acting on stale data from a previous phase
+  const [gr, gs] = await Promise.all([
+    prisma.gameRound.findUnique({ where: { id: roundId } }),
+    prisma.gameState.findUnique({ where: { roomId } }),
+  ]);
   if (!gr) return;
-  if (gr.phase === 'ACCUSING') await startDefensePhase(roomCode, roundId, roomId);
-  if (gr.phase === 'DEFENSE') {
+
+  // Only force timeout if the timer for the CURRENT phase has actually expired
+  const timerEnd = gs?.timerEndsAt?.getTime() || 0;
+  if (timerEnd > Date.now()) return;
+
+  if (gr.phase === 'ACCUSING') {
+    await startDefensePhase(roomCode, roundId, roomId);
+  } else if (gr.phase === 'DEFENSE') {
     const defense = '(Nessuna difesa presentata)';
-    await prisma.gameAction.upsert({
-      where: { roundId_playerId_actionType: { roundId, playerId: ((gr.state as any).defendantId || ''), actionType: 'DEFENSE' } },
-      create: { roundId, playerId: ((gr.state as any).defendantId || ''), actionType: 'DEFENSE', data: { defense } },
-      update: { data: { defense } },
-    });
+    const defendantId = (gr.state as any).defendantId || '';
+    if (defendantId) {
+      await prisma.gameAction.upsert({
+        where: { roundId_playerId_actionType: { roundId, playerId: defendantId, actionType: 'DEFENSE' } },
+        create: { roundId, playerId: defendantId, actionType: 'DEFENSE', data: { defense } },
+        update: { data: { defense } },
+      });
+    }
     await startVerdictPhase(roomCode, roundId, roomId, defense);
+  } else if (gr.phase === 'VERDICT') {
+    await showTribunalResults(roomCode, roundId, roomId);
   }
-  if (gr.phase === 'VERDICT') await showTribunalResults(roomCode, roundId, roomId);
 }

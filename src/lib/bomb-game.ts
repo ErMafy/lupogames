@@ -44,36 +44,46 @@ export async function startBombGame(roomCode: string, rounds = 5) {
 }
 
 export async function handleBombPass(roomCode: string, playerId: string, roundId: string, word: string) {
-  const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
-  if (!gr || gr.phase !== 'PLAYING') throw new Error('wrong phase');
-  const state = gr.state as { bombHolderId: string; words: string[]; category: string };
-  if (state.bombHolderId !== playerId) throw new Error('you dont have the bomb');
+  // Atomic read-check-update inside a transaction to prevent race conditions
+  const result = await prisma.$transaction(async (tx) => {
+    const gr = await tx.gameRound.findUnique({ where: { id: roundId } });
+    if (!gr || gr.phase !== 'PLAYING') throw new Error('wrong phase');
+    const state = gr.state as { bombHolderId: string; words: string[]; category: string };
+    if (state.bombHolderId !== playerId) throw new Error('you dont have the bomb');
 
-  const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });
-  if (!room) throw new Error('room not found');
+    const room = await tx.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });
+    if (!room) throw new Error('room not found');
 
-  const otherPlayers = room.players.filter(p => p.id !== playerId);
-  const nextHolder = (pickRandom(otherPlayers, 1) as { id: string }[])[0];
-  const newWords = [...state.words, word.trim()];
+    const otherPlayers = room.players.filter(p => p.id !== playerId);
+    if (otherPlayers.length === 0) throw new Error('no other players');
+    const nextHolder = (pickRandom(otherPlayers, 1) as { id: string }[])[0];
+    const newWords = [...state.words, word.trim()];
 
-  const gs = room.gameState;
-  const currentEnd = gs?.timerEndsAt?.getTime() || Date.now();
-  const extension = 5 * 1000;
-  const newEnd = new Date(currentEnd + extension);
+    const gs = room.gameState;
+    const currentEnd = gs?.timerEndsAt?.getTime() || Date.now();
+    const extension = 5 * 1000;
+    const newEnd = new Date(currentEnd + extension);
 
-  await prisma.gameRound.update({
-    where: { id: roundId },
-    data: { state: { ...state, bombHolderId: nextHolder.id, words: newWords } },
+    await tx.gameRound.update({
+      where: { id: roundId },
+      data: { state: { ...state, bombHolderId: nextHolder.id, words: newWords } },
+    });
+    await tx.gameState.update({ where: { roomId: room.id }, data: { timerEndsAt: newEnd } });
+
+    return { nextHolderId: nextHolder.id, newEnd, roomCode };
   });
-  await prisma.gameState.update({ where: { roomId: room.id }, data: { timerEndsAt: newEnd } });
 
   await sendToRoom(roomCode, 'bomb-passed', {
-    gameType: 'BOMB', previousHolder: playerId, newBombHolderId: nextHolder.id,
-    word, remainingMs: newEnd.getTime() - Date.now(),
+    gameType: 'BOMB', previousHolder: playerId, newBombHolderId: result.nextHolderId,
+    word, remainingMs: result.newEnd.getTime() - Date.now(),
   });
 }
 
 export async function explodeBomb(roomCode: string, roundId: string, roomId: string) {
+  // Re-check timer to avoid exploding if a pass just extended it
+  const freshGs = await prisma.gameState.findUnique({ where: { roomId } });
+  if (freshGs?.timerEndsAt && freshGs.timerEndsAt.getTime() > Date.now()) return;
+
   const transitioned = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'PLAYING' }, data: { phase: 'EXPLODED', endedAt: new Date() } });
   if (transitioned.count === 0) return;
 
