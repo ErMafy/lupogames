@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 const TITOLARE = {
   nome: '[Inserisci ragione sociale o nome del titolare]',
   indirizzo: '[Inserisci sede legale o domicilio, se applicabile]',
-  email: '[Inserisci email dedicata alla privacy, es. privacy@tuodominio.it]',
+  /** Sostituisci con un indirizzo reale prima degli store (example.com è solo segnaposto valido per mailto). */
+  email: 'privacy@example.com',
 };
 
 export default function PrivacyPage() {
@@ -31,7 +32,7 @@ export default function PrivacyPage() {
         </h1>
         <p className="text-white/50 text-sm mb-8">Ultimo aggiornamento: 10 aprile 2026</p>
 
-        <div className="space-y-6 text-white/85 text-sm leading-relaxed">
+        <div className="space-y-6 text-white/80 text-sm leading-relaxed">
           <section>
             <h2 className="text-white font-bold text-base mb-2">1. Titolare del trattamento</h2>
             <p>
