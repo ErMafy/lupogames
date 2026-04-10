@@ -1,3 +1,7 @@
+/**
+ * Pulizia stanze obsolete. Su Vercel Piano Hobby il cron può girare al massimo 1 volta al giorno
+ * (vedi vercel.json). Le soglie d’età sotto compensano: dati vecchi vengono comunque eliminati.
+ */
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
