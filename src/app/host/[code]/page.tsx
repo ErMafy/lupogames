@@ -1108,10 +1108,10 @@ export default function HostPage() {
                     emoji="🧠"
                     title="La Corsa del Sapere"
                     subtitle="Quiz • 10 domande • 30 sec"
-                    description="Rispondi A/B/C/D dal telefono."
+                    description={`Rispondi A/B/C/D dal telefono.${players.length < 2 ? ' (min. 2 giocatori)' : ''}`}
                     gradient="bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600"
                     onClick={() => startGame('TRIVIA')}
-                    disabled={isLoadingGame}
+                    disabled={isLoadingGame || players.length < 2}
                     onInfo={() => setInfoModal({ title: 'La Corsa del Sapere', emoji: '🧠' })}
                   />
                   <GameCard
@@ -1138,10 +1138,10 @@ export default function HostPage() {
                     emoji="🗑️"
                     title="Swipe Trash"
                     subtitle="5 round • 20 sec"
-                    description="Il termometro dell'indignazione. Vota SÌ o NO."
+                    description={`Il termometro dell'indignazione. Vota SÌ o NO.${players.length < 2 ? ' (min. 2 giocatori)' : ''}`}
                     gradient="bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-600"
                     onClick={() => startGame('SWIPE_TRASH')}
-                    disabled={isLoadingGame}
+                    disabled={isLoadingGame || players.length < 2}
                     onInfo={() => setInfoModal({ title: 'Swipe Trash', emoji: '🗑️' })}
                   />
                   <GameCard
@@ -1168,10 +1168,10 @@ export default function HostPage() {
                     emoji="🌡️"
                     title="Il Termometro del Disagio"
                     subtitle="5 round • 25 sec"
-                    description="Indovina cosa pensa la stanza da 0 a 100."
+                    description={`Indovina cosa pensa la stanza da 0 a 100.${players.length < 2 ? ' (min. 2 giocatori)' : ''}`}
                     gradient="bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600"
                     onClick={() => startGame('THERMOMETER')}
-                    disabled={isLoadingGame}
+                    disabled={isLoadingGame || players.length < 2}
                     onInfo={() => setInfoModal({ title: 'Il Termometro del Disagio', emoji: '🌡️' })}
                   />
                   <GameCard
