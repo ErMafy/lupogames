@@ -56,11 +56,10 @@ export async function handleBombPass(roomCode: string, playerId: string, roundId
   const nextHolder = (pickRandom(otherPlayers, 1) as { id: string }[])[0];
   const newWords = [...state.words, word.trim()];
 
-  // Each pass reduces remaining time by 2-4 seconds
   const gs = room.gameState;
   const currentEnd = gs?.timerEndsAt?.getTime() || Date.now();
-  const reduction = (2 + Math.random() * 2) * 1000;
-  const newEnd = new Date(Math.max(Date.now() + 1000, currentEnd - reduction));
+  const extension = 5 * 1000;
+  const newEnd = new Date(currentEnd + extension);
 
   await prisma.gameRound.update({
     where: { id: roundId },

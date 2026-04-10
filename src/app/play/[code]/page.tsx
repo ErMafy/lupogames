@@ -23,6 +23,34 @@ import { SplitRoomController } from '@/components/game/SplitRoomController';
 import { InterviewController } from '@/components/game/InterviewController';
 import type { PusherMember, AvatarSelectedEvent, TriviaRoundData, PromptRoundData, SecretRoundData } from '@/types';
 
+const GAME_INFO: { emoji: string; title: string; subtitle: string }[] = [
+  { emoji: '🧠', title: 'La Corsa del Sapere', subtitle: 'Quiz • 10 domande • 30 sec' },
+  { emoji: '💬', title: 'Continua la Frase', subtitle: '5 round • 45+45 sec' },
+  { emoji: '🕵️', title: 'Chi è Stato?', subtitle: '5 round • 45+45 sec' },
+  { emoji: '🗑️', title: 'Swipe Trash', subtitle: '5 round • 20 sec' },
+  { emoji: '⚖️', title: 'Il Tribunale del Popolo', subtitle: '5 round • 30+20+20 sec' },
+  { emoji: '💣', title: 'La Bomba', subtitle: '5 round • 30 sec' },
+  { emoji: '🌡️', title: 'Il Termometro del Disagio', subtitle: '5 round • 25 sec' },
+  { emoji: '🐑', title: 'Mente di Gregge', subtitle: '5 round • 25 sec' },
+  { emoji: '🦎', title: 'Il Camaleonte', subtitle: '5 round • 30+8+25 sec' },
+  { emoji: '⚡', title: 'Lo Spacca-Stanza', subtitle: '5 round • 30+25 sec' },
+  { emoji: '📝', title: 'Colloquio Disperato', subtitle: '3 round • 40+30+25 sec' },
+];
+
+const GAME_DETAILS: Record<string, string> = {
+  'La Corsa del Sapere': 'Rispondi a domande di cultura generale prima degli altri! 4 opzioni, 1 risposta giusta, 30 secondi per decidere. Più sei veloce, più punti guadagni!',
+  'Continua la Frase': 'Ti diamo l\'inizio di una frase assurda e tu la completi. Poi tutti votano la risposta più divertente.',
+  'Chi è Stato?': 'Uno scrive un segreto anonimo. Gli altri devono indovinare chi l\'ha scritto. Bluffa o confessa!',
+  'Swipe Trash': 'Il termometro dell\'indignazione! Concetti controversi, vota SÌ o NO. Chi vota con la maggioranza prende punti.',
+  'Il Tribunale del Popolo': 'Una domanda infame, tutti votano in segreto. Chi prende più voti diventa l\'Imputato e deve difendersi!',
+  'La Bomba': 'La patata bollente digitale! Hai la bomba? Scrivi una parola nella categoria e passala. Chi ce l\'ha quando esplode perde!',
+  'Il Termometro del Disagio': 'Un concetto, uno slider da 0 a 100. Più ti avvicini alla media del gruppo, più punti fai.',
+  'Mente di Gregge': 'Una categoria, una risposta. Solo chi scrive la stessa cosa della maggioranza prende punti.',
+  'Il Camaleonte': 'Tutti conoscono la parola segreta tranne il Camaleonte. Scrivi un indizio senza farti scoprire!',
+  'Lo Spacca-Stanza': 'Completa un dilemma e tutti votano. Fai più punti se spacchi il gruppo esattamente a metà!',
+  'Colloquio Disperato': 'Rispondi a domande, poi le parole vengono mischiate. Crea la frase migliore e vota!',
+};
+
 interface Player {
   id: string;
   name: string;
@@ -40,6 +68,7 @@ export default function ControllerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [infoModal, setInfoModal] = useState<{ title: string; emoji: string } | null>(null);
   
   // Avatar già selezionati dagli altri
   const [takenAvatars, setTakenAvatars] = useState<Map<string, { playerId: string; playerName: string }>>(new Map());
@@ -85,6 +114,9 @@ export default function ControllerPage() {
   // New games state
   const [newGameData, setNewGameData] = useState<Record<string, unknown> | null>(null);
   const newGameRoundIdRef = useRef<string | null>(null);
+
+  // Score snapshot at game start (for per-game leaderboard)
+  const scoreSnapshotRef = useRef<Record<string, number>>({});
 
   // Risultati round prompt (visibili a tutti)
   const [promptRoundResults, setPromptRoundResults] = useState<Array<{
@@ -227,6 +259,12 @@ export default function ControllerPage() {
 
   const customGameEventHandler = useCallback((eventName: string, data: unknown) => {
     console.log('🎮 Controller event:', eventName, data);
+
+    if (eventName === 'game-started') {
+      const snap: Record<string, number> = {};
+      for (const p of allPlayers) snap[p.playerId] = p.score;
+      scoreSnapshotRef.current = snap;
+    }
     
     if (eventName === 'avatar-deselected') {
       handleAvatarDeselected(data as { playerId: string; avatar: string });
@@ -388,7 +426,7 @@ export default function ControllerPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [handleAvatarDeselected, handleGameEvent, roomCode, router, resetHasSubmitted, refreshRoomPlayers]);
+  }, [handleAvatarDeselected, handleGameEvent, roomCode, router, resetHasSubmitted, refreshRoomPlayers, allPlayers]);
 
   const gameEventHandlerRef = useRef(customGameEventHandler);
   gameEventHandlerRef.current = customGameEventHandler;
@@ -421,9 +459,11 @@ export default function ControllerPage() {
     };
   }, [roomCode, player?.id]);
 
-  // Periodic sync fallback: if no game detected yet, keep polling until one starts
+  // Periodic sync fallback: polls while no game OR while stuck in waiting with an active game
   useEffect(() => {
-    if (!roomCode || !player?.id || currentGame) return;
+    if (!roomCode || !player?.id) return;
+    const shouldPoll = !currentGame || (currentGame && controllerView === 'waiting');
+    if (!shouldPoll) return;
     const id = setInterval(async () => {
       try {
         const res = await fetch(`/api/game/sync?code=${roomCode}`);
@@ -438,7 +478,7 @@ export default function ControllerPage() {
       }
     }, 2000);
     return () => clearInterval(id);
-  }, [roomCode, player?.id, currentGame]);
+  }, [roomCode, player?.id, currentGame, controllerView]);
 
   const {
     isConnected,
@@ -765,6 +805,23 @@ export default function ControllerPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Game cards visibili ai giocatori */}
+                <div className="mt-4">
+                  <h3 className="text-sm font-black text-white mb-3 flex items-center gap-2">
+                    <span>🎯</span> Giochi Disponibili
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {GAME_INFO.map(g => (
+                      <button key={g.title} type="button" onClick={() => setInfoModal(g)}
+                        className="glass-card p-3 text-center active:scale-95 transition-transform">
+                        <div className="text-2xl mb-1">{g.emoji}</div>
+                        <div className="text-white font-bold text-[11px] leading-tight">{g.title}</div>
+                        <div className="text-white/40 text-[9px] mt-0.5">{g.subtitle}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -790,6 +847,7 @@ export default function ControllerPage() {
               result={triviaResult || undefined}
               players={allPlayers}
               currentPlayerId={player?.id}
+              scoreSnapshot={scoreSnapshotRef.current}
             />
           </div>
         )}
@@ -1013,6 +1071,22 @@ export default function ControllerPage() {
           </div>
         )}
       </main>
+
+      {/* Game Info Modal */}
+      {infoModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-5" onClick={() => setInfoModal(null)}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative w-full max-w-sm rounded-[24px] p-[1px]" onClick={e => e.stopPropagation()}>
+            <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-purple-500/50 via-white/[0.08] to-pink-500/30" />
+            <div className="relative rounded-[23px] bg-[#0c0c20]/97 backdrop-blur-2xl overflow-hidden p-6">
+              <button type="button" onClick={() => setInfoModal(null)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-white/40 text-sm active:scale-90 transition-transform">✕</button>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/25 to-pink-500/15 border border-white/[0.08] flex items-center justify-center text-3xl mb-4">{infoModal.emoji}</div>
+              <h3 className="text-white font-black text-lg mb-3 pr-8">{infoModal.title}</h3>
+              <p className="text-white/55 text-sm leading-relaxed">{GAME_DETAILS[infoModal.title] || ''}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

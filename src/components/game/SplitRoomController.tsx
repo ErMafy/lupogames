@@ -34,8 +34,8 @@ export function SplitRoomController({ phase, dilemmaStart, dilemma, authorId, cu
         <div className="glass-card-premium p-6">
           <div className="text-4xl mb-2">⚡</div>
           <div className="flex justify-center gap-6 mb-3">
-            <div className="text-center"><div className="text-3xl font-black text-green-400">{results.yesCount}</div><div className="text-xs text-green-300/60">SÌ ({results.splitPercent}%)</div></div>
-            <div className="text-center"><div className="text-3xl font-black text-red-400">{results.noCount}</div><div className="text-xs text-red-300/60">NO ({100 - results.splitPercent}%)</div></div>
+            <div className="text-center"><div className="text-3xl font-black text-green-400">{results.yesCount}</div><div className="text-xs text-green-300/60">Opzione 1 ({results.splitPercent}%)</div></div>
+            <div className="text-center"><div className="text-3xl font-black text-red-400">{results.noCount}</div><div className="text-xs text-red-300/60">Opzione 2 ({100 - results.splitPercent}%)</div></div>
           </div>
           <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden mb-3">
             <div className="h-full bg-gradient-to-r from-green-500 to-green-400" style={{ width: `${total > 0 ? (results.yesCount / total) * 100 : 50}%` }} />
@@ -88,12 +88,12 @@ export function SplitRoomController({ phase, dilemmaStart, dilemma, authorId, cu
             <button onClick={async () => { setSubmitting(true); try { await onVote('YES'); } finally { setSubmitting(false); } }}
               disabled={submitting}
               className="flex-1 py-8 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white text-2xl font-black active:scale-95 transition-transform">
-              SÌ 👍
+              1 ☝️
             </button>
             <button onClick={async () => { setSubmitting(true); try { await onVote('NO'); } finally { setSubmitting(false); } }}
               disabled={submitting}
               className="flex-1 py-8 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 text-white text-2xl font-black active:scale-95 transition-transform">
-              NO 👎
+              2 ✌️
             </button>
           </div>
         ) : (

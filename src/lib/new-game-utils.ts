@@ -22,7 +22,7 @@ export async function incrementContentUsage(id: string) {
 export async function endGenericGame(roomCode: string, roomId: string, gameType: string) {
   const players = await prisma.player.findMany({
     where: { roomId },
-    orderBy: { score: 'desc' },
+    orderBy: [{ score: 'desc' }, { name: 'asc' }],
   });
 
   await prisma.$transaction([

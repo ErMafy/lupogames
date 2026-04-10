@@ -20,6 +20,8 @@ interface LiveLeaderboardProps {
   compact?: boolean;
   /** Nessuna card esterna (es. dentro pannello già incorniciato) */
   bare?: boolean;
+  /** Snapshot of scores at game start — when provided, displays per-game deltas */
+  scoreSnapshot?: Record<string, number>;
 }
 
 export function LiveLeaderboard({ 
@@ -28,15 +30,19 @@ export function LiveLeaderboard({
   gameType = 'TRIVIA',
   compact = false,
   bare = false,
+  scoreSnapshot,
 }: LiveLeaderboardProps) {
-  const sortedPlayers = [...players].sort((a, b) => {
-    // Per Trivia, ordina per trackPosition poi per score
+  const displayPlayers = scoreSnapshot
+    ? players.map(p => ({ ...p, score: Math.max(0, p.score - (scoreSnapshot[p.playerId] || 0)) }))
+    : players;
+  const sortedPlayers = [...displayPlayers].sort((a, b) => {
     if (gameType === 'TRIVIA' && a.trackPosition !== undefined && b.trackPosition !== undefined) {
       if (a.trackPosition !== b.trackPosition) {
         return b.trackPosition - a.trackPosition;
       }
     }
-    return b.score - a.score;
+    if (a.score !== b.score) return b.score - a.score;
+    return a.playerName.localeCompare(b.playerName);
   });
 
   const currentPlayerRank = sortedPlayers.findIndex(p => p.playerId === currentPlayerId) + 1;

@@ -115,8 +115,11 @@ function CircularTimer({ timeLeft, maxTime }: { timeLeft: number; maxTime: numbe
 }
 
 // Componente Leaderboard Premium
-function Leaderboard({ players, compact = false }: { players: Player[]; compact?: boolean }) {
-  const sorted = [...players].sort((a, b) => b.score - a.score);
+function Leaderboard({ players, compact = false, scoreSnapshot }: { players: Player[]; compact?: boolean; scoreSnapshot?: Record<string, number> }) {
+  const displayPlayers = scoreSnapshot
+    ? players.map(p => ({ ...p, score: Math.max(0, p.score - (scoreSnapshot[p.id] || 0)) }))
+    : players;
+  const sorted = [...displayPlayers].sort((a, b) => b.score - a.score);
   
   if (compact) {
     return (
@@ -339,6 +342,9 @@ export default function HostPage() {
   // Game info modal
   const [infoModal, setInfoModal] = useState<{ title: string; emoji: string } | null>(null);
 
+  // Score snapshot at game start (to compute per-game deltas)
+  const scoreSnapshotRef = useRef<Record<string, number>>({});
+
   // Host trivia state
   const hostTriviaRoundIdRef = useRef<string | null>(null);
   const [hostTriviaResult, setHostTriviaResult] = useState<{
@@ -444,6 +450,9 @@ export default function HostPage() {
       setGamePhase('playing');
       setCurrentGameType(eventData.gameType as GameType);
       if (eventData.totalRounds) setTotalRoundsNum(eventData.totalRounds as number);
+      const snap: Record<string, number> = {};
+      for (const p of players) snap[p.id] = p.score;
+      scoreSnapshotRef.current = snap;
     }
     
     if (eventName === 'round-started') {
@@ -676,7 +685,7 @@ export default function HostPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [roomCode, handleGameEvent, resetHasSubmitted]);
+  }, [roomCode, handleGameEvent, resetHasSubmitted, players]);
 
   const handleHostPromptResponse = useCallback(
     async (response: string) => {
@@ -1089,7 +1098,7 @@ export default function HostPage() {
               </div>
             </div>
 
-            {players.length >= 2 && (
+            {(
               <div className="glass-card p-4 sm:p-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 <h2 className="text-lg sm:text-2xl font-black text-white mb-4 sm:mb-8 text-center flex items-center justify-center gap-2">
                   <span>🎯</span> Scegli il Gioco
@@ -1219,10 +1228,9 @@ export default function HostPage() {
             )}
 
             {players.length < 2 && (
-              <div className="text-center py-8">
-                <div className="text-4xl mb-3 animate-bounce">⏳</div>
-                <p className="text-purple-200 text-sm sm:text-xl font-medium">
-                  Aspettando almeno <span className="text-gradient font-bold">2 giocatori</span>...
+              <div className="text-center py-4">
+                <p className="text-amber-300 text-xs sm:text-sm font-medium bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2 inline-block">
+                  ⏳ Aspettando almeno <span className="font-bold">2 giocatori</span> per iniziare...
                 </p>
               </div>
             )}
@@ -1259,6 +1267,7 @@ export default function HostPage() {
                     trackPosition: p.trackPosition,
                   }))}
                   currentPlayerId={hostPlayer.id}
+                  scoreSnapshot={scoreSnapshotRef.current}
                 />
               </div>
             )}
@@ -1267,7 +1276,7 @@ export default function HostPage() {
               <h3 className="text-sm sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <span>🏆</span> Classifica
               </h3>
-              <Leaderboard players={players} compact />
+              <Leaderboard players={players} compact scoreSnapshot={scoreSnapshotRef.current} />
             </div>
           </div>
         )}

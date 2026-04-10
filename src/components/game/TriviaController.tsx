@@ -25,6 +25,7 @@ interface TriviaControllerProps {
     wrongAnswers?: number;
   }>;
   currentPlayerId?: string;
+  scoreSnapshot?: Record<string, number>;
 }
 
 const COLORS: Record<string, { bg: string; active: string; letter: string }> = {
@@ -42,6 +43,7 @@ export function TriviaController({
   result,
   players = [],
   currentPlayerId,
+  scoreSnapshot,
 }: TriviaControllerProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -117,7 +119,7 @@ export function TriviaController({
           {players.length === 0 ? (
             <p className="text-xs text-purple-200 text-center py-2">Caricamento…</p>
           ) : (
-            <LiveLeaderboard bare players={players} currentPlayerId={currentPlayerId} gameType="TRIVIA" />
+            <LiveLeaderboard bare players={players} currentPlayerId={currentPlayerId} gameType="TRIVIA" scoreSnapshot={scoreSnapshot} />
           )}
         </div>
       )}
