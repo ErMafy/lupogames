@@ -3,7 +3,7 @@ import { startChameleonGame } from '@/lib/chameleon';
 
 export async function POST(request: NextRequest) {
   try {
-    const { roomCode, rounds = 5 } = await request.json();
+    const { roomCode, rounds = 3 } = await request.json();
     const result = await startChameleonGame(roomCode, rounds);
     return NextResponse.json({ success: true, data: { gameType: 'CHAMELEON', ...result } });
   } catch (error: any) {

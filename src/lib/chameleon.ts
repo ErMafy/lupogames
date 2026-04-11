@@ -9,7 +9,7 @@ const REVEAL_SEC = 8;
 const VOTE_SEC = 25;
 const RESULTS_DWELL_MS = 4000;
 
-export async function startChameleonGame(roomCode: string, rounds = 5) {
+export async function startChameleonGame(roomCode: string, rounds = 3) {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });
   if (!room) throw new Error('Room not found');
   if (room.players.length < 4) throw new Error('min 4');
