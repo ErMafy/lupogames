@@ -164,6 +164,7 @@ export function usePresenceChannel({
       'prompt-results',
       'secret-reveal',
       'bomb-passed',
+      'chameleon-hint',
     ];
 
     gameEvents.forEach(eventName => {

@@ -377,6 +377,14 @@ export default function ControllerPage() {
       resetHasSubmitted();
     }
 
+    if (eventName === 'chameleon-hint') {
+      const ch = data as { playerId: string; playerName: string; hint: string };
+      setNewGameData(prev => ({
+        ...prev,
+        liveHints: [...((prev?.liveHints as Array<{ playerId: string; playerName: string; hint: string }>) || []), ch],
+      }));
+    }
+
     if (eventName === 'secret-reveal') {
       const sr = data as { actualPlayer?: { name: string }; secretContent?: string };
       if (sr.actualPlayer) setSecretReveal({ ownerName: sr.actualPlayer.name, ownerAvatar: null });
@@ -980,8 +988,10 @@ export default function ControllerPage() {
               <ChameleonController phase={(phase as any) || 'HINTING'}
                 secretWord={player.id === (newGameData.chameleonId as string) ? null : (newGameData.secretWord as string)}
                 chameleonId={(newGameData.chameleonId as string) || ''} currentPlayerId={player.id}
-                players={(newGameData.players as any) || []}
+                players={allPlayers.map(p => ({ id: p.playerId, name: p.playerName, avatar: p.avatar || null }))}
                 roundId={newGameRoundIdRef.current || ''} hints={(newGameData.hints as any)}
+                liveHints={(newGameData.liveHints as any) || []}
+                retry={!!(newGameData.retry)}
                 onHint={async (h) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'hint', hint: h }); }}
                 onVote={async (id) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'vote', suspectedId: id }); }}
                 hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />

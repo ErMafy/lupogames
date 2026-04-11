@@ -52,7 +52,15 @@ export async function handleChameleonHint(roomCode: string, playerId: string, ro
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true } });
   if (!room) throw new Error('room not found');
 
-  const count = await upsertActionAndCount(roundId, playerId, 'HINT', { hint: hint.trim().split(' ')[0] });
+  const trimmedHint = hint.trim().split(' ')[0];
+  const count = await upsertActionAndCount(roundId, playerId, 'HINT', { hint: trimmedHint });
+  const player = room.players.find(p => p.id === playerId);
+
+  // Broadcast each hint in real-time so the chameleon (and everyone) can see them
+  await sendToRoom(roomCode, 'chameleon-hint', {
+    playerId, playerName: player?.name || '???', hint: trimmedHint, totalHints: count, totalPlayers: room.players.length,
+  });
+
   if (count >= room.players.length) await startChameleonReveal(roomCode, roundId, room.id);
 }
 
@@ -82,6 +90,7 @@ export async function handleChameleonVote(roomCode: string, playerId: string, ro
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true } });
   if (!room) throw new Error('room not found');
 
+  // suspectedId can be 'SKIP' meaning "non lo so"
   const count = await upsertActionAndCount(roundId, playerId, 'VOTE', { suspectedId });
   if (count >= room.players.length) await showChameleonResults(roomCode, roundId, room.id);
 }
@@ -91,12 +100,35 @@ export async function showChameleonResults(roomCode: string, roundId: string, ro
   if (transitioned.count === 0) return;
 
   const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
-  const state = gr?.state as { chameleonId: string; secretWord: string };
+  const state = gr?.state as { chameleonId: string; secretWord: string; retried?: boolean };
   const votes = await getAllActions(roundId, 'VOTE');
 
   const voteCounts: Record<string, number> = {};
   for (const v of votes) { const s = (v.data as { suspectedId: string }).suspectedId; voteCounts[s] = (voteCounts[s] || 0) + 1; }
-  const topSuspect = Object.entries(voteCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  // Check if majority voted SKIP ("Non lo so") and hasn't retried yet
+  const skipCount = voteCounts['SKIP'] || 0;
+  const totalVotes = votes.length;
+  const majoritySkipped = skipCount > totalVotes / 2 && !state.retried;
+
+  if (majoritySkipped) {
+    // Retry: go back to HINTING with same word, same chameleon, mark as retried
+    await prisma.gameRound.update({
+      where: { id: roundId },
+      data: { phase: 'HINTING', endedAt: null, state: { ...state, retried: true } },
+    });
+    // Clear old actions so players can hint and vote again
+    await prisma.gameAction.deleteMany({ where: { roundId } });
+    const gsUpdated = await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: new Date(Date.now() + HINT_SEC * 1000) } });
+
+    await sendToRoom(roomCode, 'round-started', {
+      roundNumber: gr?.roundNumber || 1, totalRounds: gsUpdated.totalRounds, gameType: 'CHAMELEON', phase: 'HINTING',
+      data: { secretWord: state.secretWord, roundId, chameleonId: state.chameleonId, timeLimit: HINT_SEC, retry: true },
+    });
+    return;
+  }
+
+  const topSuspect = Object.entries(voteCounts).filter(([k]) => k !== 'SKIP').sort((a, b) => b[1] - a[1])[0]?.[0];
   const chameleonCaught = topSuspect === state.chameleonId;
 
   if (chameleonCaught) {
@@ -161,9 +193,16 @@ export async function advanceChameleon(roomCode: string): Promise<boolean> {
 }
 
 export async function forceChameleonTimeout(roomCode: string, roundId: string, roomId: string) {
-  const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
+  const [gr, gs] = await Promise.all([
+    prisma.gameRound.findUnique({ where: { id: roundId } }),
+    prisma.gameState.findUnique({ where: { roomId } }),
+  ]);
   if (!gr) return;
+  // Only force timeout if the current phase timer has actually expired
+  const timerEnd = gs?.timerEndsAt?.getTime() || 0;
+  if (timerEnd > Date.now()) return;
+
   if (gr.phase === 'HINTING') await startChameleonReveal(roomCode, roundId, roomId);
-  if (gr.phase === 'REVEAL') await startChameleonVoting(roomCode, roundId, roomId);
-  if (gr.phase === 'VOTING') await showChameleonResults(roomCode, roundId, roomId);
+  else if (gr.phase === 'REVEAL') await startChameleonVoting(roomCode, roundId, roomId);
+  else if (gr.phase === 'VOTING') await showChameleonResults(roomCode, roundId, roomId);
 }

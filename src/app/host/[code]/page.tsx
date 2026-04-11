@@ -608,6 +608,14 @@ export default function HostPage() {
       resetHasSubmitted();
     }
     
+    if (eventName === 'chameleon-hint') {
+      const ch = eventData as { playerId: string; playerName: string; hint: string };
+      setNewGameData(prev => ({
+        ...prev,
+        liveHints: [...((prev?.liveHints as Array<{ playerId: string; playerName: string; hint: string }>) || []), ch],
+      }));
+    }
+    
     if (eventName === 'show-results' && eventData.correctAnswer) {
       setShowCorrectAnswer(eventData.correctAnswer as string);
       setHostTriviaResult((prev) =>
@@ -1512,6 +1520,8 @@ export default function HostPage() {
                 chameleonId={(newGameData.chameleonId as string) || ''} currentPlayerId={hostPlayer.id}
                 players={players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar }))}
                 roundId={newGameRoundIdRef.current || ''} hints={(newGameData.hints as any)}
+                liveHints={(newGameData.liveHints as any) || []}
+                retry={!!(newGameData.retry)}
                 onHint={async (h) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'hint', hint: h }); }}
                 onVote={async (id) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'vote', suspectedId: id }); }}
                 hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
