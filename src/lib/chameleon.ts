@@ -170,6 +170,11 @@ export async function advanceChameleon(roomCode: string): Promise<boolean> {
 
   if (st.advanceAt && new Date(st.advanceAt).getTime() > Date.now()) return false;
 
+  if (st.currentRoundId) {
+    const curRound = await prisma.gameRound.findUnique({ where: { id: st.currentRoundId } });
+    if (curRound && curRound.phase !== 'RESULTS') return false;
+  }
+
   const nextIdx = st.currentIndex ?? 0;
   const contentIds = st.contentIds || [];
   if (nextIdx >= contentIds.length) { await endGenericGame(roomCode, room.id, 'CHAMELEON'); return true; }

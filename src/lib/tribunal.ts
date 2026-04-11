@@ -62,7 +62,15 @@ async function startDefensePhase(roomCode: string, roundId: string, roomId: stri
     const accused = (a.data as { accusedPlayerId: string }).accusedPlayerId;
     voteCounts[accused] = (voteCounts[accused] || 0) + 1;
   }
-  const defendantId = Object.entries(voteCounts).sort((a, b) => b[1] - a[1])[0][0];
+  const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+  if (sorted.length === 0) {
+    // No accusations — pick a random player as defendant
+    const room = await prisma.room.findUnique({ where: { id: roomId }, include: { players: true } });
+    if (!room || room.players.length === 0) return;
+    const randomIdx = Math.floor(Math.random() * room.players.length);
+    sorted.push([room.players[randomIdx].id, 0]);
+  }
+  const defendantId = sorted[0][0];
   const defendant = await prisma.player.findUnique({ where: { id: defendantId } });
 
   const currentGr = await prisma.gameRound.findUnique({ where: { id: roundId } });
@@ -154,8 +162,13 @@ export async function advanceTribunal(roomCode: string): Promise<boolean> {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { gameState: true } });
   if (!room?.gameState || room.currentGame !== 'TRIBUNAL') return false;
   const gs = room.gameState;
-  const st = (gs.state || {}) as { contentIds?: string[]; currentIndex?: number; advanceAt?: string };
+  const st = (gs.state || {}) as { contentIds?: string[]; currentIndex?: number; advanceAt?: string; currentRoundId?: string };
   if (st.advanceAt && new Date(st.advanceAt).getTime() > Date.now()) return false;
+
+  if (st.currentRoundId) {
+    const curRound = await prisma.gameRound.findUnique({ where: { id: st.currentRoundId } });
+    if (curRound && curRound.phase !== 'RESULTS') return false;
+  }
 
   const nextIdx = st.currentIndex ?? 0;
   const contentIds = st.contentIds || [];

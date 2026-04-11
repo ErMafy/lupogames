@@ -121,6 +121,8 @@ export async function advanceBomb(roomCode: string): Promise<boolean> {
   if (st.currentRoundId) {
     const gr = await prisma.gameRound.findUnique({ where: { id: st.currentRoundId } });
     if (gr?.phase === 'PLAYING') { await explodeBomb(roomCode, st.currentRoundId, room.id); return true; }
+    // Only advance past a round that has fully exploded
+    if (gr && gr.phase !== 'EXPLODED') return false;
   }
 
   if (st.advanceAt && new Date(st.advanceAt).getTime() > Date.now()) return false;

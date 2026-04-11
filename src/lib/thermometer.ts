@@ -78,8 +78,13 @@ export async function advanceThermometer(roomCode: string): Promise<boolean> {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { gameState: true } });
   if (!room?.gameState || room.currentGame !== 'THERMOMETER') return false;
   const gs = room.gameState;
-  const st = (gs.state || {}) as { contentIds?: string[]; currentIndex?: number; advanceAt?: string };
+  const st = (gs.state || {}) as { contentIds?: string[]; currentIndex?: number; advanceAt?: string; currentRoundId?: string };
   if (st.advanceAt && new Date(st.advanceAt).getTime() > Date.now()) return false;
+
+  if (st.currentRoundId) {
+    const curRound = await prisma.gameRound.findUnique({ where: { id: st.currentRoundId } });
+    if (curRound && curRound.phase !== 'RESULTS') return false;
+  }
 
   const nextIdx = st.currentIndex ?? 0;
   const contentIds = st.contentIds || [];
@@ -107,5 +112,7 @@ export async function advanceThermometer(roomCode: string): Promise<boolean> {
 }
 
 export async function forceThermometerTimeout(roomCode: string, roundId: string, roomId: string) {
+  const gs = await prisma.gameState.findUnique({ where: { roomId } });
+  if (gs?.timerEndsAt && gs.timerEndsAt.getTime() > Date.now()) return;
   await showThermometerResults(roomCode, roundId, roomId);
 }

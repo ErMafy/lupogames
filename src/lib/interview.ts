@@ -60,8 +60,10 @@ async function extractWordPool(roundId: string): Promise<string[]> {
   const actions = await getAllActions(roundId, 'COLLECT');
   const allWords: string[] = [];
   for (const a of actions) {
-    const answers = (a.data as { answers: string[] }).answers;
+    const answers = (a.data as { answers?: string[] }).answers;
+    if (!Array.isArray(answers)) continue;
     for (const answer of answers) {
+      if (typeof answer !== 'string') continue;
       const words = answer.replace(/[^\w\sàèéìòùÀÈÉÌÒÙ]/g, '').split(/\s+/).filter(w => w.length > 1);
       allWords.push(...words);
     }

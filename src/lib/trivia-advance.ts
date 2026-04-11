@@ -67,7 +67,20 @@ export async function advanceTriviaRound(
     const question = await prisma.triviaQuestion.findUnique({
       where: { id: gameState.questionIds[nextIndex] },
     });
-    if (!question) return { gameEnded: true };
+    if (!question) {
+      // Missing question — clean up and end the game
+      const sorted = [...room.players].sort((a, b) => b.score - a.score);
+      await prisma.$transaction([
+        prisma.room.update({ where: { id: room.id }, data: { status: 'LOBBY', currentGame: null, currentRound: 0 } }),
+        prisma.gameState.update({ where: { roomId: room.id }, data: { state: {}, currentRound: 0, timerEndsAt: null } }),
+      ]);
+      await sendToRoom(roomCode, 'game-ended', {
+        finalScores: sorted.map((p) => ({
+          playerId: p.id, playerName: p.name, avatar: p.avatar, score: p.score, trackPosition: p.trackPosition,
+        })),
+      });
+      return { gameEnded: true };
+    }
 
     const triviaRound = await prisma.triviaRound.create({
       data: { roomId: room.id, questionId: question.id, roundNumber: nextIndex + 1 },
