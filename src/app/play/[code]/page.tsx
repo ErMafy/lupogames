@@ -340,7 +340,7 @@ export default function ControllerPage() {
         const ev = data as Record<string, unknown>;
         const nested = (ev.data as Record<string, unknown>) || {};
         const topChameleon = typeof ev.chameleonId === 'string' ? ev.chameleonId : '';
-        const rd = {
+        const rd: Record<string, unknown> = {
           ...nested,
           ...(topChameleon ? { chameleonId: topChameleon } : {}),
         };
