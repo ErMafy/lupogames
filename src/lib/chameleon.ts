@@ -5,9 +5,27 @@ import {
 } from '@/lib/new-game-utils';
 
 const HINT_SEC = 30;
-const REVEAL_SEC = 8;
 const VOTE_SEC = 25;
 const RESULTS_DWELL_MS = 4000;
+
+export type ChameleonHintRow = { playerId: string; playerName: string; hint: string };
+
+async function buildHintRows(roomId: string, roundId: string): Promise<ChameleonHintRow[]> {
+  const room = await prisma.room.findUnique({ where: { id: roomId }, include: { players: true } });
+  if (!room) return [];
+  const actions = await getAllActions(roundId, 'HINT');
+  const byPlayer = new Map(actions.map(a => [a.playerId, a]));
+  return room.players.map(p => {
+    const a = byPlayer.get(p.id);
+    const hint = a ? String((a.data as { hint: string }).hint || '').trim() || '(nessun indizio)' : '(nessun indizio)';
+    return { playerId: p.id, playerName: p.name, hint };
+  });
+}
+
+/** Sync API: elenco indizi per fase VOTING/RESULTS */
+export async function buildChameleonHintRowsForSync(roomId: string, roundId: string) {
+  return buildHintRows(roomId, roundId);
+}
 
 export async function startChameleonGame(roomCode: string, rounds = 3) {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });
@@ -61,27 +79,19 @@ export async function handleChameleonHint(roomCode: string, playerId: string, ro
     playerId, playerName: player?.name || '???', hint: trimmedHint, totalHints: count, totalPlayers: room.players.length,
   });
 
-  if (count >= room.players.length) await startChameleonReveal(roomCode, roundId, room.id);
+  if (count >= room.players.length) await startChameleonVoting(roomCode, roundId, room.id);
 }
 
-async function startChameleonReveal(roomCode: string, roundId: string, roomId: string) {
-  const transitioned = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'HINTING' }, data: { phase: 'REVEAL' } });
-  if (transitioned.count === 0) return;
-
-  const hints = await getAllActions(roundId, 'HINT');
-  await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: new Date(Date.now() + REVEAL_SEC * 1000) } });
-
-  await sendToRoom(roomCode, 'phase-changed', {
-    gameType: 'CHAMELEON', phase: 'REVEAL',
-    data: { hints: hints.map(h => ({ playerId: h.playerId, playerName: h.player.name, hint: (h.data as { hint: string }).hint })), timeLimit: REVEAL_SEC },
-  });
-}
-
+/** HINTING → VOTING (no REVEAL pause): everyone sees all hints in the voting screen. */
 async function startChameleonVoting(roomCode: string, roundId: string, roomId: string) {
-  const transitioned = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'REVEAL' }, data: { phase: 'VOTING' } });
+  const hints = await buildHintRows(roomId, roundId);
+  const transitioned = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'HINTING' }, data: { phase: 'VOTING' } });
   if (transitioned.count === 0) return;
   await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: new Date(Date.now() + VOTE_SEC * 1000) } });
-  await sendToRoom(roomCode, 'phase-changed', { gameType: 'CHAMELEON', phase: 'VOTING', data: { timeLimit: VOTE_SEC } });
+  await sendToRoom(roomCode, 'phase-changed', {
+    gameType: 'CHAMELEON', phase: 'VOTING',
+    data: { roundId, hints, timeLimit: VOTE_SEC },
+  });
 }
 
 export async function handleChameleonVote(roomCode: string, playerId: string, roundId: string, suspectedId: string) {
@@ -145,9 +155,10 @@ export async function showChameleonResults(roomCode: string, roundId: string, ro
   await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: until, state: { ...st, advanceAt: until.toISOString() } } });
 
   const chameleon = await prisma.player.findUnique({ where: { id: state.chameleonId } });
+  const hints = await buildHintRows(roomId, roundId);
   await sendToRoom(roomCode, 'round-results', {
     gameType: 'CHAMELEON',
-    results: { chameleonId: state.chameleonId, chameleonName: chameleon?.name, secretWord: state.secretWord, chameleonCaught, voteCounts },
+    results: { chameleonId: state.chameleonId, chameleonName: chameleon?.name, secretWord: state.secretWord, chameleonCaught, voteCounts, hints },
   });
 }
 
@@ -156,12 +167,6 @@ export async function advanceChameleon(roomCode: string): Promise<boolean> {
   if (!room?.gameState || room.currentGame !== 'CHAMELEON') return false;
   const gs = room.gameState;
   const st = (gs.state || {}) as { contentIds?: string[]; currentIndex?: number; advanceAt?: string; currentRoundId?: string };
-
-  // Handle REVEAL → VOTING transition
-  if (st.currentRoundId) {
-    const gr = await prisma.gameRound.findUnique({ where: { id: st.currentRoundId } });
-    if (gr?.phase === 'REVEAL') { await startChameleonVoting(roomCode, st.currentRoundId, room.id); return true; }
-  }
 
   if (st.advanceAt && new Date(st.advanceAt).getTime() > Date.now()) return false;
 
@@ -202,7 +207,17 @@ export async function forceChameleonTimeout(roomCode: string, roundId: string, r
   const timerEnd = gs?.timerEndsAt?.getTime() || 0;
   if (timerEnd > Date.now()) return;
 
-  if (gr.phase === 'HINTING') await startChameleonReveal(roomCode, roundId, roomId);
-  else if (gr.phase === 'REVEAL') await startChameleonVoting(roomCode, roundId, roomId);
-  else if (gr.phase === 'VOTING') await showChameleonResults(roomCode, roundId, roomId);
+  if (gr.phase === 'HINTING') await startChameleonVoting(roomCode, roundId, roomId);
+  else if (gr.phase === 'REVEAL') {
+    // Vecchie partite ancora in REVEAL: vai direttamente al voto
+    const hints = await buildHintRows(roomId, roundId);
+    const t = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'REVEAL' }, data: { phase: 'VOTING' } });
+    if (t.count > 0) {
+      await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: new Date(Date.now() + VOTE_SEC * 1000) } });
+      await sendToRoom(roomCode, 'phase-changed', {
+        gameType: 'CHAMELEON', phase: 'VOTING',
+        data: { roundId, hints, timeLimit: VOTE_SEC },
+      });
+    }
+  } else if (gr.phase === 'VOTING') await showChameleonResults(roomCode, roundId, roomId);
 }

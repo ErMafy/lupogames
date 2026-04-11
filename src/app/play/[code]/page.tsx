@@ -292,7 +292,17 @@ export default function ControllerPage() {
       }
       const newGameTypes2 = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
       if (newGameTypes2.includes(phaseData.gameType)) {
-        setNewGameData(prev => ({ ...prev, ...((phaseData as any).data || {}), phase: phaseData.phase, gameType: phaseData.gameType }));
+        const payload = (phaseData as { data?: { roundId?: string } }).data || {};
+        if (typeof payload.roundId === 'string' && payload.roundId) {
+          newGameRoundIdRef.current = payload.roundId;
+        }
+        setNewGameData(prev => ({
+          ...prev,
+          ...payload,
+          phase: phaseData.phase,
+          gameType: phaseData.gameType,
+          ...(phaseData.gameType === 'CHAMELEON' && phaseData.phase === 'VOTING' ? { liveHints: [] } : {}),
+        }));
         resetHasSubmitted();
       }
     }
@@ -379,10 +389,13 @@ export default function ControllerPage() {
 
     if (eventName === 'chameleon-hint') {
       const ch = data as { playerId: string; playerName: string; hint: string };
-      setNewGameData(prev => ({
-        ...prev,
-        liveHints: [...((prev?.liveHints as Array<{ playerId: string; playerName: string; hint: string }>) || []), ch],
-      }));
+      setNewGameData(prev => {
+        const list = [...((prev?.liveHints as Array<{ playerId: string; playerName: string; hint: string }>) || [])];
+        const idx = list.findIndex(h => h.playerId === ch.playerId);
+        if (idx >= 0) list[idx] = ch;
+        else list.push(ch);
+        return { ...prev, liveHints: list };
+      });
     }
 
     if (eventName === 'secret-reveal') {

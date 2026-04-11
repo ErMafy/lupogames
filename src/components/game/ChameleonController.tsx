@@ -16,7 +16,14 @@ interface Props {
   onVote: (suspectedId: string) => Promise<void>;
   hasSubmitted: boolean;
   timeRemaining: number;
-  results?: { chameleonId: string; chameleonName: string; secretWord: string; chameleonCaught: boolean; voteCounts: Record<string, number> };
+  results?: {
+    chameleonId: string;
+    chameleonName: string;
+    secretWord: string;
+    chameleonCaught: boolean;
+    voteCounts: Record<string, number>;
+    hints?: Hint[];
+  };
   retry?: boolean;
 }
 
@@ -34,29 +41,49 @@ export function ChameleonController({ phase, secretWord, chameleonId, currentPla
 
   if (results) {
     const realVotes = Object.entries(results.voteCounts).filter(([k]) => k !== 'SKIP');
+    const hintRows = results.hints || [];
     return (
       <div className="max-w-lg mx-auto w-full px-2 text-center animate-bounce-in">
         <div className="glass-card-premium p-6">
-          <div className="text-5xl mb-3">{results.chameleonCaught ? '🎯' : '🦎'}</div>
+          <div className="text-5xl mb-3">{results.chameleonCaught ? '\u{1F3AF}' : '\u{1F98E}'}</div>
           <h3 className="text-xl font-black text-white mb-2">
             {results.chameleonCaught ? 'Camaleonte beccato!' : 'Il Camaleonte è sfuggito!'}
           </h3>
           <p className="text-purple-200/60 text-sm mb-2">Il camaleonte era: <span className="text-white font-bold">{results.chameleonName}</span></p>
           <p className="text-purple-200/60 text-sm mb-3">La parola era: <span className="text-gradient font-bold">{results.secretWord}</span></p>
+          {hintRows.length > 0 && (
+            <div className="glass-card p-3 mb-3 text-left">
+              <p className="text-xs text-white/40 mb-2 text-center">Indizi del round</p>
+              <div className="max-h-40 overflow-y-auto space-y-1.5">
+                {hintRows.map(h => (
+                  <div key={h.playerId} className="flex justify-between gap-2 text-sm">
+                    <span className="text-white/50 truncate">{h.playerName}</span>
+                    <span className="text-white font-bold shrink-0">{h.hint}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {realVotes.length > 0 && (
             <div className="glass-card p-3 mt-2">
-              <p className="text-xs text-white/40 mb-2">Voti:</p>
+              <p className="text-xs text-white/40 mb-2">Voti (sospetti):</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {realVotes.map(([id, count]) => {
-                  const p = (players || []).find(pl => pl.id === id);
+                  const name =
+                    (players || []).find(pl => pl.id === id)?.name
+                    ?? hintRows.find(h => h.playerId === id)?.playerName
+                    ?? '???';
                   return (
                     <div key={id} className={`px-2 py-1 rounded-lg text-xs font-bold ${id === results.chameleonId ? 'bg-red-500/30 text-red-300' : 'bg-white/10 text-white/70'}`}>
-                      {p?.name || '???'}: {count}
+                      {name}: {count}
                     </div>
                   );
                 })}
               </div>
             </div>
+          )}
+          {(results.voteCounts['SKIP'] || 0) > 0 && (
+            <p className="text-white/40 text-xs mt-2">Non lo so: {results.voteCounts['SKIP']}</p>
           )}
         </div>
       </div>
@@ -68,7 +95,7 @@ export function ChameleonController({ phase, secretWord, chameleonId, currentPla
     return (
       <div className="max-w-lg mx-auto w-full px-2 text-center">
         <div className="glass-card-premium p-5 mb-4">
-          <div className="text-3xl mb-2">{isChameleon ? '🦎' : '🔍'}</div>
+          <div className="text-3xl mb-2">{isChameleon ? '\u{1F98E}' : '\u{1F50D}'}</div>
           {isChameleon ? (
             <>
               <h3 className="text-lg font-black text-red-400 mb-1">Sei il Camaleonte!</h3>
@@ -81,15 +108,14 @@ export function ChameleonController({ phase, secretWord, chameleonId, currentPla
               <p className="text-white/40 text-xs mt-1">Scrivi un indizio senza essere troppo ovvio</p>
             </>
           )}
-          {retry && <p className="text-amber-400 text-xs mt-2 font-bold">🔄 Secondo turno — stessa parola!</p>}
+          {retry && <p className="text-amber-400 text-xs mt-2 font-bold">Secondo turno — stessa parola!</p>}
           <div className="mt-2">{timerBadge}</div>
         </div>
 
-        {/* Only the chameleon sees live hints from others */}
         {isChameleon && othersHints.length > 0 && (
           <div className="glass-card p-3 mb-3 border border-red-500/20">
-            <p className="text-xs text-red-300/60 mb-2">🕵️ Indizi degli altri (solo tu li vedi):</p>
-            <div className="grid grid-cols-2 gap-2">
+            <p className="text-xs text-red-300/60 mb-2">Indizi degli altri (solo tu li vedi):</p>
+            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
               {othersHints.map(h => (
                 <div key={h.playerId} className="glass-card p-2 animate-bounce-in">
                   <div className="text-xs text-white/40">{h.playerName}</div>
@@ -118,50 +144,47 @@ export function ChameleonController({ phase, secretWord, chameleonId, currentPla
     );
   }
 
-  if (phase === 'REVEAL') {
-    return (
-      <div className="max-w-lg mx-auto w-full px-2 text-center">
-        <div className="glass-card-premium p-5 mb-4">
-          <h3 className="text-lg font-black text-white mb-3">Indizi di tutti:</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {(hints || []).map(h => (
-              <div key={h.playerId} className="glass-card p-2">
-                <div className="text-xs text-white/40">{h.playerName}</div>
-                <div className="text-white font-bold">{h.hint}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3">{timerBadge}</div>
-        </div>
-        <p className="text-white/60 text-sm">Analizza gli indizi... chi è il Camaleonte?</p>
-      </div>
-    );
-  }
-
   if (phase === 'VOTING') {
+    const hintList = hints || [];
+    const voteTargets = (players || []).filter(p => p.id !== currentPlayerId);
     return (
       <div className="max-w-lg mx-auto w-full px-2">
         <div className="glass-card-premium p-4 mb-4 text-center">
           <h3 className="text-lg font-black text-white mb-1">Chi è il Camaleonte?</h3>
-          <p className="text-white/40 text-xs mb-2">Oppure vota &quot;Non lo so&quot; per un altro turno</p>
+          <p className="text-white/40 text-xs mb-2">Tutti gli indizi — poi vota un giocatore o &quot;Non lo so&quot;</p>
           <div>{timerBadge}</div>
         </div>
+
+        {hintList.length > 0 && (
+          <div className="glass-card p-3 mb-3">
+            <p className="text-xs text-white/40 mb-2">Indizi</p>
+            <div className="max-h-44 overflow-y-auto space-y-2">
+              {hintList.map(h => (
+                <div key={h.playerId} className="flex items-baseline justify-between gap-2 border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                  <span className="text-white/60 text-sm font-medium shrink-0">{h.playerName}</span>
+                  <span className="text-white font-bold text-right break-words">{h.hint}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {!hasSubmitted ? (
           <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              {(players || []).filter(p => p.id !== currentPlayerId).map(p => (
-                <button key={p.id} onClick={async () => { setSubmitting(true); try { await onVote(p.id); } finally { setSubmitting(false); } }}
+            <div className="flex flex-col gap-2">
+              {voteTargets.map(p => (
+                <button key={p.id} type="button" onClick={async () => { setSubmitting(true); try { await onVote(p.id); } finally { setSubmitting(false); } }}
                   disabled={submitting}
-                  className="glass-card p-3 text-center hover:bg-white/20 active:scale-95 transition-all">
-                  <div className="text-2xl mb-1">{p.avatar || '👤'}</div>
-                  <div className="text-white font-bold text-sm truncate">{p.name}</div>
+                  className="glass-card p-3 flex items-center gap-3 text-left hover:bg-white/20 active:scale-[0.99] transition-all">
+                  <span className="text-2xl shrink-0">{p.avatar || '\u{1F464}'}</span>
+                  <span className="text-white font-bold truncate">{p.name}</span>
                 </button>
               ))}
             </div>
-            <button onClick={async () => { setSubmitting(true); try { await onVote('SKIP'); } finally { setSubmitting(false); } }}
+            <button type="button" onClick={async () => { setSubmitting(true); try { await onVote('SKIP'); } finally { setSubmitting(false); } }}
               disabled={submitting}
               className="w-full glass-card p-3 text-center hover:bg-amber-500/20 active:scale-95 transition-all border border-amber-500/30">
-              <span className="text-amber-300 font-bold">🤷 Non lo so</span>
+              <span className="text-amber-300 font-bold">Non lo so</span>
               <span className="text-white/40 text-xs block">Ripeti turno con stessa parola</span>
             </button>
           </div>

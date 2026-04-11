@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { buildChameleonHintRowsForSync } from '@/lib/chameleon';
 
 type SyncEvent = { name: string; data: Record<string, unknown> };
 
@@ -214,6 +215,11 @@ export async function GET(request: NextRequest) {
             HERD_MIND: 25, CHAMELEON: 30, SPLIT_ROOM: 30, INTERVIEW: 40,
           };
 
+          let chameleonHints: Awaited<ReturnType<typeof buildChameleonHintRowsForSync>> | undefined;
+          if (gameType === 'CHAMELEON' && (gr.phase === 'VOTING' || gr.phase === 'RESULTS')) {
+            chameleonHints = await buildChameleonHintRowsForSync(room.id, gr.id);
+          }
+
           events.push({
             name: 'round-started',
             data: {
@@ -223,6 +229,7 @@ export async function GET(request: NextRequest) {
               phase: gr.phase,
               data: {
                 ...grState,
+                ...(chameleonHints ? { hints: chameleonHints } : {}),
                 roundId: gr.id,
                 timeLimit: timeLimits[gameType] || 30,
                 players: players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar })),
