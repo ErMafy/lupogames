@@ -16,7 +16,7 @@ import { forceTribunalTimeout, advanceTribunal } from '@/lib/tribunal';
 import { advanceBomb } from '@/lib/bomb-game';
 import { forceThermometerTimeout, advanceThermometer } from '@/lib/thermometer';
 import { forceHerdTimeout, advanceHerdMind } from '@/lib/herd-mind';
-import { forceChameleonTimeout, advanceChameleon } from '@/lib/chameleon';
+import { forceChameleonTimeout, advanceChameleon, checkChameleonEarlyProgress } from '@/lib/chameleon';
 import { forceSplitTimeout, advanceSplitRoom } from '@/lib/split-room';
 import { advanceInterview } from '@/lib/interview';
 
@@ -69,6 +69,11 @@ async function checkEarlyAdvance(
         return 'secret_early_advance';
       }
     }
+  }
+
+  if (game === 'CHAMELEON') {
+    const ch = await checkChameleonEarlyProgress(code);
+    if (ch) return ch;
   }
 
   return null;

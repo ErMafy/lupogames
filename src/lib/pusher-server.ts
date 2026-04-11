@@ -29,7 +29,15 @@ export async function sendToRoom(
   data: unknown
 ) {
   const channelName = `presence-room-${roomCode}`;
-  await pusherServer.trigger(channelName, eventName, data);
+  try {
+    await pusherServer.trigger(channelName, eventName, data);
+  } catch (err) {
+    if (process.env.LUPO_SMOKE_API === '1') {
+      console.warn('[LUPO_SMOKE_API] Pusher trigger ignorato:', channelName, eventName, err);
+      return;
+    }
+    throw err;
+  }
 }
 
 // Helper per inviare eventi a un singolo giocatore

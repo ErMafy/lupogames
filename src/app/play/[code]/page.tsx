@@ -358,6 +358,28 @@ export default function ControllerPage() {
         });
         newGameRoundIdRef.current = (rd?.roundId as string) ?? null;
         resetHasSubmitted();
+        if (roundStartData.gameType === 'CHAMELEON' && roomCode && player?.id) {
+          void fetch(
+            `/api/game/chameleon/context?code=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(player.id)}`,
+          )
+            .then((r) => r.json())
+            .then((j: { success?: boolean; data?: Record<string, unknown> }) => {
+              if (!j.success || !j.data || typeof j.data.chameleonId !== 'string' || !j.data.chameleonId) return;
+              setNewGameData((prev) => {
+                if (!prev || prev.gameType !== 'CHAMELEON') return prev;
+                const d = j.data!;
+                return {
+                  ...prev,
+                  chameleonId: d.chameleonId as string,
+                  ...(typeof d.secretWord === 'string' ? { secretWord: d.secretWord } : {}),
+                  ...(typeof d.chameleonPlayerCount === 'number'
+                    ? { chameleonPlayerCount: d.chameleonPlayerCount }
+                    : {}),
+                };
+              });
+            })
+            .catch(() => {});
+        }
       }
       if (roundStartData.gameType === 'TRIVIA') {
         setTriviaResult(null);
@@ -484,7 +506,7 @@ export default function ControllerPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [handleAvatarDeselected, handleGameEvent, roomCode, router, resetHasSubmitted, refreshRoomPlayers, allPlayers]);
+  }, [handleAvatarDeselected, handleGameEvent, roomCode, router, resetHasSubmitted, refreshRoomPlayers, allPlayers, player?.id]);
 
   const gameEventHandlerRef = useRef(customGameEventHandler);
   gameEventHandlerRef.current = customGameEventHandler;
@@ -517,10 +539,15 @@ export default function ControllerPage() {
     };
   }, [roomCode, player?.id]);
 
-  // Periodic sync fallback: polls while no game OR while stuck in waiting with an active game
+   // Periodic sync fallback: polls while no game OR while stuck in waiting with an active game
   useEffect(() => {
     if (!roomCode || !player?.id) return;
-    const shouldPoll = !currentGame || (currentGame && controllerView === 'waiting');
+    const chameleonLive =
+      currentGame === 'CHAMELEON' &&
+      newGameData &&
+      (newGameData.phase === 'HINTING' || newGameData.phase === 'VOTING');
+    const shouldPoll =
+      !currentGame || (currentGame && controllerView === 'waiting') || chameleonLive;
     if (!shouldPoll) return;
     const id = setInterval(async () => {
       try {
@@ -536,7 +563,7 @@ export default function ControllerPage() {
       }
     }, 2000);
     return () => clearInterval(id);
-  }, [roomCode, player?.id, currentGame, controllerView]);
+  }, [roomCode, player?.id, currentGame, controllerView, newGameData?.phase]);
 
   const {
     isConnected,

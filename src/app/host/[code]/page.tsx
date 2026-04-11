@@ -530,6 +530,28 @@ export default function HostPage() {
         setTotalRoundsNum((eventData.totalRounds as number) || 5);
         newGameRoundIdRef.current = (rd.roundId as string) ?? null;
         resetHasSubmitted();
+        if (ev.gameType === 'CHAMELEON' && roomCode && hostPlayer?.id) {
+          void fetch(
+            `/api/game/chameleon/context?code=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(hostPlayer.id)}`,
+          )
+            .then((r) => r.json())
+            .then((j: { success?: boolean; data?: Record<string, unknown> }) => {
+              if (!j.success || !j.data || typeof j.data.chameleonId !== 'string' || !j.data.chameleonId) return;
+              setNewGameData((prev) => {
+                if (!prev || prev.gameType !== 'CHAMELEON') return prev;
+                const d = j.data!;
+                return {
+                  ...prev,
+                  chameleonId: d.chameleonId as string,
+                  ...(typeof d.secretWord === 'string' ? { secretWord: d.secretWord } : {}),
+                  ...(typeof d.chameleonPlayerCount === 'number'
+                    ? { chameleonPlayerCount: d.chameleonPlayerCount }
+                    : {}),
+                };
+              });
+            })
+            .catch(() => {});
+        }
       }
     }
 
@@ -742,7 +764,7 @@ export default function HostPage() {
     }
     
     handleGameEvent(eventName, data);
-  }, [roomCode, handleGameEvent, resetHasSubmitted, players]);
+  }, [roomCode, handleGameEvent, resetHasSubmitted, players, hostPlayer]);
 
   const handleHostPromptResponse = useCallback(
     async (response: string) => {

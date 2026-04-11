@@ -7,6 +7,10 @@
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:playthrough": "tsx scripts/smoke-playthrough-all-games.ts",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -31,6 +35,8 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
@@ -39,10 +45,13 @@
     "dotenv": "^17.4.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "@vitest/coverage-v8": "^3.2.4",
+    "jsdom": "^26.1.0",
     "pg": "^8.20.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
+    "vitest": "^3.2.4",
     "ws": "^8.20.0"
   }
 }

@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Capacitor shell (dipendenze solo in native-app/, non nella root Next)
     "native-app/**",
+    // Vitest: mock Prisma / pattern test-specifici
+    "tests/**",
+    "vitest.config.ts",
   ]),
 ]);
 
