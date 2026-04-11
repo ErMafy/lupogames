@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { buildChameleonHintRowsForSync } from '@/lib/chameleon';
 
+function syncChameleonIdFromState(grState: Record<string, unknown>): string | undefined {
+  const id = String(grState.chameleonId ?? grState.chameleon_id ?? '').trim();
+  return id || undefined;
+}
+
 type SyncEvent = { name: string; data: Record<string, unknown> };
 
 export async function GET(request: NextRequest) {
@@ -220,6 +225,16 @@ export async function GET(request: NextRequest) {
             chameleonHints = await buildChameleonHintRowsForSync(room.id, gr.id);
           }
 
+          const chameleonId = gameType === 'CHAMELEON' ? syncChameleonIdFromState(grState) : undefined;
+
+          const chameleonSyncFix =
+            gameType === 'CHAMELEON'
+              ? {
+                  secretWord: String(grState.secretWord ?? grState.secret_word ?? ''),
+                  ...(chameleonId ? { chameleonId } : {}),
+                }
+              : {};
+
           events.push({
             name: 'round-started',
             data: {
@@ -227,8 +242,10 @@ export async function GET(request: NextRequest) {
               totalRounds: gs.totalRounds,
               gameType,
               phase: gr.phase,
+              ...(chameleonId ? { chameleonId } : {}),
               data: {
                 ...grState,
+                ...chameleonSyncFix,
                 ...(chameleonHints ? { hints: chameleonHints } : {}),
                 roundId: gr.id,
                 timeLimit: timeLimits[gameType] || 30,

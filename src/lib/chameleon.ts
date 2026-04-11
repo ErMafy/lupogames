@@ -10,6 +10,21 @@ const RESULTS_DWELL_MS = 4000;
 
 export type ChameleonHintRow = { playerId: string; playerName: string; hint: string };
 
+/** Legge lo stato round dal JSON (camelCase o snake_case da vecchi record / driver). */
+function readRoundChameleonState(state: unknown): {
+  secretWord: string;
+  chameleonId: string;
+  contentId?: string;
+  retried?: boolean;
+} {
+  const s = (state && typeof state === 'object' ? state : {}) as Record<string, unknown>;
+  const chameleonId = String(s.chameleonId ?? s.chameleon_id ?? '').trim();
+  const secretWord = String(s.secretWord ?? s.secret_word ?? '').trim();
+  const contentId = s.contentId != null ? String(s.contentId) : undefined;
+  const retried = Boolean(s.retried);
+  return { secretWord, chameleonId, contentId, retried };
+}
+
 async function buildHintRows(roomId: string, roundId: string): Promise<ChameleonHintRow[]> {
   const room = await prisma.room.findUnique({ where: { id: roomId }, include: { players: true } });
   if (!room) return [];
@@ -37,7 +52,9 @@ export async function startChameleonGame(roomCode: string, rounds = 3) {
 
   await cleanupOldRounds(room.id, 'CHAMELEON');
   const first = contents[0];
-  const chameleon = (pickRandom(room.players, 1) as { id: string }[])[0];
+  const chameleonPick = pickRandom(room.players, 1) as { id: string }[];
+  const chameleon = chameleonPick[0];
+  if (!chameleon?.id) throw new Error('Impossibile scegliere il camaleonte');
 
   const gr = await prisma.gameRound.create({
     data: { roomId: room.id, gameType: 'CHAMELEON', roundNumber: 1, phase: 'HINTING',
@@ -55,10 +72,10 @@ export async function startChameleonGame(roomCode: string, rounds = 3) {
   await incrementContentUsage(first.id);
 
   await sendToRoom(roomCode, 'game-started', { gameType: 'CHAMELEON', totalRounds: rounds });
-  // Asymmetric payload: each player gets told their role individually via the room event
-  // chameleonId is sent only for server-side; client checks if their ID matches
+  // chameleonId anche a livello root così non si perde se il client legge male data annidata
   await sendToRoom(roomCode, 'round-started', {
     roundNumber: 1, totalRounds: rounds, gameType: 'CHAMELEON', phase: 'HINTING',
+    chameleonId: chameleon.id,
     data: { secretWord: first.content, roundId: gr.id, chameleonId: chameleon.id, timeLimit: HINT_SEC },
   });
   return { roundId: gr.id };
@@ -76,7 +93,12 @@ export async function handleChameleonHint(roomCode: string, playerId: string, ro
 
   // Broadcast each hint in real-time so the chameleon (and everyone) can see them
   await sendToRoom(roomCode, 'chameleon-hint', {
-    playerId, playerName: player?.name || '???', hint: trimmedHint, totalHints: count, totalPlayers: room.players.length,
+    playerId,
+    playerName: player?.name || '???',
+    hint: trimmedHint,
+    totalHints: count,
+    totalPlayers: room.players.length,
+    roundId,
   });
 
   if (count >= room.players.length) await startChameleonVoting(roomCode, roundId, room.id);
@@ -87,10 +109,14 @@ async function startChameleonVoting(roomCode: string, roundId: string, roomId: s
   const hints = await buildHintRows(roomId, roundId);
   const transitioned = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'HINTING' }, data: { phase: 'VOTING' } });
   if (transitioned.count === 0) return;
+  const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
+  const chameleonId = readRoundChameleonState(gr?.state).chameleonId;
   await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: new Date(Date.now() + VOTE_SEC * 1000) } });
   await sendToRoom(roomCode, 'phase-changed', {
-    gameType: 'CHAMELEON', phase: 'VOTING',
-    data: { roundId, hints, timeLimit: VOTE_SEC },
+    gameType: 'CHAMELEON',
+    phase: 'VOTING',
+    chameleonId,
+    data: { roundId, hints, timeLimit: VOTE_SEC, chameleonId },
   });
 }
 
@@ -110,7 +136,11 @@ export async function showChameleonResults(roomCode: string, roundId: string, ro
   if (transitioned.count === 0) return;
 
   const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
-  const state = gr?.state as { chameleonId: string; secretWord: string; retried?: boolean };
+  const state = readRoundChameleonState(gr?.state);
+  if (!state.chameleonId) {
+    console.error('chameleon: round senza chameleonId in state', roundId);
+    return;
+  }
   const votes = await getAllActions(roundId, 'VOTE');
 
   const voteCounts: Record<string, number> = {};
@@ -123,9 +153,10 @@ export async function showChameleonResults(roomCode: string, roundId: string, ro
 
   if (majoritySkipped) {
     // Retry: go back to HINTING with same word, same chameleon, mark as retried
+    const prevState = (gr?.state && typeof gr.state === 'object' ? gr.state : {}) as Record<string, unknown>;
     await prisma.gameRound.update({
       where: { id: roundId },
-      data: { phase: 'HINTING', endedAt: null, state: { ...state, retried: true } },
+      data: { phase: 'HINTING', endedAt: null, state: { ...prevState, retried: true } },
     });
     // Clear old actions so players can hint and vote again
     await prisma.gameAction.deleteMany({ where: { roundId } });
@@ -133,6 +164,7 @@ export async function showChameleonResults(roomCode: string, roundId: string, ro
 
     await sendToRoom(roomCode, 'round-started', {
       roundNumber: gr?.roundNumber || 1, totalRounds: gsUpdated.totalRounds, gameType: 'CHAMELEON', phase: 'HINTING',
+      chameleonId: state.chameleonId,
       data: { secretWord: state.secretWord, roundId, chameleonId: state.chameleonId, timeLimit: HINT_SEC, retry: true },
     });
     return;
@@ -183,7 +215,9 @@ export async function advanceChameleon(roomCode: string): Promise<boolean> {
   if (!content) { await endGenericGame(roomCode, room.id, 'CHAMELEON'); return true; }
 
   const roundNumber = room.currentRound + 1;
-  const chameleon = (pickRandom(room.players, 1) as { id: string }[])[0];
+  const chameleonPick = pickRandom(room.players, 1) as { id: string }[];
+  const chameleon = chameleonPick[0];
+  if (!chameleon?.id) throw new Error('Impossibile scegliere il camaleonte');
   const gr = await prisma.gameRound.create({
     data: { roomId: room.id, gameType: 'CHAMELEON', roundNumber, phase: 'HINTING',
       state: { secretWord: content.content, contentId: content.id, chameleonId: chameleon.id } },
@@ -197,6 +231,7 @@ export async function advanceChameleon(roomCode: string): Promise<boolean> {
 
   await sendToRoom(roomCode, 'round-started', {
     roundNumber, totalRounds: gs.totalRounds, gameType: 'CHAMELEON', phase: 'HINTING',
+    chameleonId: chameleon.id,
     data: { secretWord: content.content, roundId: gr.id, chameleonId: chameleon.id, timeLimit: HINT_SEC },
   });
   return true;
@@ -218,10 +253,13 @@ export async function forceChameleonTimeout(roomCode: string, roundId: string, r
     const hints = await buildHintRows(roomId, roundId);
     const t = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'REVEAL' }, data: { phase: 'VOTING' } });
     if (t.count > 0) {
+      const chameleonId = readRoundChameleonState(gr.state).chameleonId;
       await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: new Date(Date.now() + VOTE_SEC * 1000) } });
       await sendToRoom(roomCode, 'phase-changed', {
-        gameType: 'CHAMELEON', phase: 'VOTING',
-        data: { roundId, hints, timeLimit: VOTE_SEC },
+        gameType: 'CHAMELEON',
+        phase: 'VOTING',
+        chameleonId,
+        data: { roundId, hints, timeLimit: VOTE_SEC, chameleonId },
       });
     }
   } else if (gr.phase === 'VOTING') await showChameleonResults(roomCode, roundId, roomId);

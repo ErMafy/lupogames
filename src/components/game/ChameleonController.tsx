@@ -8,6 +8,9 @@ interface Props {
   secretWord: string | null;
   chameleonId: string;
   currentPlayerId: string;
+  /** Conteggio invii dal server (prioritario su liveHints.length) */
+  hintsSubmitted?: number;
+  hintsTotal?: number;
   players?: Player[];
   roundId: string;
   hints?: Hint[];
@@ -27,10 +30,15 @@ interface Props {
   retry?: boolean;
 }
 
-export function ChameleonController({ phase, secretWord, chameleonId, currentPlayerId, players, hints, liveHints, onHint, onVote, hasSubmitted, timeRemaining, results, retry }: Props) {
+export function ChameleonController({ phase, secretWord, chameleonId, currentPlayerId, hintsSubmitted, hintsTotal, players, hints, liveHints, onHint, onVote, hasSubmitted, timeRemaining, results, retry }: Props) {
   const [hint, setHint] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const isChameleon = currentPlayerId === chameleonId;
+  const isChameleon = String(currentPlayerId) === String(chameleonId || '');
+  const totalPlayers = hintsTotal ?? (players?.length ?? 0);
+  const submittedCount =
+    typeof hintsSubmitted === 'number'
+      ? hintsSubmitted
+      : (liveHints || []).filter(h => (players || []).some(p => p.id === h.playerId)).length;
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 
   const timerBadge = timeRemaining > 0 && (
@@ -137,7 +145,9 @@ export function ChameleonController({ phase, secretWord, chameleonId, currentPla
         ) : (
           <div className="glass-card p-6">
             <p className="text-white/60 animate-pulse">Indizio inviato! In attesa degli altri...</p>
-            <p className="text-white/40 text-xs mt-1">{(liveHints || []).length}/{(players || []).length} inviati</p>
+            <p className="text-white/40 text-xs mt-1">
+              {submittedCount}/{totalPlayers || (players?.length ?? 0)} inviati
+            </p>
           </div>
         )}
       </div>

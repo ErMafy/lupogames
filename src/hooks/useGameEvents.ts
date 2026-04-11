@@ -101,9 +101,17 @@ export function useGameEvents() {
       default: {
         // All new games use 'new-game-play' controller view
         const inner = data.data as Record<string, unknown>;
+        const topCh =
+          typeof (data as { chameleonId?: string }).chameleonId === 'string'
+            ? (data as { chameleonId: string }).chameleonId
+            : '';
         view = 'new-game-play';
         timeLimit = typeof inner.timeLimit === 'number' ? inner.timeLimit : 30;
-        roundPayload = { ...inner, gameType: data.gameType } as unknown as TriviaRoundData;
+        roundPayload = {
+          ...inner,
+          gameType: data.gameType,
+          ...(topCh ? { chameleonId: topCh } : {}),
+        } as unknown as TriviaRoundData;
         break;
       }
     }
@@ -222,8 +230,9 @@ export function useGameEvents() {
   // 🎯 EVENT DISPATCHER
   // ============================================
 
-  const handlePhaseChanged = useCallback((data: { gameType: string; phase: string; data?: { timeLimit?: number } }) => {
+  const handlePhaseChanged = useCallback((data: { gameType: string; phase: string; chameleonId?: string; data?: { timeLimit?: number } }) => {
     const timeLimit = data.data?.timeLimit;
+    const topChameleon = typeof data.chameleonId === 'string' ? data.chameleonId : '';
     setState(prev => {
       let view = prev.controllerView;
       if (data.gameType === 'CONTINUE_PHRASE') {
@@ -239,7 +248,15 @@ export function useGameEvents() {
         hasSubmitted: false,
         canSubmit: true,
         timeRemaining: timeLimit ?? prev.timeRemaining,
-        roundData: data.data ? { ...prev.roundData, ...(data.data as object), phase: data.phase, gameType: data.gameType } as unknown as typeof prev.roundData : prev.roundData,
+        roundData: data.data
+          ? ({
+              ...prev.roundData,
+              ...(data.data as object),
+              ...(topChameleon ? { chameleonId: topChameleon } : {}),
+              phase: data.phase,
+              gameType: data.gameType,
+            } as unknown as typeof prev.roundData)
+          : prev.roundData,
       };
     });
     if (timeLimit) startTimer(timeLimit);

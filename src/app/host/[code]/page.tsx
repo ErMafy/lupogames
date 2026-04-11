@@ -507,8 +507,25 @@ export default function HostPage() {
       // New games: store round data generically
       const newGameTypes = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
       if (newGameTypes.includes(eventData.gameType as string)) {
-        const rd = eventData.data as Record<string, unknown>;
-        setNewGameData({ ...rd, gameType: eventData.gameType, phase: eventData.phase || rd.phase || 'ACTIVE' });
+        const ev = eventData as Record<string, unknown>;
+        const nested = (ev.data as Record<string, unknown>) || {};
+        const topChameleon = typeof ev.chameleonId === 'string' ? ev.chameleonId : '';
+        const rd = {
+          ...nested,
+          ...(topChameleon ? { chameleonId: topChameleon } : {}),
+        };
+        setNewGameData({
+          ...rd,
+          gameType: ev.gameType,
+          phase: (ev.phase as string) || (nested.phase as string) || 'ACTIVE',
+          ...(ev.gameType === 'CHAMELEON'
+            ? {
+                liveHints: [],
+                chameleonHintCount: 0,
+                chameleonPlayerCount: Array.isArray(nested.players) ? nested.players.length : players.length,
+              }
+            : {}),
+        });
         setCurrentRoundNum(eventData.roundNumber as number);
         setTotalRoundsNum((eventData.totalRounds as number) || 5);
         newGameRoundIdRef.current = (rd.roundId as string) ?? null;
@@ -543,13 +560,16 @@ export default function HostPage() {
       // New games: update phase and merge data
       const newGameTypes2 = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
       if (newGameTypes2.includes(pd.gameType)) {
-        const payload = (pd as { data?: { roundId?: string } }).data || {};
+        const pdx = pd as { data?: Record<string, unknown>; chameleonId?: string };
+        const payload = pdx.data || {};
         if (typeof payload.roundId === 'string' && payload.roundId) {
           newGameRoundIdRef.current = payload.roundId;
         }
+        const topCh = typeof pdx.chameleonId === 'string' ? pdx.chameleonId : '';
         setNewGameData(prev => ({
           ...prev,
           ...payload,
+          ...(topCh ? { chameleonId: topCh } : {}),
           phase: pd.phase,
           gameType: pd.gameType,
           ...(pd.gameType === 'CHAMELEON' && pd.phase === 'VOTING' ? { liveHints: [] } : {}),
@@ -619,13 +639,28 @@ export default function HostPage() {
     }
     
     if (eventName === 'chameleon-hint') {
-      const ch = eventData as { playerId: string; playerName: string; hint: string };
+      const ch = eventData as {
+        playerId: string;
+        playerName: string;
+        hint: string;
+        totalHints?: number;
+        totalPlayers?: number;
+        roundId?: string;
+      };
       setNewGameData(prev => {
+        const rid = newGameRoundIdRef.current;
+        if (ch.roundId && rid && ch.roundId !== rid) return prev ?? {};
         const list = [...((prev?.liveHints as Array<{ playerId: string; playerName: string; hint: string }>) || [])];
         const idx = list.findIndex(h => h.playerId === ch.playerId);
         if (idx >= 0) list[idx] = ch;
         else list.push(ch);
-        return { ...prev, liveHints: list };
+        return {
+          ...prev,
+          liveHints: list,
+          chameleonHintCount: typeof ch.totalHints === 'number' ? ch.totalHints : list.length,
+          chameleonPlayerCount:
+            typeof ch.totalPlayers === 'number' ? ch.totalPlayers : (prev?.chameleonPlayerCount as number | undefined),
+        };
       });
     }
     
@@ -1529,8 +1564,10 @@ export default function HostPage() {
                 <span className="text-purple-300 text-sm font-bold">Round {currentRoundNum}/{totalRoundsNum}</span>
               </div>
               <ChameleonController phase={(phase as any) || 'HINTING'}
-                secretWord={hostPlayer.id === (newGameData.chameleonId as string) ? null : (newGameData.secretWord as string)}
-                chameleonId={(newGameData.chameleonId as string) || ''} currentPlayerId={hostPlayer.id}
+                secretWord={String(hostPlayer.id) === String(newGameData.chameleonId ?? '') ? null : (newGameData.secretWord as string)}
+                chameleonId={String(newGameData.chameleonId ?? '')} currentPlayerId={hostPlayer.id}
+                hintsSubmitted={typeof newGameData.chameleonHintCount === 'number' ? newGameData.chameleonHintCount : undefined}
+                hintsTotal={typeof newGameData.chameleonPlayerCount === 'number' ? newGameData.chameleonPlayerCount : undefined}
                 players={players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar }))}
                 roundId={newGameRoundIdRef.current || ''} hints={(newGameData.hints as any)}
                 liveHints={(newGameData.liveHints as any) || []}

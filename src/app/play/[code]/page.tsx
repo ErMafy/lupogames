@@ -292,13 +292,16 @@ export default function ControllerPage() {
       }
       const newGameTypes2 = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
       if (newGameTypes2.includes(phaseData.gameType)) {
-        const payload = (phaseData as { data?: { roundId?: string } }).data || {};
+        const pdx = phaseData as { data?: Record<string, unknown>; chameleonId?: string };
+        const payload = pdx.data || {};
         if (typeof payload.roundId === 'string' && payload.roundId) {
           newGameRoundIdRef.current = payload.roundId;
         }
+        const topCh = typeof pdx.chameleonId === 'string' ? pdx.chameleonId : '';
         setNewGameData(prev => ({
           ...prev,
           ...payload,
+          ...(topCh ? { chameleonId: topCh } : {}),
           phase: phaseData.phase,
           gameType: phaseData.gameType,
           ...(phaseData.gameType === 'CHAMELEON' && phaseData.phase === 'VOTING' ? { liveHints: [] } : {}),
@@ -334,8 +337,25 @@ export default function ControllerPage() {
       // New games
       const newGameTypes = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
       if (newGameTypes.includes(roundStartData.gameType)) {
-        const rd = roundStartData.data as Record<string, unknown>;
-        setNewGameData({ ...rd, gameType: roundStartData.gameType, phase: (roundStartData as any).phase || rd?.phase || 'ACTIVE' });
+        const ev = data as Record<string, unknown>;
+        const nested = (ev.data as Record<string, unknown>) || {};
+        const topChameleon = typeof ev.chameleonId === 'string' ? ev.chameleonId : '';
+        const rd = {
+          ...nested,
+          ...(topChameleon ? { chameleonId: topChameleon } : {}),
+        };
+        setNewGameData({
+          ...rd,
+          gameType: roundStartData.gameType,
+          phase: (roundStartData as { phase?: string }).phase || (nested.phase as string) || 'ACTIVE',
+          ...(roundStartData.gameType === 'CHAMELEON'
+            ? {
+                liveHints: [],
+                chameleonHintCount: 0,
+                chameleonPlayerCount: Array.isArray(nested.players) ? nested.players.length : allPlayers.length,
+              }
+            : {}),
+        });
         newGameRoundIdRef.current = (rd?.roundId as string) ?? null;
         resetHasSubmitted();
       }
@@ -388,13 +408,28 @@ export default function ControllerPage() {
     }
 
     if (eventName === 'chameleon-hint') {
-      const ch = data as { playerId: string; playerName: string; hint: string };
+      const ch = data as {
+        playerId: string;
+        playerName: string;
+        hint: string;
+        totalHints?: number;
+        totalPlayers?: number;
+        roundId?: string;
+      };
       setNewGameData(prev => {
+        const rid = newGameRoundIdRef.current;
+        if (ch.roundId && rid && ch.roundId !== rid) return prev ?? {};
         const list = [...((prev?.liveHints as Array<{ playerId: string; playerName: string; hint: string }>) || [])];
         const idx = list.findIndex(h => h.playerId === ch.playerId);
         if (idx >= 0) list[idx] = ch;
         else list.push(ch);
-        return { ...prev, liveHints: list };
+        return {
+          ...prev,
+          liveHints: list,
+          chameleonHintCount: typeof ch.totalHints === 'number' ? ch.totalHints : list.length,
+          chameleonPlayerCount:
+            typeof ch.totalPlayers === 'number' ? ch.totalPlayers : (prev?.chameleonPlayerCount as number | undefined),
+        };
       });
     }
 
@@ -999,8 +1034,10 @@ export default function ControllerPage() {
           if (gt === 'CHAMELEON') return (
             <div className="animate-slide-up">
               <ChameleonController phase={(phase as any) || 'HINTING'}
-                secretWord={player.id === (newGameData.chameleonId as string) ? null : (newGameData.secretWord as string)}
-                chameleonId={(newGameData.chameleonId as string) || ''} currentPlayerId={player.id}
+                secretWord={String(player.id) === String(newGameData.chameleonId ?? '') ? null : (newGameData.secretWord as string)}
+                chameleonId={String(newGameData.chameleonId ?? '')} currentPlayerId={player.id}
+                hintsSubmitted={typeof newGameData.chameleonHintCount === 'number' ? newGameData.chameleonHintCount : undefined}
+                hintsTotal={typeof newGameData.chameleonPlayerCount === 'number' ? newGameData.chameleonPlayerCount : undefined}
                 players={allPlayers.map(p => ({ id: p.playerId, name: p.playerName, avatar: p.avatar || null }))}
                 roundId={newGameRoundIdRef.current || ''} hints={(newGameData.hints as any)}
                 liveHints={(newGameData.liveHints as any) || []}
