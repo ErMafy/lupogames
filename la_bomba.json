@@ -1,42 +1,1622 @@
 [
-  {"categoria": "Animali che vivono in Africa"},
-  {"categoria": "Marche di automobili"},
-  {"categoria": "Città italiane"},
-  {"categoria": "Film di supereroi"},
-  {"categoria": "Tipi di pasta"},
-  {"categoria": "Sport olimpici"},
-  {"categoria": "Frutti tropicali"},
-  {"categoria": "Cantanti italiani"},
-  {"categoria": "Capitali europee"},
-  {"categoria": "Tipi di pizza"},
-  {"categoria": "Personaggi dei cartoni animati"},
-  {"categoria": "Strumenti musicali"},
-  {"categoria": "Marche di abbigliamento"},
-  {"categoria": "Lingue parlate nel mondo"},
-  {"categoria": "Piatti tipici italiani"},
-  {"categoria": "App famose per smartphone"},
-  {"categoria": "Colori dell'arcobaleno e sfumature"},
-  {"categoria": "Calciatori famosi"},
-  {"categoria": "Cose che trovi in spiaggia"},
-  {"categoria": "Mestieri che esistevano 100 anni fa"},
-  {"categoria": "Cose che metti in valigia"},
-  {"categoria": "Programmi TV italiani"},
-  {"categoria": "Cose che trovi in un frigorifero"},
-  {"categoria": "Fiori e piante"},
-  {"categoria": "Videogiochi famosi"},
-  {"categoria": "Ingredienti della pizza"},
-  {"categoria": "Cose che fai prima di dormire"},
-  {"categoria": "Film di animazione Disney/Pixar"},
-  {"categoria": "Razze di cani"},
-  {"categoria": "Paesi dell'Asia"},
-  {"categoria": "Dolci e dessert"},
-  {"categoria": "Oggetti che trovi in bagno"},
-  {"categoria": "Serie TV famose"},
-  {"categoria": "Cose che compri al supermercato"},
-  {"categoria": "Tipi di formaggio"},
-  {"categoria": "Cose che trovi in una scuola"},
-  {"categoria": "Social media e piattaforme online"},
-  {"categoria": "Cose associate all'estate"},
-  {"categoria": "Cose associate al Natale"},
-  {"categoria": "Attori di Hollywood"}
+  {
+    "categoria": "Animali che vivono in Africa"
+  },
+  {
+    "categoria": "Marche di automobili"
+  },
+  {
+    "categoria": "Città italiane"
+  },
+  {
+    "categoria": "Film di supereroi"
+  },
+  {
+    "categoria": "Tipi di pasta"
+  },
+  {
+    "categoria": "Sport olimpici"
+  },
+  {
+    "categoria": "Frutti tropicali"
+  },
+  {
+    "categoria": "Cantanti italiani"
+  },
+  {
+    "categoria": "Capitali europee"
+  },
+  {
+    "categoria": "Tipi di pizza"
+  },
+  {
+    "categoria": "Personaggi dei cartoni animati"
+  },
+  {
+    "categoria": "Strumenti musicali"
+  },
+  {
+    "categoria": "Marche di abbigliamento"
+  },
+  {
+    "categoria": "Lingue parlate nel mondo"
+  },
+  {
+    "categoria": "Piatti tipici italiani"
+  },
+  {
+    "categoria": "App famose per smartphone"
+  },
+  {
+    "categoria": "Colori dell'arcobaleno e sfumature"
+  },
+  {
+    "categoria": "Calciatori famosi"
+  },
+  {
+    "categoria": "Cose che trovi in spiaggia"
+  },
+  {
+    "categoria": "Mestieri che esistevano 100 anni fa"
+  },
+  {
+    "categoria": "Cose che metti in valigia"
+  },
+  {
+    "categoria": "Programmi TV italiani"
+  },
+  {
+    "categoria": "Cose che trovi in un frigorifero"
+  },
+  {
+    "categoria": "Fiori e piante"
+  },
+  {
+    "categoria": "Videogiochi famosi"
+  },
+  {
+    "categoria": "Ingredienti della pizza"
+  },
+  {
+    "categoria": "Cose che fai prima di dormire"
+  },
+  {
+    "categoria": "Film di animazione Disney/Pixar"
+  },
+  {
+    "categoria": "Razze di cani"
+  },
+  {
+    "categoria": "Paesi dell'Asia"
+  },
+  {
+    "categoria": "Dolci e dessert"
+  },
+  {
+    "categoria": "Oggetti che trovi in bagno"
+  },
+  {
+    "categoria": "Serie TV famose"
+  },
+  {
+    "categoria": "Cose che compri al supermercato"
+  },
+  {
+    "categoria": "Tipi di formaggio"
+  },
+  {
+    "categoria": "Cose che trovi in una scuola"
+  },
+  {
+    "categoria": "Social media e piattaforme online"
+  },
+  {
+    "categoria": "Cose associate all'estate"
+  },
+  {
+    "categoria": "Cose associate al Natale"
+  },
+  {
+    "categoria": "Attori di Hollywood"
+  },
+  {
+    "categoria": "Animali domestici"
+  },
+  {
+    "categoria": "Animali marini"
+  },
+  {
+    "categoria": "Uccelli comuni"
+  },
+  {
+    "categoria": "Insetti e aracnidi"
+  },
+  {
+    "categoria": "Razze di gatti"
+  },
+  {
+    "categoria": "Animali della fattoria"
+  },
+  {
+    "categoria": "Animali del bosco"
+  },
+  {
+    "categoria": "Rettili e anfibi"
+  },
+  {
+    "categoria": "Animali in via di estinzione"
+  },
+  {
+    "categoria": "Animali notturni"
+  },
+  {
+    "categoria": "Animali che vivono nei deserti"
+  },
+  {
+    "categoria": "Animali con le corna"
+  },
+  {
+    "categoria": "Pesci d'acqua dolce"
+  },
+  {
+    "categoria": "Animali che vivono al Polo Nord"
+  },
+  {
+    "categoria": "Animali australiani"
+  },
+  {
+    "categoria": "Animali velenosi"
+  },
+  {
+    "categoria": "Primati"
+  },
+  {
+    "categoria": "Animali che vivono sottoterra"
+  },
+  {
+    "categoria": "Animali con il guscio"
+  },
+  {
+    "categoria": "Animali della savana"
+  },
+  {
+    "categoria": "Animali che migrano"
+  },
+  {
+    "categoria": "Animali preistorici"
+  },
+  {
+    "categoria": "Pesci tropicali"
+  },
+  {
+    "categoria": "Animali con la coda lunga"
+  },
+  {
+    "categoria": "Dinosauri famosi"
+  },
+  {
+    "categoria": "Farfalle e falene"
+  },
+  {
+    "categoria": "Animali a sangue freddo"
+  },
+  {
+    "categoria": "Animali dello zoo"
+  },
+  {
+    "categoria": "Tipi di vino"
+  },
+  {
+    "categoria": "Bevande alcoliche"
+  },
+  {
+    "categoria": "Spezie e erbe aromatiche"
+  },
+  {
+    "categoria": "Verdure dell'orto"
+  },
+  {
+    "categoria": "Tipi di pane"
+  },
+  {
+    "categoria": "Frutti di mare"
+  },
+  {
+    "categoria": "Tipi di birra"
+  },
+  {
+    "categoria": "Cocktail famosi"
+  },
+  {
+    "categoria": "Piatti messicani"
+  },
+  {
+    "categoria": "Piatti giapponesi"
+  },
+  {
+    "categoria": "Cibi che si mangiano a colazione"
+  },
+  {
+    "categoria": "Tipi di insalata"
+  },
+  {
+    "categoria": "Tipi di carne"
+  },
+  {
+    "categoria": "Cibi fritti"
+  },
+  {
+    "categoria": "Condimenti e salse"
+  },
+  {
+    "categoria": "Tipi di gelato"
+  },
+  {
+    "categoria": "Piatti cinesi"
+  },
+  {
+    "categoria": "Bevande calde"
+  },
+  {
+    "categoria": "Tipi di frutta secca"
+  },
+  {
+    "categoria": "Piatti indiani"
+  },
+  {
+    "categoria": "Tipi di cioccolato"
+  },
+  {
+    "categoria": "Dolci natalizi"
+  },
+  {
+    "categoria": "Tipi di zuppa"
+  },
+  {
+    "categoria": "Cibi piccanti"
+  },
+  {
+    "categoria": "Frutti che crescono sugli alberi"
+  },
+  {
+    "categoria": "Marche di bevande gassate"
+  },
+  {
+    "categoria": "Tipi di tè"
+  },
+  {
+    "categoria": "Tipi di caffè"
+  },
+  {
+    "categoria": "Formaggi italiani"
+  },
+  {
+    "categoria": "Formaggi francesi"
+  },
+  {
+    "categoria": "Vini rossi italiani"
+  },
+  {
+    "categoria": "Piatti a base di pesce"
+  },
+  {
+    "categoria": "Cibi che si mangiano crudi"
+  },
+  {
+    "categoria": "Piatti greci"
+  },
+  {
+    "categoria": "Tipi di sushi"
+  },
+  {
+    "categoria": "Dolci americani"
+  },
+  {
+    "categoria": "Cibi che si mangiano con le mani"
+  },
+  {
+    "categoria": "Piatti a base di riso"
+  },
+  {
+    "categoria": "Tipi di olio"
+  },
+  {
+    "categoria": "Piatti thailandesi"
+  },
+  {
+    "categoria": "Alimenti ricchi di proteine"
+  },
+  {
+    "categoria": "Cibi fermentati"
+  },
+  {
+    "categoria": "Frutti rossi"
+  },
+  {
+    "categoria": "Cibi tipici di Napoli"
+  },
+  {
+    "categoria": "Piatti vegani famosi"
+  },
+  {
+    "categoria": "Agrumi"
+  },
+  {
+    "categoria": "Erbe medicinali"
+  },
+  {
+    "categoria": "Tipi di aceto"
+  },
+  {
+    "categoria": "Piatti arabi"
+  },
+  {
+    "categoria": "Piatti coreani"
+  },
+  {
+    "categoria": "Dolci tipici siciliani"
+  },
+  {
+    "categoria": "Tipi di panino"
+  },
+  {
+    "categoria": "Gusti di caramelle"
+  },
+  {
+    "categoria": "Piatti cucinati al forno"
+  },
+  {
+    "categoria": "Piatti cucinati alla griglia"
+  },
+  {
+    "categoria": "Cibi di colore verde"
+  },
+  {
+    "categoria": "Cibi di colore giallo"
+  },
+  {
+    "categoria": "Cibi di colore bianco"
+  },
+  {
+    "categoria": "Cibi di colore rosso"
+  },
+  {
+    "categoria": "Città americane"
+  },
+  {
+    "categoria": "Paesi dell'Africa"
+  },
+  {
+    "categoria": "Regioni italiane"
+  },
+  {
+    "categoria": "Isole famose"
+  },
+  {
+    "categoria": "Fiumi del mondo"
+  },
+  {
+    "categoria": "Montagne famose"
+  },
+  {
+    "categoria": "Laghi del mondo"
+  },
+  {
+    "categoria": "Deserti del mondo"
+  },
+  {
+    "categoria": "Città dell'America del Sud"
+  },
+  {
+    "categoria": "Paesi dell'Europa"
+  },
+  {
+    "categoria": "Vulcani famosi"
+  },
+  {
+    "categoria": "Mari e oceani"
+  },
+  {
+    "categoria": "Cascate famose"
+  },
+  {
+    "categoria": "Città francesi"
+  },
+  {
+    "categoria": "Città tedesche"
+  },
+  {
+    "categoria": "Città spagnole"
+  },
+  {
+    "categoria": "Paesi con la monarchia"
+  },
+  {
+    "categoria": "Città inglesi"
+  },
+  {
+    "categoria": "Arcipelaghi del mondo"
+  },
+  {
+    "categoria": "Nazioni insulari"
+  },
+  {
+    "categoria": "Capitali asiatiche"
+  },
+  {
+    "categoria": "Città del Giappone"
+  },
+  {
+    "categoria": "Paesi nordici"
+  },
+  {
+    "categoria": "Città australiane"
+  },
+  {
+    "categoria": "Città canadesi"
+  },
+  {
+    "categoria": "Province italiane"
+  },
+  {
+    "categoria": "Quartieri famosi di New York"
+  },
+  {
+    "categoria": "Strade famose nel mondo"
+  },
+  {
+    "categoria": "Ponti famosi nel mondo"
+  },
+  {
+    "categoria": "Parchi nazionali del mondo"
+  },
+  {
+    "categoria": "Città con la metropolitana"
+  },
+  {
+    "categoria": "Paesi dell'America Centrale"
+  },
+  {
+    "categoria": "Città russe"
+  },
+  {
+    "categoria": "Piazze famose nel mondo"
+  },
+  {
+    "categoria": "Città patrimonio UNESCO"
+  },
+  {
+    "categoria": "Città sulla costa italiana"
+  },
+  {
+    "categoria": "Capitali africane"
+  },
+  {
+    "categoria": "Città del Medio Oriente"
+  },
+  {
+    "categoria": "Nazioni che iniziano con la lettera M"
+  },
+  {
+    "categoria": "Squadre di calcio italiane"
+  },
+  {
+    "categoria": "Tennisti famosi"
+  },
+  {
+    "categoria": "Sport con la palla"
+  },
+  {
+    "categoria": "Sport acquatici"
+  },
+  {
+    "categoria": "Sport invernali"
+  },
+  {
+    "categoria": "Discipline dell'atletica leggera"
+  },
+  {
+    "categoria": "Piloti di Formula 1"
+  },
+  {
+    "categoria": "Giocatori NBA famosi"
+  },
+  {
+    "categoria": "Arti marziali"
+  },
+  {
+    "categoria": "Sport estremi"
+  },
+  {
+    "categoria": "Squadre di calcio inglesi"
+  },
+  {
+    "categoria": "Squadre di calcio spagnole"
+  },
+  {
+    "categoria": "Sportivi italiani famosi"
+  },
+  {
+    "categoria": "Pugili famosi"
+  },
+  {
+    "categoria": "Stadi famosi nel mondo"
+  },
+  {
+    "categoria": "Nuotatori famosi"
+  },
+  {
+    "categoria": "Ciclisti famosi"
+  },
+  {
+    "categoria": "Sport di squadra"
+  },
+  {
+    "categoria": "Sport con la racchetta"
+  },
+  {
+    "categoria": "Circuiti di Formula 1"
+  },
+  {
+    "categoria": "Squadre di basket NBA"
+  },
+  {
+    "categoria": "Sport da combattimento"
+  },
+  {
+    "categoria": "Ginnasti famosi"
+  },
+  {
+    "categoria": "Sciatori famosi"
+  },
+  {
+    "categoria": "Sport praticati sulla neve"
+  },
+  {
+    "categoria": "Atleti olimpici italiani"
+  },
+  {
+    "categoria": "Sport con la bicicletta"
+  },
+  {
+    "categoria": "Tipi di danza sportiva"
+  },
+  {
+    "categoria": "Maratoneti famosi"
+  },
+  {
+    "categoria": "Campioni del mondo di calcio"
+  },
+  {
+    "categoria": "Pallavolisti famosi"
+  },
+  {
+    "categoria": "Film horror famosi"
+  },
+  {
+    "categoria": "Film romantici"
+  },
+  {
+    "categoria": "Film di fantascienza"
+  },
+  {
+    "categoria": "Cantanti americani"
+  },
+  {
+    "categoria": "Band rock famose"
+  },
+  {
+    "categoria": "Film vincitori di Oscar"
+  },
+  {
+    "categoria": "Canzoni italiane famose"
+  },
+  {
+    "categoria": "Generi musicali"
+  },
+  {
+    "categoria": "Attori italiani"
+  },
+  {
+    "categoria": "Registi famosi"
+  },
+  {
+    "categoria": "Personaggi di Star Wars"
+  },
+  {
+    "categoria": "Personaggi dei fumetti Marvel"
+  },
+  {
+    "categoria": "Film di James Bond"
+  },
+  {
+    "categoria": "Serie TV Netflix"
+  },
+  {
+    "categoria": "Giochi da tavolo"
+  },
+  {
+    "categoria": "Anime giapponesi famosi"
+  },
+  {
+    "categoria": "Rapper famosi"
+  },
+  {
+    "categoria": "Cartoni animati degli anni 90"
+  },
+  {
+    "categoria": "Show televisivi americani"
+  },
+  {
+    "categoria": "Film degli anni 80"
+  },
+  {
+    "categoria": "Film con Leonardo DiCaprio"
+  },
+  {
+    "categoria": "Cantanti pop internazionali"
+  },
+  {
+    "categoria": "Band italiane"
+  },
+  {
+    "categoria": "Festival musicali famosi"
+  },
+  {
+    "categoria": "Canzoni di Sanremo"
+  },
+  {
+    "categoria": "Personaggi dei videogiochi"
+  },
+  {
+    "categoria": "Film di Quentin Tarantino"
+  },
+  {
+    "categoria": "Film di Steven Spielberg"
+  },
+  {
+    "categoria": "Comici italiani"
+  },
+  {
+    "categoria": "Conduttori televisivi italiani"
+  },
+  {
+    "categoria": "Youtuber famosi"
+  },
+  {
+    "categoria": "Personaggi di Harry Potter"
+  },
+  {
+    "categoria": "Film di Tim Burton"
+  },
+  {
+    "categoria": "Musical famosi"
+  },
+  {
+    "categoria": "Film con Tom Hanks"
+  },
+  {
+    "categoria": "Serie TV degli anni 2000"
+  },
+  {
+    "categoria": "Cantautori italiani"
+  },
+  {
+    "categoria": "Film western famosi"
+  },
+  {
+    "categoria": "Film di guerra famosi"
+  },
+  {
+    "categoria": "Gruppi musicali degli anni 70"
+  },
+  {
+    "categoria": "Canzoni d'amore famose"
+  },
+  {
+    "categoria": "Presentatori del Festival di Sanremo"
+  },
+  {
+    "categoria": "Film d'azione degli anni 90"
+  },
+  {
+    "categoria": "Attrici premio Oscar"
+  },
+  {
+    "categoria": "Personaggi dei Simpson"
+  },
+  {
+    "categoria": "Gruppi K-pop"
+  },
+  {
+    "categoria": "Band punk famose"
+  },
+  {
+    "categoria": "Cantanti soul e R&B"
+  },
+  {
+    "categoria": "Film thriller psicologici"
+  },
+  {
+    "categoria": "Serie TV britanniche"
+  },
+  {
+    "categoria": "Personaggi di Game of Thrones"
+  },
+  {
+    "categoria": "Film biografici famosi"
+  },
+  {
+    "categoria": "Commedie romantiche famose"
+  },
+  {
+    "categoria": "Serie TV poliziesche"
+  },
+  {
+    "categoria": "Film di Natale"
+  },
+  {
+    "categoria": "Personaggi dei fumetti DC"
+  },
+  {
+    "categoria": "Film con effetti speciali memorabili"
+  },
+  {
+    "categoria": "Cartoni animati giapponesi"
+  },
+  {
+    "categoria": "Cantanti che suonano la chitarra"
+  },
+  {
+    "categoria": "Strumenti a corda"
+  },
+  {
+    "categoria": "Strumenti a fiato"
+  },
+  {
+    "categoria": "Strumenti a percussione"
+  },
+  {
+    "categoria": "Balli famosi"
+  },
+  {
+    "categoria": "Album musicali iconici"
+  },
+  {
+    "categoria": "Cantanti degli anni 60"
+  },
+  {
+    "categoria": "Cantanti degli anni 80"
+  },
+  {
+    "categoria": "Boy band famose"
+  },
+  {
+    "categoria": "Musicisti jazz famosi"
+  },
+  {
+    "categoria": "Orchestre famose"
+  },
+  {
+    "categoria": "Generi di musica elettronica"
+  },
+  {
+    "categoria": "Cantanti rap italiani"
+  },
+  {
+    "categoria": "Elementi della tavola periodica"
+  },
+  {
+    "categoria": "Pianeti e corpi celesti del sistema solare"
+  },
+  {
+    "categoria": "Organi del corpo umano"
+  },
+  {
+    "categoria": "Ossa del corpo umano"
+  },
+  {
+    "categoria": "Costellazioni"
+  },
+  {
+    "categoria": "Gemme e pietre preziose"
+  },
+  {
+    "categoria": "Fenomeni atmosferici"
+  },
+  {
+    "categoria": "Tipi di nuvole"
+  },
+  {
+    "categoria": "Minerali"
+  },
+  {
+    "categoria": "Malattie comuni"
+  },
+  {
+    "categoria": "Vitamine e integratori"
+  },
+  {
+    "categoria": "Scienziati famosi"
+  },
+  {
+    "categoria": "Invenzioni che hanno cambiato il mondo"
+  },
+  {
+    "categoria": "Tipi di energia"
+  },
+  {
+    "categoria": "Metalli preziosi"
+  },
+  {
+    "categoria": "Teorie scientifiche famose"
+  },
+  {
+    "categoria": "Tipi di roccia"
+  },
+  {
+    "categoria": "Biomi della Terra"
+  },
+  {
+    "categoria": "Parti del corpo umano"
+  },
+  {
+    "categoria": "Vaccini comuni"
+  },
+  {
+    "categoria": "Gas presenti nell'atmosfera"
+  },
+  {
+    "categoria": "Galassie e nebulose"
+  },
+  {
+    "categoria": "Muscoli del corpo umano"
+  },
+  {
+    "categoria": "Tipi di cellula"
+  },
+  {
+    "categoria": "Malattie tropicali"
+  },
+  {
+    "categoria": "Imperatori romani"
+  },
+  {
+    "categoria": "Faraoni egizi"
+  },
+  {
+    "categoria": "Guerre famose nella storia"
+  },
+  {
+    "categoria": "Rivoluzioni nella storia"
+  },
+  {
+    "categoria": "Civiltà antiche"
+  },
+  {
+    "categoria": "Personaggi storici italiani"
+  },
+  {
+    "categoria": "Re e regine d'Inghilterra"
+  },
+  {
+    "categoria": "Presidenti degli Stati Uniti"
+  },
+  {
+    "categoria": "Esploratori famosi"
+  },
+  {
+    "categoria": "Battaglie famose"
+  },
+  {
+    "categoria": "Filosofi greci"
+  },
+  {
+    "categoria": "Inventori famosi"
+  },
+  {
+    "categoria": "Artisti del Rinascimento"
+  },
+  {
+    "categoria": "Scrittori famosi"
+  },
+  {
+    "categoria": "Poeti italiani"
+  },
+  {
+    "categoria": "Divinità greche"
+  },
+  {
+    "categoria": "Divinità romane"
+  },
+  {
+    "categoria": "Figure mitologiche"
+  },
+  {
+    "categoria": "Feste e tradizioni italiane"
+  },
+  {
+    "categoria": "Monumenti famosi nel mondo"
+  },
+  {
+    "categoria": "Castelli famosi"
+  },
+  {
+    "categoria": "Musei famosi nel mondo"
+  },
+  {
+    "categoria": "Chiese e cattedrali famose"
+  },
+  {
+    "categoria": "Siti archeologici"
+  },
+  {
+    "categoria": "Patrimoni UNESCO italiani"
+  },
+  {
+    "categoria": "Architetti famosi"
+  },
+  {
+    "categoria": "Pittori impressionisti"
+  },
+  {
+    "categoria": "Scultori famosi"
+  },
+  {
+    "categoria": "Premi Nobel famosi"
+  },
+  {
+    "categoria": "Donne che hanno fatto la storia"
+  },
+  {
+    "categoria": "Religioni del mondo"
+  },
+  {
+    "categoria": "Filosofi moderni"
+  },
+  {
+    "categoria": "Movimenti artistici"
+  },
+  {
+    "categoria": "Piramidi e templi antichi"
+  },
+  {
+    "categoria": "Dittatori nella storia"
+  },
+  {
+    "categoria": "Eroi nazionali italiani"
+  },
+  {
+    "categoria": "Oggetti che trovi in cucina"
+  },
+  {
+    "categoria": "Oggetti che trovi in ufficio"
+  },
+  {
+    "categoria": "Oggetti che trovi in garage"
+  },
+  {
+    "categoria": "Tipi di scarpe"
+  },
+  {
+    "categoria": "Tipi di cappelli"
+  },
+  {
+    "categoria": "Cose che trovi in un parco"
+  },
+  {
+    "categoria": "Oggetti che trovi in una borsa"
+  },
+  {
+    "categoria": "Materiali da costruzione"
+  },
+  {
+    "categoria": "Tipi di tessuto"
+  },
+  {
+    "categoria": "Tipi di legno"
+  },
+  {
+    "categoria": "Elettrodomestici"
+  },
+  {
+    "categoria": "Attrezzi da giardinaggio"
+  },
+  {
+    "categoria": "Attrezzi da lavoro"
+  },
+  {
+    "categoria": "Parti di un'automobile"
+  },
+  {
+    "categoria": "Tipi di veicoli"
+  },
+  {
+    "categoria": "Mezzi di trasporto"
+  },
+  {
+    "categoria": "Tipi di imbarcazione"
+  },
+  {
+    "categoria": "Cose che trovi in un cassetto"
+  },
+  {
+    "categoria": "Cose che trovi in soffitta"
+  },
+  {
+    "categoria": "Cose che trovi in cantina"
+  },
+  {
+    "categoria": "Cose che porti in campeggio"
+  },
+  {
+    "categoria": "Cose che usi per cucinare"
+  },
+  {
+    "categoria": "Cose che metti sul tavolo a cena"
+  },
+  {
+    "categoria": "Accessori per capelli"
+  },
+  {
+    "categoria": "Tipi di gioielli"
+  },
+  {
+    "categoria": "Tipi di orologio"
+  },
+  {
+    "categoria": "Oggetti per la pulizia della casa"
+  },
+  {
+    "categoria": "Cose che compri in farmacia"
+  },
+  {
+    "categoria": "Cose che trovi nella camera da letto"
+  },
+  {
+    "categoria": "Tipi di lampada"
+  },
+  {
+    "categoria": "Tipi di sedia"
+  },
+  {
+    "categoria": "Accessori per il telefono"
+  },
+  {
+    "categoria": "Cose che si rompono facilmente"
+  },
+  {
+    "categoria": "Cose fatte di vetro"
+  },
+  {
+    "categoria": "Cose fatte di legno"
+  },
+  {
+    "categoria": "Cose che funzionano con la batteria"
+  },
+  {
+    "categoria": "Cose che funzionano con l'elettricità"
+  },
+  {
+    "categoria": "Cose trasparenti"
+  },
+  {
+    "categoria": "Cose che si trovano in un portafoglio"
+  },
+  {
+    "categoria": "Cose di colore rosso"
+  },
+  {
+    "categoria": "Cose che profumano"
+  },
+  {
+    "categoria": "Cose che fanno rumore"
+  },
+  {
+    "categoria": "Utensili da cucina"
+  },
+  {
+    "categoria": "Tipi di pentola"
+  },
+  {
+    "categoria": "Cose che si appendono al muro"
+  },
+  {
+    "categoria": "Tipi di coltello"
+  },
+  {
+    "categoria": "Cose fatte di plastica"
+  },
+  {
+    "categoria": "Cose che si piegano"
+  },
+  {
+    "categoria": "Cose che si trovano in un hotel"
+  },
+  {
+    "categoria": "Professioni nel campo della medicina"
+  },
+  {
+    "categoria": "Professioni nel campo del diritto"
+  },
+  {
+    "categoria": "Lavori creativi"
+  },
+  {
+    "categoria": "Lavori all'aperto"
+  },
+  {
+    "categoria": "Lavori nel campo della tecnologia"
+  },
+  {
+    "categoria": "Professioni pericolose"
+  },
+  {
+    "categoria": "Lavori che richiedono un'uniforme"
+  },
+  {
+    "categoria": "Materie scolastiche"
+  },
+  {
+    "categoria": "Facoltà universitarie"
+  },
+  {
+    "categoria": "Lavori nel campo dello spettacolo"
+  },
+  {
+    "categoria": "Lavori nel campo della ristorazione"
+  },
+  {
+    "categoria": "Lavori che si fanno di notte"
+  },
+  {
+    "categoria": "Professioni sportive"
+  },
+  {
+    "categoria": "Lavori nel campo della moda"
+  },
+  {
+    "categoria": "Lavori nel campo dell'edilizia"
+  },
+  {
+    "categoria": "Lavori nel campo della finanza"
+  },
+  {
+    "categoria": "Lavori che si fanno da casa"
+  },
+  {
+    "categoria": "Tipi di medico specialista"
+  },
+  {
+    "categoria": "Lavori nel campo del turismo"
+  },
+  {
+    "categoria": "Lavori nel campo dell'agricoltura"
+  },
+  {
+    "categoria": "Lavori nel campo dell'arte"
+  },
+  {
+    "categoria": "Ruoli in un'azienda"
+  },
+  {
+    "categoria": "Professioni nel campo della sicurezza"
+  },
+  {
+    "categoria": "Lavori nel campo della comunicazione"
+  },
+  {
+    "categoria": "Professioni del futuro"
+  },
+  {
+    "categoria": "Cose che fai la mattina"
+  },
+  {
+    "categoria": "Cose che fai nel tempo libero"
+  },
+  {
+    "categoria": "Cose che fai in vacanza"
+  },
+  {
+    "categoria": "Cose che fai a una festa"
+  },
+  {
+    "categoria": "Cose che fai quando piove"
+  },
+  {
+    "categoria": "Cose che fai al mare"
+  },
+  {
+    "categoria": "Cose che fai in montagna"
+  },
+  {
+    "categoria": "Cose che fai quando sei annoiato"
+  },
+  {
+    "categoria": "Cose che ti fanno arrabbiare"
+  },
+  {
+    "categoria": "Cose che ti fanno ridere"
+  },
+  {
+    "categoria": "Cose che ti fanno paura"
+  },
+  {
+    "categoria": "Cose che fai a Capodanno"
+  },
+  {
+    "categoria": "Cose che fai il weekend"
+  },
+  {
+    "categoria": "Cose che fai in aereo"
+  },
+  {
+    "categoria": "Cose che fai al ristorante"
+  },
+  {
+    "categoria": "Cose che fai quando sei malato"
+  },
+  {
+    "categoria": "Cose che fai per rilassarti"
+  },
+  {
+    "categoria": "Cose che fai in palestra"
+  },
+  {
+    "categoria": "Cose che fai in auto"
+  },
+  {
+    "categoria": "Cose che si fanno al parco"
+  },
+  {
+    "categoria": "Cose che fai prima di uscire di casa"
+  },
+  {
+    "categoria": "Cose che fai dopo cena"
+  },
+  {
+    "categoria": "Abitudini mattutine comuni"
+  },
+  {
+    "categoria": "Tradizioni del matrimonio"
+  },
+  {
+    "categoria": "Cose che si fanno a un pigiama party"
+  },
+  {
+    "categoria": "Cose che si fanno a un barbecue"
+  },
+  {
+    "categoria": "Attività da fare in coppia"
+  },
+  {
+    "categoria": "Attività da fare con i bambini"
+  },
+  {
+    "categoria": "Cose proibite in aereo"
+  },
+  {
+    "categoria": "Cose proibite a scuola"
+  },
+  {
+    "categoria": "Cose che fai quando non riesci a dormire"
+  },
+  {
+    "categoria": "Cose che dimentichi spesso"
+  },
+  {
+    "categoria": "Cose che perdi facilmente"
+  },
+  {
+    "categoria": "Scuse per arrivare in ritardo"
+  },
+  {
+    "categoria": "Buoni propositi per l'anno nuovo"
+  },
+  {
+    "categoria": "Cose che ti rendono felice"
+  },
+  {
+    "categoria": "Cose che fai il primo giorno di lavoro"
+  },
+  {
+    "categoria": "Cose che fai in pausa pranzo"
+  },
+  {
+    "categoria": "Marche di smartphone"
+  },
+  {
+    "categoria": "Marche di orologi"
+  },
+  {
+    "categoria": "Marche di scarpe sportive"
+  },
+  {
+    "categoria": "Marche di profumi"
+  },
+  {
+    "categoria": "Marche di cosmetici"
+  },
+  {
+    "categoria": "Marche di borse di lusso"
+  },
+  {
+    "categoria": "Marche di moto"
+  },
+  {
+    "categoria": "Marche di elettronica"
+  },
+  {
+    "categoria": "Catene di fast food"
+  },
+  {
+    "categoria": "Catene di supermercati italiani"
+  },
+  {
+    "categoria": "Marche di computer"
+  },
+  {
+    "categoria": "Marche di cioccolato"
+  },
+  {
+    "categoria": "Compagnie aeree"
+  },
+  {
+    "categoria": "Marche di cereali"
+  },
+  {
+    "categoria": "Marche di gelato"
+  },
+  {
+    "categoria": "Marche di bibite"
+  },
+  {
+    "categoria": "Catene di alberghi"
+  },
+  {
+    "categoria": "Marche di giocattoli"
+  },
+  {
+    "categoria": "Marche di occhiali"
+  },
+  {
+    "categoria": "Piattaforme di streaming"
+  },
+  {
+    "categoria": "Marche di articoli sportivi"
+  },
+  {
+    "categoria": "Case di moda italiane"
+  },
+  {
+    "categoria": "Marche di auto di lusso"
+  },
+  {
+    "categoria": "Marche di auto sportive"
+  },
+  {
+    "categoria": "Marche di snack"
+  },
+  {
+    "categoria": "Marche di caffè"
+  },
+  {
+    "categoria": "Marche di detersivi"
+  },
+  {
+    "categoria": "Marche di dentifricio"
+  },
+  {
+    "categoria": "Marche di prodotti per capelli"
+  },
+  {
+    "categoria": "Linguaggi di programmazione"
+  },
+  {
+    "categoria": "Sistemi operativi"
+  },
+  {
+    "categoria": "Browser web"
+  },
+  {
+    "categoria": "Siti web famosi"
+  },
+  {
+    "categoria": "Aziende tecnologiche"
+  },
+  {
+    "categoria": "Componenti di un computer"
+  },
+  {
+    "categoria": "Marche di console per videogiochi"
+  },
+  {
+    "categoria": "Videogiochi degli anni 90"
+  },
+  {
+    "categoria": "Tipi di robot"
+  },
+  {
+    "categoria": "Dispositivi tecnologici"
+  },
+  {
+    "categoria": "Criptovalute"
+  },
+  {
+    "categoria": "Innovazioni tecnologiche"
+  },
+  {
+    "categoria": "Software famosi"
+  },
+  {
+    "categoria": "App di messaggistica"
+  },
+  {
+    "categoria": "App per la produttività"
+  },
+  {
+    "categoria": "Tipi di file digitali"
+  },
+  {
+    "categoria": "Tipi di vestito"
+  },
+  {
+    "categoria": "Capi di abbigliamento invernale"
+  },
+  {
+    "categoria": "Capi di abbigliamento estivo"
+  },
+  {
+    "categoria": "Accessori di moda"
+  },
+  {
+    "categoria": "Stili di moda"
+  },
+  {
+    "categoria": "Colori di capelli"
+  },
+  {
+    "categoria": "Tagli di capelli famosi"
+  },
+  {
+    "categoria": "Tipi di trucco"
+  },
+  {
+    "categoria": "Stilisti famosi"
+  },
+  {
+    "categoria": "Modelle famose"
+  },
+  {
+    "categoria": "Riviste di moda"
+  },
+  {
+    "categoria": "Pietre usate in gioielleria"
+  },
+  {
+    "categoria": "Tipi di occhiali da sole"
+  },
+  {
+    "categoria": "Tipi di borsa"
+  },
+  {
+    "categoria": "Tipi di tessuto pregiato"
+  },
+  {
+    "categoria": "Tipi di danza"
+  },
+  {
+    "categoria": "Superstizioni famose"
+  },
+  {
+    "categoria": "Feste e celebrazioni nel mondo"
+  },
+  {
+    "categoria": "Giochi di carte"
+  },
+  {
+    "categoria": "Giochi per bambini"
+  },
+  {
+    "categoria": "Hobby creativi"
+  },
+  {
+    "categoria": "Hobby all'aria aperta"
+  },
+  {
+    "categoria": "Tipi di collezionismo"
+  },
+  {
+    "categoria": "Parole in inglese che tutti conoscono"
+  },
+  {
+    "categoria": "Forme geometriche"
+  },
+  {
+    "categoria": "Cose che si vedono in cielo"
+  },
+  {
+    "categoria": "Cose che crescono in un giardino"
+  },
+  {
+    "categoria": "Alberi comuni"
+  },
+  {
+    "categoria": "Tipi di fungo"
+  },
+  {
+    "categoria": "Frutti che crescono in Italia"
+  },
+  {
+    "categoria": "Personaggi della Bibbia"
+  },
+  {
+    "categoria": "Eroi della mitologia greca"
+  },
+  {
+    "categoria": "Mostri e creature leggendarie"
+  },
+  {
+    "categoria": "Modi di dire italiani"
+  },
+  {
+    "categoria": "Proverbi italiani"
+  },
+  {
+    "categoria": "Tradizioni di Pasqua"
+  },
+  {
+    "categoria": "Tradizioni di Carnevale"
+  },
+  {
+    "categoria": "Santi famosi"
+  },
+  {
+    "categoria": "Papi famosi"
+  },
+  {
+    "categoria": "Dialetti italiani"
+  },
+  {
+    "categoria": "Città con la squadra in Serie A"
+  },
+  {
+    "categoria": "Bandiere con il colore rosso"
+  },
+  {
+    "categoria": "Paesi produttori di vino"
+  },
+  {
+    "categoria": "Paesi produttori di caffè"
+  },
+  {
+    "categoria": "Marche italiane famose nel mondo"
+  },
+  {
+    "categoria": "Cose inventate in Italia"
+  },
+  {
+    "categoria": "Cose che si trovano in un bar italiano"
+  },
+  {
+    "categoria": "Giochi da fare in macchina"
+  },
+  {
+    "categoria": "Giochi da fare in spiaggia"
+  },
+  {
+    "categoria": "Giochi da fare a casa"
+  },
+  {
+    "categoria": "Nomi italiani maschili"
+  },
+  {
+    "categoria": "Nomi italiani femminili"
+  },
+  {
+    "categoria": "Cognomi italiani comuni"
+  },
+  {
+    "categoria": "Cose associate alla Francia"
+  }
 ]

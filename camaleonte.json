@@ -1,42 +1,1622 @@
 [
-  {"parola_segreta": "Pizza"},
-  {"parola_segreta": "Matrimonio"},
-  {"parola_segreta": "Spiaggia"},
-  {"parola_segreta": "Calcio"},
-  {"parola_segreta": "Natale"},
-  {"parola_segreta": "Discoteca"},
-  {"parola_segreta": "Ospedale"},
-  {"parola_segreta": "Scuola"},
-  {"parola_segreta": "Aeroporto"},
-  {"parola_segreta": "Cinema"},
-  {"parola_segreta": "Compleanno"},
-  {"parola_segreta": "Palestra"},
-  {"parola_segreta": "Supermercato"},
-  {"parola_segreta": "Concerto"},
-  {"parola_segreta": "Ristorante"},
-  {"parola_segreta": "Campeggio"},
-  {"parola_segreta": "Biblioteca"},
-  {"parola_segreta": "Carnevale"},
-  {"parola_segreta": "Zoo"},
-  {"parola_segreta": "Funerale"},
-  {"parola_segreta": "Luna Park"},
-  {"parola_segreta": "Montagna"},
-  {"parola_segreta": "Barbiere"},
-  {"parola_segreta": "Museo"},
-  {"parola_segreta": "Treno"},
-  {"parola_segreta": "Piscina"},
-  {"parola_segreta": "Casinò"},
-  {"parola_segreta": "Halloween"},
-  {"parola_segreta": "Festival"},
-  {"parola_segreta": "Vacanza"},
-  {"parola_segreta": "Capodanno"},
-  {"parola_segreta": "Safari"},
-  {"parola_segreta": "Parco divertimenti"},
-  {"parola_segreta": "Dentista"},
-  {"parola_segreta": "Lavanderia"},
-  {"parola_segreta": "Pasqua"},
-  {"parola_segreta": "Karaoke"},
-  {"parola_segreta": "Mercatino"},
-  {"parola_segreta": "Teatro"},
-  {"parola_segreta": "Spa"}
+  {
+    "parola_segreta": "Pizza"
+  },
+  {
+    "parola_segreta": "Matrimonio"
+  },
+  {
+    "parola_segreta": "Spiaggia"
+  },
+  {
+    "parola_segreta": "Calcio"
+  },
+  {
+    "parola_segreta": "Natale"
+  },
+  {
+    "parola_segreta": "Discoteca"
+  },
+  {
+    "parola_segreta": "Ospedale"
+  },
+  {
+    "parola_segreta": "Scuola"
+  },
+  {
+    "parola_segreta": "Aeroporto"
+  },
+  {
+    "parola_segreta": "Cinema"
+  },
+  {
+    "parola_segreta": "Compleanno"
+  },
+  {
+    "parola_segreta": "Palestra"
+  },
+  {
+    "parola_segreta": "Supermercato"
+  },
+  {
+    "parola_segreta": "Concerto"
+  },
+  {
+    "parola_segreta": "Ristorante"
+  },
+  {
+    "parola_segreta": "Campeggio"
+  },
+  {
+    "parola_segreta": "Biblioteca"
+  },
+  {
+    "parola_segreta": "Carnevale"
+  },
+  {
+    "parola_segreta": "Zoo"
+  },
+  {
+    "parola_segreta": "Funerale"
+  },
+  {
+    "parola_segreta": "Luna Park"
+  },
+  {
+    "parola_segreta": "Montagna"
+  },
+  {
+    "parola_segreta": "Barbiere"
+  },
+  {
+    "parola_segreta": "Museo"
+  },
+  {
+    "parola_segreta": "Treno"
+  },
+  {
+    "parola_segreta": "Piscina"
+  },
+  {
+    "parola_segreta": "Casinò"
+  },
+  {
+    "parola_segreta": "Halloween"
+  },
+  {
+    "parola_segreta": "Festival"
+  },
+  {
+    "parola_segreta": "Vacanza"
+  },
+  {
+    "parola_segreta": "Capodanno"
+  },
+  {
+    "parola_segreta": "Safari"
+  },
+  {
+    "parola_segreta": "Parco divertimenti"
+  },
+  {
+    "parola_segreta": "Dentista"
+  },
+  {
+    "parola_segreta": "Lavanderia"
+  },
+  {
+    "parola_segreta": "Pasqua"
+  },
+  {
+    "parola_segreta": "Karaoke"
+  },
+  {
+    "parola_segreta": "Mercatino"
+  },
+  {
+    "parola_segreta": "Teatro"
+  },
+  {
+    "parola_segreta": "Spa"
+  },
+  {
+    "parola_segreta": "Gelato"
+  },
+  {
+    "parola_segreta": "Pasta"
+  },
+  {
+    "parola_segreta": "Tiramisù"
+  },
+  {
+    "parola_segreta": "Lasagna"
+  },
+  {
+    "parola_segreta": "Risotto"
+  },
+  {
+    "parola_segreta": "Cioccolato"
+  },
+  {
+    "parola_segreta": "Formaggio"
+  },
+  {
+    "parola_segreta": "Prosciutto"
+  },
+  {
+    "parola_segreta": "Cappuccino"
+  },
+  {
+    "parola_segreta": "Espresso"
+  },
+  {
+    "parola_segreta": "Cornetto"
+  },
+  {
+    "parola_segreta": "Panettone"
+  },
+  {
+    "parola_segreta": "Focaccia"
+  },
+  {
+    "parola_segreta": "Gnocchi"
+  },
+  {
+    "parola_segreta": "Polenta"
+  },
+  {
+    "parola_segreta": "Parmigiano"
+  },
+  {
+    "parola_segreta": "Mozzarella"
+  },
+  {
+    "parola_segreta": "Nutella"
+  },
+  {
+    "parola_segreta": "Cannolo"
+  },
+  {
+    "parola_segreta": "Pesto"
+  },
+  {
+    "parola_segreta": "Ravioli"
+  },
+  {
+    "parola_segreta": "Tortellini"
+  },
+  {
+    "parola_segreta": "Minestrone"
+  },
+  {
+    "parola_segreta": "Carbonara"
+  },
+  {
+    "parola_segreta": "Bistecca"
+  },
+  {
+    "parola_segreta": "Salsiccia"
+  },
+  {
+    "parola_segreta": "Pancetta"
+  },
+  {
+    "parola_segreta": "Cotoletta"
+  },
+  {
+    "parola_segreta": "Bruschetta"
+  },
+  {
+    "parola_segreta": "Panino"
+  },
+  {
+    "parola_segreta": "Sushi"
+  },
+  {
+    "parola_segreta": "Hamburger"
+  },
+  {
+    "parola_segreta": "Croissant"
+  },
+  {
+    "parola_segreta": "Miele"
+  },
+  {
+    "parola_segreta": "Burro"
+  },
+  {
+    "parola_segreta": "Limone"
+  },
+  {
+    "parola_segreta": "Fragola"
+  },
+  {
+    "parola_segreta": "Anguria"
+  },
+  {
+    "parola_segreta": "Ciliegia"
+  },
+  {
+    "parola_segreta": "Pesca"
+  },
+  {
+    "parola_segreta": "Banana"
+  },
+  {
+    "parola_segreta": "Mela"
+  },
+  {
+    "parola_segreta": "Arancia"
+  },
+  {
+    "parola_segreta": "Uva"
+  },
+  {
+    "parola_segreta": "Cocco"
+  },
+  {
+    "parola_segreta": "Ananas"
+  },
+  {
+    "parola_segreta": "Mandarino"
+  },
+  {
+    "parola_segreta": "Fico"
+  },
+  {
+    "parola_segreta": "Castagna"
+  },
+  {
+    "parola_segreta": "Noce"
+  },
+  {
+    "parola_segreta": "Mandorla"
+  },
+  {
+    "parola_segreta": "Pistacchio"
+  },
+  {
+    "parola_segreta": "Telefono"
+  },
+  {
+    "parola_segreta": "Orologio"
+  },
+  {
+    "parola_segreta": "Ombrello"
+  },
+  {
+    "parola_segreta": "Chiave"
+  },
+  {
+    "parola_segreta": "Candela"
+  },
+  {
+    "parola_segreta": "Specchio"
+  },
+  {
+    "parola_segreta": "Cuscino"
+  },
+  {
+    "parola_segreta": "Tappeto"
+  },
+  {
+    "parola_segreta": "Quadro"
+  },
+  {
+    "parola_segreta": "Valigia"
+  },
+  {
+    "parola_segreta": "Zaino"
+  },
+  {
+    "parola_segreta": "Occhiali"
+  },
+  {
+    "parola_segreta": "Anello"
+  },
+  {
+    "parola_segreta": "Collana"
+  },
+  {
+    "parola_segreta": "Bracciale"
+  },
+  {
+    "parola_segreta": "Portafoglio"
+  },
+  {
+    "parola_segreta": "Pettine"
+  },
+  {
+    "parola_segreta": "Sapone"
+  },
+  {
+    "parola_segreta": "Asciugamano"
+  },
+  {
+    "parola_segreta": "Coltello"
+  },
+  {
+    "parola_segreta": "Forchetta"
+  },
+  {
+    "parola_segreta": "Cucchiaio"
+  },
+  {
+    "parola_segreta": "Piatto"
+  },
+  {
+    "parola_segreta": "Bicchiere"
+  },
+  {
+    "parola_segreta": "Bottiglia"
+  },
+  {
+    "parola_segreta": "Pentola"
+  },
+  {
+    "parola_segreta": "Padella"
+  },
+  {
+    "parola_segreta": "Lampada"
+  },
+  {
+    "parola_segreta": "Divano"
+  },
+  {
+    "parola_segreta": "Armadio"
+  },
+  {
+    "parola_segreta": "Finestra"
+  },
+  {
+    "parola_segreta": "Scala"
+  },
+  {
+    "parola_segreta": "Porta"
+  },
+  {
+    "parola_segreta": "Calendario"
+  },
+  {
+    "parola_segreta": "Matita"
+  },
+  {
+    "parola_segreta": "Forbici"
+  },
+  {
+    "parola_segreta": "Colla"
+  },
+  {
+    "parola_segreta": "Busta"
+  },
+  {
+    "parola_segreta": "Francobollo"
+  },
+  {
+    "parola_segreta": "Fotografia"
+  },
+  {
+    "parola_segreta": "Chitarra"
+  },
+  {
+    "parola_segreta": "Pianoforte"
+  },
+  {
+    "parola_segreta": "Violino"
+  },
+  {
+    "parola_segreta": "Tamburo"
+  },
+  {
+    "parola_segreta": "Tromba"
+  },
+  {
+    "parola_segreta": "Flauto"
+  },
+  {
+    "parola_segreta": "Fisarmonica"
+  },
+  {
+    "parola_segreta": "Arcobaleno"
+  },
+  {
+    "parola_segreta": "Tramonto"
+  },
+  {
+    "parola_segreta": "Alba"
+  },
+  {
+    "parola_segreta": "Fulmine"
+  },
+  {
+    "parola_segreta": "Terremoto"
+  },
+  {
+    "parola_segreta": "Tornado"
+  },
+  {
+    "parola_segreta": "Nebbia"
+  },
+  {
+    "parola_segreta": "Neve"
+  },
+  {
+    "parola_segreta": "Pioggia"
+  },
+  {
+    "parola_segreta": "Grandine"
+  },
+  {
+    "parola_segreta": "Ghiaccio"
+  },
+  {
+    "parola_segreta": "Sole"
+  },
+  {
+    "parola_segreta": "Luna"
+  },
+  {
+    "parola_segreta": "Stella"
+  },
+  {
+    "parola_segreta": "Nuvola"
+  },
+  {
+    "parola_segreta": "Fiume"
+  },
+  {
+    "parola_segreta": "Lago"
+  },
+  {
+    "parola_segreta": "Mare"
+  },
+  {
+    "parola_segreta": "Oceano"
+  },
+  {
+    "parola_segreta": "Bosco"
+  },
+  {
+    "parola_segreta": "Collina"
+  },
+  {
+    "parola_segreta": "Valle"
+  },
+  {
+    "parola_segreta": "Caverna"
+  },
+  {
+    "parola_segreta": "Sabbia"
+  },
+  {
+    "parola_segreta": "Vulcano"
+  },
+  {
+    "parola_segreta": "Deserto"
+  },
+  {
+    "parola_segreta": "Foresta"
+  },
+  {
+    "parola_segreta": "Cascata"
+  },
+  {
+    "parola_segreta": "Isola"
+  },
+  {
+    "parola_segreta": "Gatto"
+  },
+  {
+    "parola_segreta": "Cane"
+  },
+  {
+    "parola_segreta": "Cavallo"
+  },
+  {
+    "parola_segreta": "Elefante"
+  },
+  {
+    "parola_segreta": "Leone"
+  },
+  {
+    "parola_segreta": "Tigre"
+  },
+  {
+    "parola_segreta": "Orso"
+  },
+  {
+    "parola_segreta": "Lupo"
+  },
+  {
+    "parola_segreta": "Volpe"
+  },
+  {
+    "parola_segreta": "Delfino"
+  },
+  {
+    "parola_segreta": "Balena"
+  },
+  {
+    "parola_segreta": "Squalo"
+  },
+  {
+    "parola_segreta": "Aquila"
+  },
+  {
+    "parola_segreta": "Pappagallo"
+  },
+  {
+    "parola_segreta": "Pinguino"
+  },
+  {
+    "parola_segreta": "Coccodrillo"
+  },
+  {
+    "parola_segreta": "Serpente"
+  },
+  {
+    "parola_segreta": "Tartaruga"
+  },
+  {
+    "parola_segreta": "Farfalla"
+  },
+  {
+    "parola_segreta": "Ape"
+  },
+  {
+    "parola_segreta": "Ragno"
+  },
+  {
+    "parola_segreta": "Formica"
+  },
+  {
+    "parola_segreta": "Coniglio"
+  },
+  {
+    "parola_segreta": "Pecora"
+  },
+  {
+    "parola_segreta": "Mucca"
+  },
+  {
+    "parola_segreta": "Maiale"
+  },
+  {
+    "parola_segreta": "Gallina"
+  },
+  {
+    "parola_segreta": "Scimmia"
+  },
+  {
+    "parola_segreta": "Giraffa"
+  },
+  {
+    "parola_segreta": "Zebra"
+  },
+  {
+    "parola_segreta": "Cammello"
+  },
+  {
+    "parola_segreta": "Pipistrello"
+  },
+  {
+    "parola_segreta": "Gufo"
+  },
+  {
+    "parola_segreta": "Cervo"
+  },
+  {
+    "parola_segreta": "Cinghiale"
+  },
+  {
+    "parola_segreta": "Riccio"
+  },
+  {
+    "parola_segreta": "Topo"
+  },
+  {
+    "parola_segreta": "Rana"
+  },
+  {
+    "parola_segreta": "Polpo"
+  },
+  {
+    "parola_segreta": "Medusa"
+  },
+  {
+    "parola_segreta": "Granchio"
+  },
+  {
+    "parola_segreta": "Lumaca"
+  },
+  {
+    "parola_segreta": "Cigno"
+  },
+  {
+    "parola_segreta": "Fenicottero"
+  },
+  {
+    "parola_segreta": "Amore"
+  },
+  {
+    "parola_segreta": "Amicizia"
+  },
+  {
+    "parola_segreta": "Libertà"
+  },
+  {
+    "parola_segreta": "Giustizia"
+  },
+  {
+    "parola_segreta": "Guerra"
+  },
+  {
+    "parola_segreta": "Pace"
+  },
+  {
+    "parola_segreta": "Sogno"
+  },
+  {
+    "parola_segreta": "Fortuna"
+  },
+  {
+    "parola_segreta": "Paura"
+  },
+  {
+    "parola_segreta": "Coraggio"
+  },
+  {
+    "parola_segreta": "Gelosia"
+  },
+  {
+    "parola_segreta": "Nostalgia"
+  },
+  {
+    "parola_segreta": "Speranza"
+  },
+  {
+    "parola_segreta": "Felicità"
+  },
+  {
+    "parola_segreta": "Tristezza"
+  },
+  {
+    "parola_segreta": "Rabbia"
+  },
+  {
+    "parola_segreta": "Vergogna"
+  },
+  {
+    "parola_segreta": "Orgoglio"
+  },
+  {
+    "parola_segreta": "Fiducia"
+  },
+  {
+    "parola_segreta": "Rispetto"
+  },
+  {
+    "parola_segreta": "Nuoto"
+  },
+  {
+    "parola_segreta": "Tennis"
+  },
+  {
+    "parola_segreta": "Basket"
+  },
+  {
+    "parola_segreta": "Pallavolo"
+  },
+  {
+    "parola_segreta": "Ciclismo"
+  },
+  {
+    "parola_segreta": "Boxe"
+  },
+  {
+    "parola_segreta": "Yoga"
+  },
+  {
+    "parola_segreta": "Surf"
+  },
+  {
+    "parola_segreta": "Sci"
+  },
+  {
+    "parola_segreta": "Snowboard"
+  },
+  {
+    "parola_segreta": "Pattinaggio"
+  },
+  {
+    "parola_segreta": "Equitazione"
+  },
+  {
+    "parola_segreta": "Arrampicata"
+  },
+  {
+    "parola_segreta": "Vela"
+  },
+  {
+    "parola_segreta": "Scherma"
+  },
+  {
+    "parola_segreta": "Rugby"
+  },
+  {
+    "parola_segreta": "Golf"
+  },
+  {
+    "parola_segreta": "Baseball"
+  },
+  {
+    "parola_segreta": "Poker"
+  },
+  {
+    "parola_segreta": "Scacchi"
+  },
+  {
+    "parola_segreta": "Farmacia"
+  },
+  {
+    "parola_segreta": "Chiesa"
+  },
+  {
+    "parola_segreta": "Stadio"
+  },
+  {
+    "parola_segreta": "Porto"
+  },
+  {
+    "parola_segreta": "Faro"
+  },
+  {
+    "parola_segreta": "Giardino"
+  },
+  {
+    "parola_segreta": "Parco"
+  },
+  {
+    "parola_segreta": "Castello"
+  },
+  {
+    "parola_segreta": "Ponte"
+  },
+  {
+    "parola_segreta": "Stazione"
+  },
+  {
+    "parola_segreta": "Grotta"
+  },
+  {
+    "parola_segreta": "Fontana"
+  },
+  {
+    "parola_segreta": "Palazzo"
+  },
+  {
+    "parola_segreta": "Torre"
+  },
+  {
+    "parola_segreta": "Piazza"
+  },
+  {
+    "parola_segreta": "Cattedrale"
+  },
+  {
+    "parola_segreta": "Monastero"
+  },
+  {
+    "parola_segreta": "Cimitero"
+  },
+  {
+    "parola_segreta": "Pizzeria"
+  },
+  {
+    "parola_segreta": "Panetteria"
+  },
+  {
+    "parola_segreta": "Gelateria"
+  },
+  {
+    "parola_segreta": "Tabaccheria"
+  },
+  {
+    "parola_segreta": "Edicola"
+  },
+  {
+    "parola_segreta": "Banca"
+  },
+  {
+    "parola_segreta": "Tribunale"
+  },
+  {
+    "parola_segreta": "Università"
+  },
+  {
+    "parola_segreta": "Asilo"
+  },
+  {
+    "parola_segreta": "Fabbrica"
+  },
+  {
+    "parola_segreta": "Cantina"
+  },
+  {
+    "parola_segreta": "Soffitta"
+  },
+  {
+    "parola_segreta": "Terrazza"
+  },
+  {
+    "parola_segreta": "Balcone"
+  },
+  {
+    "parola_segreta": "Autostrada"
+  },
+  {
+    "parola_segreta": "Parcheggio"
+  },
+  {
+    "parola_segreta": "Dogana"
+  },
+  {
+    "parola_segreta": "Prigione"
+  },
+  {
+    "parola_segreta": "Laboratorio"
+  },
+  {
+    "parola_segreta": "Poliziotto"
+  },
+  {
+    "parola_segreta": "Pompiere"
+  },
+  {
+    "parola_segreta": "Astronauta"
+  },
+  {
+    "parola_segreta": "Pirata"
+  },
+  {
+    "parola_segreta": "Cowboy"
+  },
+  {
+    "parola_segreta": "Ninja"
+  },
+  {
+    "parola_segreta": "Strega"
+  },
+  {
+    "parola_segreta": "Mago"
+  },
+  {
+    "parola_segreta": "Re"
+  },
+  {
+    "parola_segreta": "Regina"
+  },
+  {
+    "parola_segreta": "Principe"
+  },
+  {
+    "parola_segreta": "Principessa"
+  },
+  {
+    "parola_segreta": "Chef"
+  },
+  {
+    "parola_segreta": "Pilota"
+  },
+  {
+    "parola_segreta": "Capitano"
+  },
+  {
+    "parola_segreta": "Soldato"
+  },
+  {
+    "parola_segreta": "Gladiatore"
+  },
+  {
+    "parola_segreta": "Cavaliere"
+  },
+  {
+    "parola_segreta": "Monaco"
+  },
+  {
+    "parola_segreta": "Samurai"
+  },
+  {
+    "parola_segreta": "Detective"
+  },
+  {
+    "parola_segreta": "Arbitro"
+  },
+  {
+    "parola_segreta": "Clown"
+  },
+  {
+    "parola_segreta": "Tatuaggio"
+  },
+  {
+    "parola_segreta": "Puzzle"
+  },
+  {
+    "parola_segreta": "Origami"
+  },
+  {
+    "parola_segreta": "Magia"
+  },
+  {
+    "parola_segreta": "Circo"
+  },
+  {
+    "parola_segreta": "Giungla"
+  },
+  {
+    "parola_segreta": "Tesoro"
+  },
+  {
+    "parola_segreta": "Mappa"
+  },
+  {
+    "parola_segreta": "Bussola"
+  },
+  {
+    "parola_segreta": "Bandiera"
+  },
+  {
+    "parola_segreta": "Corona"
+  },
+  {
+    "parola_segreta": "Spada"
+  },
+  {
+    "parola_segreta": "Scudo"
+  },
+  {
+    "parola_segreta": "Freccia"
+  },
+  {
+    "parola_segreta": "Martello"
+  },
+  {
+    "parola_segreta": "Catena"
+  },
+  {
+    "parola_segreta": "Ancora"
+  },
+  {
+    "parola_segreta": "Labirinto"
+  },
+  {
+    "parola_segreta": "Semaforo"
+  },
+  {
+    "parola_segreta": "Ascensore"
+  },
+  {
+    "parola_segreta": "Bicicletta"
+  },
+  {
+    "parola_segreta": "Motocicletta"
+  },
+  {
+    "parola_segreta": "Elicottero"
+  },
+  {
+    "parola_segreta": "Sottomarino"
+  },
+  {
+    "parola_segreta": "Razzo"
+  },
+  {
+    "parola_segreta": "Mongolfiera"
+  },
+  {
+    "parola_segreta": "Paracadute"
+  },
+  {
+    "parola_segreta": "Ambulanza"
+  },
+  {
+    "parola_segreta": "Taxi"
+  },
+  {
+    "parola_segreta": "Autobus"
+  },
+  {
+    "parola_segreta": "Traghetto"
+  },
+  {
+    "parola_segreta": "Metropolitana"
+  },
+  {
+    "parola_segreta": "Funivia"
+  },
+  {
+    "parola_segreta": "Gondola"
+  },
+  {
+    "parola_segreta": "Canoa"
+  },
+  {
+    "parola_segreta": "Trattore"
+  },
+  {
+    "parola_segreta": "Pittura"
+  },
+  {
+    "parola_segreta": "Scultura"
+  },
+  {
+    "parola_segreta": "Danza"
+  },
+  {
+    "parola_segreta": "Canto"
+  },
+  {
+    "parola_segreta": "Recitazione"
+  },
+  {
+    "parola_segreta": "Giardinaggio"
+  },
+  {
+    "parola_segreta": "Cucina"
+  },
+  {
+    "parola_segreta": "Meditazione"
+  },
+  {
+    "parola_segreta": "Lettura"
+  },
+  {
+    "parola_segreta": "Scrittura"
+  },
+  {
+    "parola_segreta": "Disegno"
+  },
+  {
+    "parola_segreta": "Ricamo"
+  },
+  {
+    "parola_segreta": "Uncinetto"
+  },
+  {
+    "parola_segreta": "Ceramica"
+  },
+  {
+    "parola_segreta": "Astronomia"
+  },
+  {
+    "parola_segreta": "Archeologia"
+  },
+  {
+    "parola_segreta": "Alchimia"
+  },
+  {
+    "parola_segreta": "Diplomazia"
+  },
+  {
+    "parola_segreta": "Democrazia"
+  },
+  {
+    "parola_segreta": "Rivoluzione"
+  },
+  {
+    "parola_segreta": "Propaganda"
+  },
+  {
+    "parola_segreta": "Censura"
+  },
+  {
+    "parola_segreta": "Sabotaggio"
+  },
+  {
+    "parola_segreta": "Contrabbando"
+  },
+  {
+    "parola_segreta": "Piramide"
+  },
+  {
+    "parola_segreta": "Colosseo"
+  },
+  {
+    "parola_segreta": "Gondoliere"
+  },
+  {
+    "parola_segreta": "Carrozza"
+  },
+  {
+    "parola_segreta": "Campana"
+  },
+  {
+    "parola_segreta": "Lanterna"
+  },
+  {
+    "parola_segreta": "Fiaccola"
+  },
+  {
+    "parola_segreta": "Camino"
+  },
+  {
+    "parola_segreta": "Amaca"
+  },
+  {
+    "parola_segreta": "Tenda"
+  },
+  {
+    "parola_segreta": "Barca"
+  },
+  {
+    "parola_segreta": "Timone"
+  },
+  {
+    "parola_segreta": "Telescopio"
+  },
+  {
+    "parola_segreta": "Microscopio"
+  },
+  {
+    "parola_segreta": "Caleidoscopio"
+  },
+  {
+    "parola_segreta": "Binocolo"
+  },
+  {
+    "parola_segreta": "Lente"
+  },
+  {
+    "parola_segreta": "Diamante"
+  },
+  {
+    "parola_segreta": "Rubino"
+  },
+  {
+    "parola_segreta": "Smeraldo"
+  },
+  {
+    "parola_segreta": "Perla"
+  },
+  {
+    "parola_segreta": "Oro"
+  },
+  {
+    "parola_segreta": "Argento"
+  },
+  {
+    "parola_segreta": "Bronzo"
+  },
+  {
+    "parola_segreta": "Ferro"
+  },
+  {
+    "parola_segreta": "Rame"
+  },
+  {
+    "parola_segreta": "Cristallo"
+  },
+  {
+    "parola_segreta": "Oasi"
+  },
+  {
+    "parola_segreta": "Iceberg"
+  },
+  {
+    "parola_segreta": "Geyser"
+  },
+  {
+    "parola_segreta": "Aurora boreale"
+  },
+  {
+    "parola_segreta": "Eclissi"
+  },
+  {
+    "parola_segreta": "Cometa"
+  },
+  {
+    "parola_segreta": "Meteorite"
+  },
+  {
+    "parola_segreta": "Galassia"
+  },
+  {
+    "parola_segreta": "Buco nero"
+  },
+  {
+    "parola_segreta": "Satellite"
+  },
+  {
+    "parola_segreta": "Gravità"
+  },
+  {
+    "parola_segreta": "Ossigeno"
+  },
+  {
+    "parola_segreta": "Energia"
+  },
+  {
+    "parola_segreta": "Elettricità"
+  },
+  {
+    "parola_segreta": "Magnete"
+  },
+  {
+    "parola_segreta": "Batteria"
+  },
+  {
+    "parola_segreta": "Motore"
+  },
+  {
+    "parola_segreta": "Ingranaggio"
+  },
+  {
+    "parola_segreta": "Ruota"
+  },
+  {
+    "parola_segreta": "Elica"
+  },
+  {
+    "parola_segreta": "Pendolo"
+  },
+  {
+    "parola_segreta": "Clessidra"
+  },
+  {
+    "parola_segreta": "Bolla"
+  },
+  {
+    "parola_segreta": "Fiamma"
+  },
+  {
+    "parola_segreta": "Fumo"
+  },
+  {
+    "parola_segreta": "Cenere"
+  },
+  {
+    "parola_segreta": "Polvere"
+  },
+  {
+    "parola_segreta": "Rugiada"
+  },
+  {
+    "parola_segreta": "Brina"
+  },
+  {
+    "parola_segreta": "Ombra"
+  },
+  {
+    "parola_segreta": "Eco"
+  },
+  {
+    "parola_segreta": "Silenzio"
+  },
+  {
+    "parola_segreta": "Melodia"
+  },
+  {
+    "parola_segreta": "Ritmo"
+  },
+  {
+    "parola_segreta": "Accordo"
+  },
+  {
+    "parola_segreta": "Applauso"
+  },
+  {
+    "parola_segreta": "Fischio"
+  },
+  {
+    "parola_segreta": "Sirena"
+  },
+  {
+    "parola_segreta": "Dinosauro"
+  },
+  {
+    "parola_segreta": "Unicorno"
+  },
+  {
+    "parola_segreta": "Drago"
+  },
+  {
+    "parola_segreta": "Fenice"
+  },
+  {
+    "parola_segreta": "Fantasma"
+  },
+  {
+    "parola_segreta": "Vampiro"
+  },
+  {
+    "parola_segreta": "Zombi"
+  },
+  {
+    "parola_segreta": "Lupo mannaro"
+  },
+  {
+    "parola_segreta": "Elfo"
+  },
+  {
+    "parola_segreta": "Fata"
+  },
+  {
+    "parola_segreta": "Gnomo"
+  },
+  {
+    "parola_segreta": "Gigante"
+  },
+  {
+    "parola_segreta": "Ciclope"
+  },
+  {
+    "parola_segreta": "Centauro"
+  },
+  {
+    "parola_segreta": "Minotauro"
+  },
+  {
+    "parola_segreta": "Sfinge"
+  },
+  {
+    "parola_segreta": "Trofeo"
+  },
+  {
+    "parola_segreta": "Medaglia"
+  },
+  {
+    "parola_segreta": "Diploma"
+  },
+  {
+    "parola_segreta": "Patente"
+  },
+  {
+    "parola_segreta": "Passaporto"
+  },
+  {
+    "parola_segreta": "Biglietto"
+  },
+  {
+    "parola_segreta": "Ricevuta"
+  },
+  {
+    "parola_segreta": "Contratto"
+  },
+  {
+    "parola_segreta": "Testamento"
+  },
+  {
+    "parola_segreta": "Segreto"
+  },
+  {
+    "parola_segreta": "Bugia"
+  },
+  {
+    "parola_segreta": "Promessa"
+  },
+  {
+    "parola_segreta": "Vendetta"
+  },
+  {
+    "parola_segreta": "Perdono"
+  },
+  {
+    "parola_segreta": "Miracolo"
+  },
+  {
+    "parola_segreta": "Destino"
+  },
+  {
+    "parola_segreta": "Tradizione"
+  },
+  {
+    "parola_segreta": "Leggenda"
+  },
+  {
+    "parola_segreta": "Mito"
+  },
+  {
+    "parola_segreta": "Profezia"
+  },
+  {
+    "parola_segreta": "Maledizione"
+  },
+  {
+    "parola_segreta": "Benedizione"
+  },
+  {
+    "parola_segreta": "Preghiera"
+  },
+  {
+    "parola_segreta": "Confessione"
+  },
+  {
+    "parola_segreta": "Battesimo"
+  },
+  {
+    "parola_segreta": "Comunione"
+  },
+  {
+    "parola_segreta": "Rosario"
+  },
+  {
+    "parola_segreta": "Crocifisso"
+  },
+  {
+    "parola_segreta": "Campagna"
+  },
+  {
+    "parola_segreta": "Vigna"
+  },
+  {
+    "parola_segreta": "Oliveto"
+  },
+  {
+    "parola_segreta": "Frutteto"
+  },
+  {
+    "parola_segreta": "Mulino"
+  },
+  {
+    "parola_segreta": "Pozzo"
+  },
+  {
+    "parola_segreta": "Recinto"
+  },
+  {
+    "parola_segreta": "Stalla"
+  },
+  {
+    "parola_segreta": "Fienile"
+  },
+  {
+    "parola_segreta": "Trattoria"
+  },
+  {
+    "parola_segreta": "Osteria"
+  },
+  {
+    "parola_segreta": "Enoteca"
+  },
+  {
+    "parola_segreta": "Mercato"
+  },
+  {
+    "parola_segreta": "Bancarella"
+  },
+  {
+    "parola_segreta": "Vetrina"
+  },
+  {
+    "parola_segreta": "Saldo"
+  },
+  {
+    "parola_segreta": "Scommessa"
+  },
+  {
+    "parola_segreta": "Lotteria"
+  },
+  {
+    "parola_segreta": "Jackpot"
+  },
+  {
+    "parola_segreta": "Asta"
+  },
+  {
+    "parola_segreta": "Sciopero"
+  },
+  {
+    "parola_segreta": "Protesta"
+  },
+  {
+    "parola_segreta": "Elezione"
+  },
+  {
+    "parola_segreta": "Referendum"
+  },
+  {
+    "parola_segreta": "Parlamento"
+  },
+  {
+    "parola_segreta": "Costituzione"
+  },
+  {
+    "parola_segreta": "Frontiera"
+  },
+  {
+    "parola_segreta": "Ambasciata"
+  },
+  {
+    "parola_segreta": "Consolato"
+  },
+  {
+    "parola_segreta": "Cravatta"
+  },
+  {
+    "parola_segreta": "Cappello"
+  },
+  {
+    "parola_segreta": "Sciarpa"
+  },
+  {
+    "parola_segreta": "Guanti"
+  },
+  {
+    "parola_segreta": "Cintura"
+  },
+  {
+    "parola_segreta": "Stivali"
+  },
+  {
+    "parola_segreta": "Sandali"
+  },
+  {
+    "parola_segreta": "Pigiama"
+  },
+  {
+    "parola_segreta": "Costume"
+  },
+  {
+    "parola_segreta": "Vestito"
+  },
+  {
+    "parola_segreta": "Giacca"
+  },
+  {
+    "parola_segreta": "Impermeabile"
+  },
+  {
+    "parola_segreta": "Grembiule"
+  },
+  {
+    "parola_segreta": "Maschera"
+  },
+  {
+    "parola_segreta": "Parrucca"
+  },
+  {
+    "parola_segreta": "Trucco"
+  },
+  {
+    "parola_segreta": "Profumo"
+  },
+  {
+    "parola_segreta": "Rossetto"
+  },
+  {
+    "parola_segreta": "Smalto"
+  },
+  {
+    "parola_segreta": "Tavolozza"
+  },
+  {
+    "parola_segreta": "Pennello"
+  },
+  {
+    "parola_segreta": "Tela"
+  },
+  {
+    "parola_segreta": "Cornice"
+  },
+  {
+    "parola_segreta": "Mosaico"
+  },
+  {
+    "parola_segreta": "Affresco"
+  },
+  {
+    "parola_segreta": "Acquarello"
+  },
+  {
+    "parola_segreta": "Mattonella"
+  },
+  {
+    "parola_segreta": "Marmo"
+  },
+  {
+    "parola_segreta": "Granito"
+  },
+  {
+    "parola_segreta": "Porcellana"
+  }
 ]
