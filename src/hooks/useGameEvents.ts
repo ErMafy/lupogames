@@ -57,6 +57,8 @@ export function useGameEvents() {
     roundNumber: number;
     gameType: GameType;
     phase?: string;
+    /** Presente su round-started del Camaleonte (ridondante col nested data) */
+    chameleonId?: string;
     data: TriviaRoundData | PromptRoundData | SecretRoundData | Record<string, unknown>;
   }) => {
     let view: ControllerView = 'waiting';
@@ -101,10 +103,7 @@ export function useGameEvents() {
       default: {
         // All new games use 'new-game-play' controller view
         const inner = data.data as Record<string, unknown>;
-        const topCh =
-          typeof (data as { chameleonId?: string }).chameleonId === 'string'
-            ? (data as { chameleonId: string }).chameleonId
-            : '';
+        const topCh = typeof data.chameleonId === 'string' ? data.chameleonId : '';
         view = 'new-game-play';
         timeLimit = typeof inner.timeLimit === 'number' ? inner.timeLimit : 30;
         roundPayload = {
@@ -276,14 +275,20 @@ export function useGameEvents() {
         handleGameStarted(data as { gameType: GameType; totalRounds: number });
         break;
       case 'round-started':
-        handleRoundStarted(data as {
-          roundNumber: number;
-          gameType: GameType;
-          data: TriviaRoundData | PromptRoundData | SecretRoundData;
-        });
+        handleRoundStarted(
+          data as {
+            roundNumber: number;
+            gameType: GameType;
+            phase?: string;
+            chameleonId?: string;
+            data: TriviaRoundData | PromptRoundData | SecretRoundData | Record<string, unknown>;
+          },
+        );
         break;
       case 'phase-changed':
-        handlePhaseChanged(data as { gameType: string; phase: string; data?: { timeLimit?: number } });
+        handlePhaseChanged(
+          data as { gameType: string; phase: string; chameleonId?: string; data?: { timeLimit?: number } },
+        );
         break;
       case 'timer-tick':
         handleTimerTick(data as { timeRemaining: number });
