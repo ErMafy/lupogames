@@ -17,6 +17,8 @@ interface UsePresenceChannelOptions {
   onMemberRemoved?: (member: PusherMember) => void;
   onAvatarSelected?: (event: AvatarSelectedEvent) => void;
   onGameEvent?: (eventName: string, data: unknown) => void;
+  /** Dopo subscription (e dopo ogni riconnessione Pusher): allinea stato da GET /api/game/sync */
+  onPresenceReady?: () => void;
 }
 
 interface PresenceChannelState {
@@ -36,7 +38,11 @@ export function usePresenceChannel({
   onMemberRemoved,
   onAvatarSelected,
   onGameEvent,
+  onPresenceReady,
 }: UsePresenceChannelOptions) {
+  const onPresenceReadyRef = useRef(onPresenceReady);
+  onPresenceReadyRef.current = onPresenceReady;
+
   const [state, setState] = useState<PresenceChannelState>({
     isConnected: false,
     members: new Map(),
@@ -82,6 +88,12 @@ export function usePresenceChannel({
         myId: data.me.id,
         error: null,
       }));
+
+      try {
+        onPresenceReadyRef.current?.();
+      } catch (e) {
+        console.error('onPresenceReady:', e);
+      }
     });
 
     channel.bind('pusher:subscription_error', (error: { type: string; error: string }) => {

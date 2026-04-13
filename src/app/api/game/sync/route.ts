@@ -19,6 +19,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Codice mancante' }, { status: 400 });
     }
 
+    const sinceRaw = searchParams.get('sinceVersion');
+    const sinceVersion =
+      sinceRaw !== null && sinceRaw !== '' ? parseInt(sinceRaw, 10) : NaN;
+
     const room = await prisma.room.findUnique({
       where: { code },
       include: { gameState: true },
@@ -32,10 +36,24 @@ export async function GET(request: NextRequest) {
     }
 
     const gs = room.gameState;
+    const currentSyncVersion = gs.syncVersion ?? 0;
+
+    if (!Number.isNaN(sinceVersion) && sinceVersion === currentSyncVersion) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          inGame: true,
+          unchanged: true,
+          syncVersion: currentSyncVersion,
+        },
+      });
+    }
+
     const state = (gs.state || {}) as Record<string, unknown>;
     const events: SyncEvent[] = [];
 
     const revision = [
+      String(currentSyncVersion),
       room.updatedAt.toISOString(),
       gs.updatedAt.toISOString(),
       String(room.currentRound),
@@ -271,6 +289,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         inGame: true,
+        syncVersion: currentSyncVersion,
         revision,
         events,
       },

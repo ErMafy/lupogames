@@ -2,6 +2,19 @@
 // Il cuore pulsante del real-time, quello che fa la magia
 
 import Pusher from 'pusher';
+import { prisma } from '@/lib/prisma';
+
+async function bumpRoomSyncVersion(roomCode: string) {
+  const code = roomCode.toUpperCase();
+  try {
+    await prisma.gameState.updateMany({
+      where: { room: { code } },
+      data: { syncVersion: { increment: 1 } },
+    });
+  } catch (e) {
+    console.warn('[pusher] bumpRoomSyncVersion:', code, e);
+  }
+}
 
 // Singleton per il server Pusher (non vogliamo creare 1000 istanze)
 const globalForPusher = globalThis as unknown as {
@@ -31,6 +44,7 @@ export async function sendToRoom(
   const channelName = `presence-room-${roomCode}`;
   try {
     await pusherServer.trigger(channelName, eventName, data);
+    await bumpRoomSyncVersion(roomCode);
   } catch (err) {
     if (process.env.LUPO_SMOKE_API === '1') {
       console.warn('[LUPO_SMOKE_API] Pusher trigger ignorato:', channelName, eventName, err);
@@ -50,6 +64,7 @@ export async function sendToPlayer(
   // Usiamo un canale privato per messaggi diretti
   const channelName = `private-player-${playerId}`;
   await pusherServer.trigger(channelName, eventName, data);
+  await bumpRoomSyncVersion(roomCode);
 }
 
 // Helper per inviare a tutti tranne uno (utile per "tutti gli altri vedono...")
@@ -63,6 +78,7 @@ export async function sendToOthers(
   await pusherServer.trigger(channelName, eventName, data, {
     socket_id: excludeSocketId,
   });
+  await bumpRoomSyncVersion(roomCode);
 }
 
 export default pusherServer;

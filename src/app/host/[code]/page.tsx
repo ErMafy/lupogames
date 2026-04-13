@@ -345,6 +345,7 @@ export default function HostPage() {
   // Score snapshot at game start (to compute per-game deltas)
   const scoreSnapshotRef = useRef<Record<string, number>>({});
   const lastHostSyncRevisionRef = useRef<string | null>(null);
+  const lastHostKnownSyncVersionRef = useRef<number | null>(null);
   const handleCustomGameEventRef = useRef<(eventName: string, data: unknown) => void>(() => {});
 
   // Host trivia state
@@ -773,20 +774,45 @@ export default function HostPage() {
   const applyHostGameSync = useCallback(async () => {
     if (!roomCode) return;
     try {
-      const res = await fetch(`/api/game/sync?code=${roomCode}`);
+      const qs = new URLSearchParams({ code: roomCode });
+      if (lastHostKnownSyncVersionRef.current !== null) {
+        qs.set('sinceVersion', String(lastHostKnownSyncVersionRef.current));
+      }
+      const res = await fetch(`/api/game/sync?${qs.toString()}`);
       const json = await res.json();
-      if (!json.success || !json.data?.inGame || !Array.isArray(json.data.events)) {
+      if (!json.success || !json.data) {
         return;
       }
-      const rev = json.data.revision as string | undefined;
+      const d = json.data as {
+        inGame?: boolean;
+        unchanged?: boolean;
+        syncVersion?: number;
+        revision?: string;
+        events?: { name: string; data: unknown }[];
+      };
+      if (!d.inGame) {
+        lastHostKnownSyncVersionRef.current = null;
+        lastHostSyncRevisionRef.current = null;
+        return;
+      }
+      if (d.unchanged === true) {
+        return;
+      }
+      if (!Array.isArray(d.events)) {
+        return;
+      }
+      const rev = d.revision;
       if (rev !== undefined && rev === lastHostSyncRevisionRef.current) {
         return;
       }
-      for (const ev of json.data.events as { name: string; data: unknown }[]) {
+      for (const ev of d.events) {
         handleCustomGameEventRef.current(ev.name, ev.data);
       }
       if (rev !== undefined) {
         lastHostSyncRevisionRef.current = rev;
+      }
+      if (typeof d.syncVersion === 'number') {
+        lastHostKnownSyncVersionRef.current = d.syncVersion;
       }
     } catch (e) {
       console.error('host game sync:', e);
@@ -991,6 +1017,9 @@ export default function HostPage() {
     onMemberRemoved: handleMemberRemoved,
     onAvatarSelected: handleAvatarSelected,
     onGameEvent: handleCustomGameEvent,
+    onPresenceReady: () => {
+      void applyHostGameSync();
+    },
   });
 
   // Start game

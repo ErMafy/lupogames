@@ -126,6 +126,9 @@ model GameState {
   // Round corrente
   currentRound  Int      @default(1)
   totalRounds   Int      @default(10)
+
+  // Incrementato dopo ogni evento Pusher sulla stanza (allineamento client ↔ server)
+  syncVersion   Int      @default(0)
   
   updatedAt     DateTime @updatedAt
 }

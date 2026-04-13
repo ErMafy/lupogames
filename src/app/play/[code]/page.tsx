@@ -118,6 +118,7 @@ export default function ControllerPage() {
   // Score snapshot at game start (for per-game leaderboard)
   const scoreSnapshotRef = useRef<Record<string, number>>({});
   const lastSyncRevisionRef = useRef<string | null>(null);
+  const lastKnownSyncVersionRef = useRef<number | null>(null);
 
   // Risultati round prompt (visibili a tutti)
   const [promptRoundResults, setPromptRoundResults] = useState<Array<{
@@ -512,73 +513,74 @@ export default function ControllerPage() {
   const gameEventHandlerRef = useRef(customGameEventHandler);
   gameEventHandlerRef.current = customGameEventHandler;
 
-  // One-time sync on mount
+  const applyPlayGameSync = useCallback(async () => {
+    if (!roomCode) return;
+    try {
+      const qs = new URLSearchParams({ code: roomCode });
+      if (lastKnownSyncVersionRef.current !== null) {
+        qs.set('sinceVersion', String(lastKnownSyncVersionRef.current));
+      }
+      const res = await fetch(`/api/game/sync?${qs.toString()}`);
+      const json = await res.json();
+      if (!json.success || !json.data) {
+        return;
+      }
+      const d = json.data as {
+        inGame?: boolean;
+        unchanged?: boolean;
+        syncVersion?: number;
+        revision?: string;
+        events?: { name: string; data: unknown }[];
+      };
+      if (!d.inGame) {
+        lastKnownSyncVersionRef.current = null;
+        lastSyncRevisionRef.current = null;
+        return;
+      }
+      if (d.unchanged === true) {
+        return;
+      }
+      if (!Array.isArray(d.events)) {
+        return;
+      }
+      const rev = d.revision;
+      if (rev !== undefined && rev === lastSyncRevisionRef.current) {
+        return;
+      }
+      for (const ev of d.events) {
+        gameEventHandlerRef.current(ev.name, ev.data);
+      }
+      if (rev !== undefined) {
+        lastSyncRevisionRef.current = rev;
+      }
+      if (typeof d.syncVersion === 'number') {
+        lastKnownSyncVersionRef.current = d.syncVersion;
+      }
+    } catch (e) {
+      console.error('game sync:', e);
+    }
+  }, [roomCode]);
+
   useEffect(() => {
     if (!roomCode || !player?.id) return;
     let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/game/sync?code=${roomCode}`);
-        const json = await res.json();
-        if (
-          cancelled ||
-          !json.success ||
-          !json.data?.inGame ||
-          !Array.isArray(json.data.events)
-        ) {
-          return;
-        }
-        const rev = json.data.revision as string | undefined;
-        if (rev !== undefined && rev === lastSyncRevisionRef.current) {
-          return;
-        }
-        for (const ev of json.data.events as { name: string; data: unknown }[]) {
-          gameEventHandlerRef.current(ev.name, ev.data);
-        }
-        if (rev !== undefined) {
-          lastSyncRevisionRef.current = rev;
-        }
-      } catch (e) {
-        console.error('game sync:', e);
-      }
+    void (async () => {
+      await applyPlayGameSync();
+      if (cancelled) return;
     })();
     return () => {
       cancelled = true;
     };
-  }, [roomCode, player?.id]);
+  }, [roomCode, player?.id, applyPlayGameSync]);
 
-   // Periodic sync fallback: polls while no game OR while stuck in waiting with an active game
+  // Sync HTTP continuo: recupera eventi persi (Pusher); revision evita re-applicazioni inutili
   useEffect(() => {
     if (!roomCode || !player?.id) return;
-    const chameleonLive =
-      currentGame === 'CHAMELEON' &&
-      newGameData &&
-      (newGameData.phase === 'HINTING' || newGameData.phase === 'VOTING');
-    const shouldPoll =
-      !currentGame || (currentGame && controllerView === 'waiting') || chameleonLive;
-    if (!shouldPoll) return;
-    const id = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/game/sync?code=${roomCode}`);
-        const json = await res.json();
-        if (json.success && json.data?.inGame && Array.isArray(json.data.events)) {
-          const rev = json.data.revision as string | undefined;
-          if (rev !== undefined && rev === lastSyncRevisionRef.current) {
-            return;
-          }
-          for (const ev of json.data.events as { name: string; data: unknown }[]) {
-            gameEventHandlerRef.current(ev.name, ev.data);
-          }
-          if (rev !== undefined) {
-            lastSyncRevisionRef.current = rev;
-          }
-        }
-      } catch {
-        // ignore
-      }
-    }, 2000);
+    const id = setInterval(() => {
+      void applyPlayGameSync();
+    }, 2500);
     return () => clearInterval(id);
-  }, [roomCode, player?.id, currentGame, controllerView, newGameData?.phase]);
+  }, [roomCode, player?.id, applyPlayGameSync]);
 
   const {
     isConnected,
@@ -590,6 +592,9 @@ export default function ControllerPage() {
     isHost: player?.isHost || false,
     onAvatarSelected: handleAvatarSelected,
     onGameEvent: customGameEventHandler,
+    onPresenceReady: () => {
+      void applyPlayGameSync();
+    },
   });
 
   const handleSelectAvatar = async (avatar: string, color: string): Promise<boolean> => {
