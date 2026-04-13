@@ -7,23 +7,29 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import { readFileSync } from 'fs';
 import { join, resolve } from 'path';
+import dotenv from 'dotenv';
 
 const { Pool } = pg;
+
+dotenv.config({ path: resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 // Carica le variabili d'ambiente con path assoluto
 const envPath = resolve(process.cwd(), '.env.local');
 
-// Leggi direttamente dal file .env.local
-let connectionString: string | undefined;
-try {
-  const envContent = readFileSync(envPath, 'utf-8');
-  const match = envContent.match(/DATABASE_URL="([^"]+)"/);
-  if (match) {
-    connectionString = match[1];
+let connectionString = process.env.DATABASE_URL?.trim() || undefined;
+if (!connectionString) {
+  try {
+    const raw = readFileSync(envPath, 'utf-8');
+    const dq = raw.match(/DATABASE_URL\s*=\s*"([^"]+)"/);
+    const sq = raw.match(/DATABASE_URL\s*=\s*'([^']+)'/);
+    const bare = raw.match(/DATABASE_URL\s*=\s*(\S+)/);
+    if (dq) connectionString = dq[1].trim();
+    else if (sq) connectionString = sq[1].trim();
+    else if (bare) connectionString = bare[1].trim();
+  } catch {
+    /* no file */
   }
-} catch (e) {
-  // Fallback a env var
-  connectionString = process.env.DATABASE_URL;
 }
 
 console.log('🔍 Cercando DATABASE_URL in:', envPath);
@@ -114,9 +120,10 @@ async function main() {
   
   console.log(`   📁 Trovate ${domande.length} domande nel file`);
 
-  // Prima elimina le domande esistenti (per evitare duplicati durante lo sviluppo)
+  // Ordine FK: TriviaRound (cascade su TriviaAnswer) → TriviaQuestion
+  await prisma.triviaRound.deleteMany({});
   await prisma.triviaQuestion.deleteMany({});
-  console.log('   🗑️  Domande esistenti eliminate');
+  console.log('   [seed] Trivia: round e domande sostituiti');
 
   // Crea le nuove domande
   let createdQuestions = 0;
@@ -163,9 +170,10 @@ async function main() {
   
   console.log(`   📁 Trovate ${frasi.length} frasi nel file`);
 
-  // Prima elimina le frasi esistenti
+  // Ordine FK: PromptRound (cascade su vote/response) → PromptPhrase
+  await prisma.promptRound.deleteMany({});
   await prisma.promptPhrase.deleteMany({});
-  console.log('   🗑️  Frasi esistenti eliminate');
+  console.log('   [seed] Prompt: round e frasi sostituiti');
 
   // Categorie basate sul contenuto della frase (analisi euristica)
   function detectCategory(frase: string): string {
