@@ -344,6 +344,8 @@ export default function HostPage() {
 
   // Score snapshot at game start (to compute per-game deltas)
   const scoreSnapshotRef = useRef<Record<string, number>>({});
+  const lastHostSyncRevisionRef = useRef<string | null>(null);
+  const handleCustomGameEventRef = useRef<(eventName: string, data: unknown) => void>(() => {});
 
   // Host trivia state
   const hostTriviaRoundIdRef = useRef<string | null>(null);
@@ -411,7 +413,7 @@ export default function HostPage() {
     if (gamePhase !== 'playing' || !roomCode) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 3000);
+    }, 5000);
     return () => clearInterval(id);
   }, [gamePhase, roomCode]);
 
@@ -765,6 +767,51 @@ export default function HostPage() {
     
     handleGameEvent(eventName, data);
   }, [roomCode, handleGameEvent, resetHasSubmitted, players, hostPlayer]);
+
+  handleCustomGameEventRef.current = handleCustomGameEvent;
+
+  const applyHostGameSync = useCallback(async () => {
+    if (!roomCode) return;
+    try {
+      const res = await fetch(`/api/game/sync?code=${roomCode}`);
+      const json = await res.json();
+      if (!json.success || !json.data?.inGame || !Array.isArray(json.data.events)) {
+        return;
+      }
+      const rev = json.data.revision as string | undefined;
+      if (rev !== undefined && rev === lastHostSyncRevisionRef.current) {
+        return;
+      }
+      for (const ev of json.data.events as { name: string; data: unknown }[]) {
+        handleCustomGameEventRef.current(ev.name, ev.data);
+      }
+      if (rev !== undefined) {
+        lastHostSyncRevisionRef.current = rev;
+      }
+    } catch (e) {
+      console.error('host game sync:', e);
+    }
+  }, [roomCode]);
+
+  useEffect(() => {
+    if (!roomCode) return;
+    let cancelled = false;
+    void (async () => {
+      await applyHostGameSync();
+      if (cancelled) return;
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [roomCode, applyHostGameSync]);
+
+  useEffect(() => {
+    if (!roomCode) return;
+    const id = setInterval(() => {
+      void applyHostGameSync();
+    }, 3000);
+    return () => clearInterval(id);
+  }, [roomCode, applyHostGameSync]);
 
   const handleHostPromptResponse = useCallback(
     async (response: string) => {

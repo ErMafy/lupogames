@@ -117,6 +117,7 @@ export default function ControllerPage() {
 
   // Score snapshot at game start (for per-game leaderboard)
   const scoreSnapshotRef = useRef<Record<string, number>>({});
+  const lastSyncRevisionRef = useRef<string | null>(null);
 
   // Risultati round prompt (visibili a tutti)
   const [promptRoundResults, setPromptRoundResults] = useState<Array<{
@@ -211,12 +212,12 @@ export default function ControllerPage() {
     return () => clearInterval(interval);
   }, [roomCode, currentGame, refreshRoomPlayers]);
 
-  // Server tick: avanza fasi su timeout anche se Pusher perde un evento (utile su mobile)
+  // Server tick: meno frequente per ridurre corse tra più client (host + telefoni)
   useEffect(() => {
     if (!roomCode || !currentGame) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 3000);
+    }, 5000);
     return () => clearInterval(id);
   }, [roomCode, currentGame]);
 
@@ -527,8 +528,15 @@ export default function ControllerPage() {
         ) {
           return;
         }
+        const rev = json.data.revision as string | undefined;
+        if (rev !== undefined && rev === lastSyncRevisionRef.current) {
+          return;
+        }
         for (const ev of json.data.events as { name: string; data: unknown }[]) {
           gameEventHandlerRef.current(ev.name, ev.data);
+        }
+        if (rev !== undefined) {
+          lastSyncRevisionRef.current = rev;
         }
       } catch (e) {
         console.error('game sync:', e);
@@ -554,8 +562,15 @@ export default function ControllerPage() {
         const res = await fetch(`/api/game/sync?code=${roomCode}`);
         const json = await res.json();
         if (json.success && json.data?.inGame && Array.isArray(json.data.events)) {
+          const rev = json.data.revision as string | undefined;
+          if (rev !== undefined && rev === lastSyncRevisionRef.current) {
+            return;
+          }
           for (const ev of json.data.events as { name: string; data: unknown }[]) {
             gameEventHandlerRef.current(ev.name, ev.data);
+          }
+          if (rev !== undefined) {
+            lastSyncRevisionRef.current = rev;
           }
         }
       } catch {

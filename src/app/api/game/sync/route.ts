@@ -35,6 +35,16 @@ export async function GET(request: NextRequest) {
     const state = (gs.state || {}) as Record<string, unknown>;
     const events: SyncEvent[] = [];
 
+    const revision = [
+      room.updatedAt.toISOString(),
+      gs.updatedAt.toISOString(),
+      String(room.currentRound),
+      room.currentGame ?? '',
+      String(state.currentRoundId ?? ''),
+      typeof state.phase === 'string' ? state.phase : '',
+      String((state as { showingResults?: boolean }).showingResults === true),
+    ].join('\x1f');
+
     if (room.currentGame === 'TRIVIA') {
       const currentRoundId = state.currentRoundId as string | undefined;
       if (!currentRoundId) {
@@ -118,8 +128,8 @@ export async function GET(request: NextRequest) {
       });
 
       if (pr.phase === 'VOTING' || pr.phase === 'RESULTS') {
-        const shuffled = [...pr.responses]
-          .sort(() => Math.random() - 0.5)
+        const ordered = [...pr.responses]
+          .sort((a, b) => a.id.localeCompare(b.id))
           .map((r: { id: string; response: string }) => ({
             id: r.id,
             response: r.response,
@@ -130,7 +140,7 @@ export async function GET(request: NextRequest) {
             gameType: 'CONTINUE_PHRASE',
             phase: 'VOTING',
             data: {
-              responses: shuffled,
+              responses: ordered,
               timeLimit: 60,
             },
           },
@@ -261,6 +271,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         inGame: true,
+        revision,
         events,
       },
     });
