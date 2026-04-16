@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { usePresenceChannel } from '@/hooks/usePresenceChannel';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LobbyChat, dispatchLobbyChatFromPusher, type LobbyChatMessage } from '@/components/lobby/LobbyChat';
 
 interface Player {
   id: string;
@@ -92,7 +93,12 @@ function LobbyContent() {
   }, [roomCode, router]);
 
   const onRealtimeGame = useCallback(
-    (eventName: string) => {
+    (eventName: string, data: unknown) => {
+      if (eventName === 'lobby-chat' && roomCode) {
+        const msg = data as LobbyChatMessage;
+        if (msg?.id) dispatchLobbyChatFromPusher(roomCode, msg);
+        return;
+      }
       if (eventName === 'game-started' && roomCode) {
         router.push(`/play/${roomCode}`);
       }
@@ -181,11 +187,11 @@ function LobbyContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-4 pt-[max(1rem,env(safe-area-inset-top,0px))]">
+    <div className="min-h-[100dvh] flex flex-col bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
       {/* Stars background */}
       <div className="fixed inset-0 bg-stars pointer-events-none opacity-50" />
       
-      <div className="relative z-10 max-w-4xl mx-auto pt-6">
+      <div className="relative z-10 max-w-4xl mx-auto pt-6 flex flex-col flex-1 min-h-0 w-full">
         {/* Header */}
         <div className="text-center mb-8">
           <motion.div
@@ -224,6 +230,17 @@ function LobbyContent() {
             </button>
           </div>
         </div>
+
+        {/* Chat lobby — mobile-first, stessa stanza Pusher */}
+        {player && roomCode && (
+          <div className="mb-6 w-full max-w-lg mx-auto">
+            <LobbyChat
+              roomCode={roomCode}
+              playerId={player.id}
+              playerName={player.name}
+            />
+          </div>
+        )}
 
         {/* Players Grid */}
         <div className="glass-card p-6 mb-8">

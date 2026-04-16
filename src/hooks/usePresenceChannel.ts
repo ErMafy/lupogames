@@ -177,6 +177,7 @@ export function usePresenceChannel({
       'secret-reveal',
       'bomb-passed',
       'chameleon-hint',
+      'lobby-chat',
     ];
 
     gameEvents.forEach(eventName => {

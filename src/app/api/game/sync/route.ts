@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { buildChameleonHintRowsForSync } from '@/lib/chameleon';
+import { TRIVIA_RESULTS_DWELL_SEC } from '@/lib/trivia-advance';
 
 function syncChameleonIdFromState(grState: Record<string, unknown>): string | undefined {
   const id = String(grState.chameleonId ?? grState.chameleon_id ?? '').trim();
@@ -78,6 +79,8 @@ export async function GET(request: NextRequest) {
       }
 
       const q = tr.question;
+      const showingResults = (state as { showingResults?: boolean }).showingResults === true;
+
       events.push({
         name: 'game-started',
         data: {
@@ -106,6 +109,30 @@ export async function GET(request: NextRequest) {
           },
         },
       });
+
+      // Senza questo, chi fa sync durante i risultati torna alla vista "rispondi" sulla stessa domanda
+      // e può desincronizzarsi dal round successivo (es. rivede la domanda precedente).
+      if (showingResults) {
+        const letter = q.correctAnswer as 'A' | 'B' | 'C' | 'D';
+        events.push({
+          name: 'show-results',
+          data: {
+            correctAnswer: letter,
+            correctAnswerText:
+              ({ A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD } as const)[letter] ?? '',
+            roundId: tr.id,
+            resultsDwellSec: TRIVIA_RESULTS_DWELL_SEC,
+          },
+        });
+        const remainingSec =
+          gs.timerEndsAt && gs.timerEndsAt.getTime() > Date.now()
+            ? Math.max(1, Math.ceil((gs.timerEndsAt.getTime() - Date.now()) / 1000))
+            : TRIVIA_RESULTS_DWELL_SEC;
+        events.push({
+          name: 'timer-tick',
+          data: { timeRemaining: remainingSec },
+        });
+      }
     } else if (room.currentGame === 'CONTINUE_PHRASE') {
       const currentRoundId = state.currentRoundId as string | undefined;
       if (!currentRoundId) {

@@ -2,7 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { sendToRoom } from '@/lib/pusher-server';
 
 const QUESTION_SEC = 30;
-const RESULTS_DWELL_SEC = 3;
+/** Tempo in cui tutti vedono esito + classifica prima del round successivo (sync Pusher / HTTP). */
+export const TRIVIA_RESULTS_DWELL_SEC = 7;
 
 interface TriviaGameState {
   questionIds: string[];
@@ -176,7 +177,7 @@ export async function advanceTriviaRound(
     where: { id: gsFresh.id, updatedAt: gsFresh.updatedAt },
     data: {
       state: { ...inner, showingResults: true } as object,
-      timerEndsAt: new Date(Date.now() + RESULTS_DWELL_SEC * 1000),
+      timerEndsAt: new Date(Date.now() + TRIVIA_RESULTS_DWELL_SEC * 1000),
     },
   });
   if (up.count === 0) {
@@ -191,8 +192,22 @@ export async function advanceTriviaRound(
     });
 
     if (currentRound?.question) {
+      const q = currentRound.question;
+      const letter = q.correctAnswer as 'A' | 'B' | 'C' | 'D';
+      const optionText: Record<string, string> = {
+        A: q.optionA,
+        B: q.optionB,
+        C: q.optionC,
+        D: q.optionD,
+      };
       await sendToRoom(roomCode, 'show-results', {
-        correctAnswer: currentRound.question.correctAnswer,
+        correctAnswer: letter,
+        correctAnswerText: optionText[letter] ?? '',
+        roundId: currentRoundId,
+        resultsDwellSec: TRIVIA_RESULTS_DWELL_SEC,
+      });
+      await sendToRoom(roomCode, 'timer-tick', {
+        timeRemaining: TRIVIA_RESULTS_DWELL_SEC,
       });
     }
   }

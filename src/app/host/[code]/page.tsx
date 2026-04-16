@@ -690,15 +690,27 @@ export default function HostPage() {
     }
     
     if (eventName === 'show-results' && eventData.correctAnswer) {
-      setShowCorrectAnswer(eventData.correctAnswer as string);
-      setHostTriviaResult((prev) =>
-        prev || {
-          isCorrect: false,
-          correctAnswer: eventData.correctAnswer as string,
-          correctAnswerText: undefined,
-          pointsEarned: 0,
+      const letter = eventData.correctAnswer as string;
+      const txt =
+        typeof (eventData as { correctAnswerText?: string }).correctAnswerText === 'string'
+          ? (eventData as { correctAnswerText?: string }).correctAnswerText
+          : undefined;
+      setShowCorrectAnswer(letter);
+      setHostTriviaResult((prev) => {
+        if (!prev) {
+          return {
+            isCorrect: false,
+            correctAnswer: letter,
+            correctAnswerText: txt,
+            pointsEarned: 0,
+          };
         }
-      );
+        return {
+          ...prev,
+          correctAnswer: letter,
+          correctAnswerText: prev.correctAnswerText || txt,
+        };
+      });
       // Refresh scores after trivia round results
       fetch(`/api/rooms?code=${roomCode}`)
         .then(res => res.json())

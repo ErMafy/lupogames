@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { 
   GameType, 
   ControllerView,
@@ -35,7 +35,45 @@ export function useGameEvents() {
     hasSubmitted: false,
   });
 
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ============================================
+  // ⏱️ TIMER LOCALE (definito prima degli handler che lo usano)
+  // ============================================
+
+  const startTimer = useCallback((seconds: number) => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    timerRef.current = setInterval(() => {
+      setState(prev => {
+        const newTime = prev.timeRemaining - 1;
+
+        if (newTime <= 0) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          return {
+            ...prev,
+            timeRemaining: 0,
+            canSubmit: false,
+          };
+        }
+
+        return {
+          ...prev,
+          timeRemaining: newTime,
+        };
+      });
+    }, 1000);
+  }, []);
 
   // ============================================
   // 🎮 HANDLER EVENTI
@@ -126,7 +164,7 @@ export function useGameEvents() {
     }));
 
     startTimer(timeLimit);
-  }, []);
+  }, [startTimer]);
 
   const handleTimerTick = useCallback((data: { timeRemaining: number }) => {
     setState(prev => ({
@@ -135,19 +173,33 @@ export function useGameEvents() {
     }));
   }, []);
 
-  const handleShowResults = useCallback(() => {
-    // Ferma il timer
+  const handleShowResults = useCallback((data?: { resultsDwellSec?: number }) => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
+    const isTrivia = stateRef.current.currentGame === 'TRIVIA';
+    const dwell =
+      isTrivia &&
+      typeof data?.resultsDwellSec === 'number' &&
+      data.resultsDwellSec > 0
+        ? data.resultsDwellSec
+        : isTrivia
+          ? 7
+          : 0;
+
     setState(prev => ({
       ...prev,
       controllerView: 'results',
       canSubmit: false,
+      ...(isTrivia && dwell > 0 ? { timeRemaining: dwell } : {}),
     }));
-  }, []);
+
+    if (isTrivia && dwell > 0) {
+      startTimer(dwell);
+    }
+  }, [startTimer]);
 
   const handleGameEnded = useCallback(() => {
     if (timerRef.current) {
@@ -160,40 +212,6 @@ export function useGameEvents() {
       controllerView: 'final-scores',
       canSubmit: false,
     }));
-  }, []);
-
-  // ============================================
-  // ⏱️ TIMER LOCALE
-  // ============================================
-
-  const startTimer = useCallback((seconds: number) => {
-    // Pulisci timer esistente
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-
-    timerRef.current = setInterval(() => {
-      setState(prev => {
-        const newTime = prev.timeRemaining - 1;
-        
-        if (newTime <= 0) {
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          return {
-            ...prev,
-            timeRemaining: 0,
-            canSubmit: false,
-          };
-        }
-
-        return {
-          ...prev,
-          timeRemaining: newTime,
-        };
-      });
-    }, 1000);
   }, []);
 
   // ============================================
@@ -297,10 +315,18 @@ export function useGameEvents() {
         handleBombPassed(data as { remainingMs?: number });
         break;
       case 'show-results':
-        handleShowResults();
+        handleShowResults(data as { resultsDwellSec?: number });
         break;
       case 'round-results':
-        handleShowResults();
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        setState(prev => ({
+          ...prev,
+          controllerView: 'results',
+          canSubmit: false,
+        }));
         break;
       case 'game-ended':
         handleGameEnded();

@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     if (allCompleted) {
       console.log(`🐺 Tutti hanno risposto! Mostrando risultati...`);
-      // force: true bypasses the timer — enters results dwell phase (3s),
+      // force: true bypasses the timer — enters results dwell phase,
       // then tick will advance to next question
       await advanceTriviaRound(triviaRound.room.code, { force: true });
     }

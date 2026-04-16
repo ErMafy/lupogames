@@ -391,11 +391,33 @@ export default function ControllerPage() {
     }
 
     if (eventName === 'show-results') {
-      const sr = data as { correctAnswer?: string };
+      const sr = data as {
+        correctAnswer?: string;
+        correctAnswerText?: string;
+        roundId?: string;
+      };
+      const rid = sr.roundId;
+      if (rid && triviaRoundIdRef.current && rid !== triviaRoundIdRef.current) {
+        return;
+      }
       if (sr.correctAnswer) {
-        setTriviaResult((prev) =>
-          prev || { isCorrect: false, correctAnswer: sr.correctAnswer!, pointsEarned: 0 }
-        );
+        setTriviaResult((prev) => {
+          const letter = sr.correctAnswer as string;
+          const text = (sr.correctAnswerText || '').trim() || undefined;
+          if (!prev) {
+            return {
+              isCorrect: false,
+              correctAnswer: letter,
+              correctAnswerText: text,
+              pointsEarned: 0,
+            };
+          }
+          return {
+            ...prev,
+            correctAnswer: letter,
+            correctAnswerText: prev.correctAnswerText || text,
+          };
+        });
       }
       refreshRoomPlayers();
     }
