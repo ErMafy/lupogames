@@ -20,6 +20,7 @@ import { HerdMindController } from '@/components/game/HerdMindController';
 import { ChameleonController } from '@/components/game/ChameleonController';
 import { SplitRoomController } from '@/components/game/SplitRoomController';
 import { InterviewController } from '@/components/game/InterviewController';
+import { LobbyChat, dispatchLobbyChatFromPusher, type LobbyChatMessage } from '@/components/lobby/LobbyChat';
 import type {
   PusherMember,
   AvatarSelectedEvent,
@@ -448,6 +449,12 @@ export default function HostPage() {
   const handleCustomGameEvent = useCallback((eventName: string, data: unknown) => {
     console.log('🎮 Game event:', eventName, data);
     const eventData = data as Record<string, unknown>;
+
+    if (eventName === 'lobby-chat' && roomCode) {
+      const msg = data as LobbyChatMessage;
+      if (msg?.id) dispatchLobbyChatFromPusher(roomCode, msg);
+      return;
+    }
     
     if (eventName === 'game-started') {
       setGamePhase('playing');
@@ -1236,6 +1243,16 @@ export default function HostPage() {
                 </div>
               </div>
             </div>
+
+            {hostPlayer && (
+              <div className="max-w-lg mx-auto mb-4 sm:mb-8">
+                <LobbyChat
+                  roomCode={roomCode}
+                  playerId={hostPlayer.id}
+                  playerName={hostPlayer.name}
+                />
+              </div>
+            )}
 
             {/* Players Grid */}
             <div className="glass-card p-4 sm:p-8 mb-4 sm:mb-10">
