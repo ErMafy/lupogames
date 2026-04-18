@@ -6,7 +6,7 @@ import {
 
 const HINT_SEC = 30;
 const VOTE_SEC = 25;
-const RESULTS_DWELL_MS = 4000;
+const RESULTS_DWELL_MS = 8000;
 
 export type ChameleonHintRow = { playerId: string; playerName: string; hint: string };
 
@@ -116,6 +116,7 @@ export async function getChameleonRoundContextForPlayer(roomCode: string, player
     phase: gr.phase,
     timeLimit: gr.phase === 'HINTING' ? HINT_SEC : gr.phase === 'VOTING' ? VOTE_SEC : undefined,
     chameleonPlayerCount: required.length,
+    isChameleon,
   };
 }
 

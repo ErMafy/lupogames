@@ -7,7 +7,7 @@ import {
 const ACCUSE_SEC = 30;
 const DEFENSE_SEC = 20;
 const VERDICT_SEC = 20;
-const RESULTS_DWELL_MS = 4000;
+const RESULTS_DWELL_MS = 8000;
 
 export async function startTribunalGame(roomCode: string, rounds = 5) {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });

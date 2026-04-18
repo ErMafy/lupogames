@@ -524,22 +524,43 @@ export default function HostPage() {
           ...nested,
           ...(topChameleon ? { chameleonId: topChameleon } : {}),
         };
-        setNewGameData({
-          ...rd,
-          gameType: ev.gameType,
-          phase: (ev.phase as string) || (nested.phase as string) || 'ACTIVE',
-          ...(ev.gameType === 'CHAMELEON'
-            ? {
-                liveHints: [],
-                chameleonHintCount: 0,
-                chameleonPlayerCount: Array.isArray(nested.players) ? nested.players.length : players.length,
-              }
-            : {}),
+        const newRoundId = (rd.roundId as string) ?? null;
+        const prevRoundId = newGameRoundIdRef.current;
+        const sameRound = !!newRoundId && newRoundId === prevRoundId;
+        const incomingPhase = (ev.phase as string) || (nested.phase as string) || 'ACTIVE';
+        setNewGameData((prev) => {
+          if (sameRound && prev) {
+            const merged: Record<string, unknown> = { ...prev };
+            for (const [k, v] of Object.entries(rd)) {
+              if (merged[k] === undefined || merged[k] === null) merged[k] = v;
+            }
+            if (typeof prev.phase !== 'string' || prev.phase !== 'RESULTS') {
+              merged.phase = incomingPhase;
+            } else {
+              merged.phase = prev.phase;
+            }
+            merged.gameType = ev.gameType;
+            return merged;
+          }
+          return {
+            ...rd,
+            gameType: ev.gameType,
+            phase: incomingPhase,
+            ...(ev.gameType === 'CHAMELEON'
+              ? {
+                  liveHints: [],
+                  chameleonHintCount: 0,
+                  chameleonPlayerCount: Array.isArray(nested.players) ? nested.players.length : players.length,
+                }
+              : {}),
+          };
         });
         setCurrentRoundNum(eventData.roundNumber as number);
         setTotalRoundsNum((eventData.totalRounds as number) || 5);
-        newGameRoundIdRef.current = (rd.roundId as string) ?? null;
-        resetHasSubmitted();
+        newGameRoundIdRef.current = newRoundId;
+        if (!sameRound) {
+          resetHasSubmitted();
+        }
         if (ev.gameType === 'CHAMELEON' && roomCode && hostPlayer?.id) {
           void fetch(
             `/api/game/chameleon/context?code=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(hostPlayer.id)}`,
@@ -1684,15 +1705,19 @@ export default function HostPage() {
             </div>
           );
 
-          if (gt === 'CHAMELEON') return (
+          if (gt === 'CHAMELEON') {
+            const _curId = String(hostPlayer.id || '').trim();
+            const _chId = String(newGameData.chameleonId ?? '').trim();
+            const _meIsChameleon = _curId.length > 0 && _chId.length > 0 && _curId === _chId;
+            return (
             <div className="glass-card p-4 sm:p-8 animate-slide-up">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg sm:text-2xl font-black text-white">🦎 Camaleonte</h2>
                 <span className="text-purple-300 text-sm font-bold">Round {currentRoundNum}/{totalRoundsNum}</span>
               </div>
               <ChameleonController phase={(phase as any) || 'HINTING'}
-                secretWord={String(hostPlayer.id) === String(newGameData.chameleonId ?? '') ? null : (newGameData.secretWord as string)}
-                chameleonId={String(newGameData.chameleonId ?? '')} currentPlayerId={hostPlayer.id}
+                secretWord={_meIsChameleon ? null : (newGameData.secretWord as string)}
+                chameleonId={_chId} currentPlayerId={_curId}
                 hintsSubmitted={typeof newGameData.chameleonHintCount === 'number' ? newGameData.chameleonHintCount : undefined}
                 hintsTotal={typeof newGameData.chameleonPlayerCount === 'number' ? newGameData.chameleonPlayerCount : undefined}
                 players={players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar }))}
@@ -1703,7 +1728,8 @@ export default function HostPage() {
                 onVote={async (id) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'vote', suspectedId: id }); }}
                 hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
             </div>
-          );
+            );
+          }
 
           if (gt === 'SPLIT_ROOM') return (
             <div className="glass-card p-4 sm:p-8 animate-slide-up">

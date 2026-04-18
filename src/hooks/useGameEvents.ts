@@ -41,6 +41,17 @@ export function useGameEvents() {
   }, [state]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // ROUND_ID dell'ultimo round-started realmente applicato.
+  // Serve per ignorare round-started duplicati emessi dal sync HTTP
+  // (es. mentre stiamo mostrando i RESULTS), che altrimenti
+  // (a) farebbero ripartire il timer da zero,
+  // (b) riporterebbero la view a 'new-game-play' invece di 'results',
+  // (c) reseterebbero hasSubmitted permettendo doppi invii.
+  const lastRoundIdRef = useRef<string | null>(null);
+  // Risultati visti: se è arrivato 'round-results' o 'show-results' per
+  // questo roundId, qualsiasi successivo 'round-started' DUPLICATO per
+  // lo STESSO roundId non deve resettare la view.
+  const resultsShownForRoundRef = useRef<string | null>(null);
 
   // ============================================
   // ⏱️ TIMER LOCALE (definito prima degli handler che lo usano)
@@ -99,6 +110,21 @@ export function useGameEvents() {
     chameleonId?: string;
     data: TriviaRoundData | PromptRoundData | SecretRoundData | Record<string, unknown>;
   }) => {
+    // Idempotenza: se è esattamente lo stesso round già gestito, NON ripartiamo
+    // né timer, né view. Questo evita che un sync HTTP che rispedisce round-started
+    // durante la dwell dei risultati riporti il giocatore alla schermata di voto/risposta.
+    const incomingRoundId =
+      typeof (data.data as { roundId?: unknown })?.roundId === 'string'
+        ? ((data.data as { roundId: string }).roundId)
+        : null;
+    if (
+      incomingRoundId &&
+      lastRoundIdRef.current === incomingRoundId &&
+      resultsShownForRoundRef.current === incomingRoundId
+    ) {
+      // Round-started duplicato di un round per cui stiamo già mostrando i risultati: ignora.
+      return;
+    }
     let view: ControllerView = 'waiting';
     let timeLimit = 0;
     let roundPayload: TriviaRoundData | PromptRoundData | SecretRoundData | Record<string, unknown> =
@@ -163,6 +189,13 @@ export function useGameEvents() {
       hasSubmitted: false,
     }));
 
+    if (incomingRoundId) {
+      lastRoundIdRef.current = incomingRoundId;
+      // Nuovo round → resetta lo stato "ho già mostrato risultati"
+      if (resultsShownForRoundRef.current && resultsShownForRoundRef.current !== incomingRoundId) {
+        resultsShownForRoundRef.current = null;
+      }
+    }
     startTimer(timeLimit);
   }, [startTimer]);
 
@@ -173,7 +206,7 @@ export function useGameEvents() {
     }));
   }, []);
 
-  const handleShowResults = useCallback((data?: { resultsDwellSec?: number }) => {
+  const handleShowResults = useCallback((data?: { resultsDwellSec?: number; roundId?: string }) => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -188,6 +221,12 @@ export function useGameEvents() {
         : isTrivia
           ? 7
           : 0;
+
+    if (typeof data?.roundId === 'string' && data.roundId) {
+      resultsShownForRoundRef.current = data.roundId;
+    } else if (lastRoundIdRef.current) {
+      resultsShownForRoundRef.current = lastRoundIdRef.current;
+    }
 
     setState(prev => ({
       ...prev,
@@ -315,12 +354,18 @@ export function useGameEvents() {
         handleBombPassed(data as { remainingMs?: number });
         break;
       case 'show-results':
-        handleShowResults(data as { resultsDwellSec?: number });
+        handleShowResults(data as { resultsDwellSec?: number; roundId?: string });
         break;
       case 'round-results':
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
+        }
+        // Memorizza che per il round corrente abbiamo visto i risultati,
+        // così sync HTTP che rimanda 'round-started' per lo stesso round
+        // non riporterà la view a 'new-game-play'.
+        if (lastRoundIdRef.current) {
+          resultsShownForRoundRef.current = lastRoundIdRef.current;
         }
         setState(prev => ({
           ...prev,

@@ -8,7 +8,7 @@ import { shuffleArray } from '@/lib/utils';
 const COLLECT_SEC = 40;
 const BUILD_SEC = 30;
 const VOTE_SEC = 25;
-const RESULTS_DWELL_MS = 4000;
+const RESULTS_DWELL_MS = 8000;
 
 export async function startInterviewGame(roomCode: string, rounds = 3) {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });

@@ -5,7 +5,7 @@ import {
 } from '@/lib/new-game-utils';
 
 const ANSWER_SEC = 25;
-const RESULTS_DWELL_MS = 4000;
+const RESULTS_DWELL_MS = 8000;
 
 export async function startHerdMindGame(roomCode: string, rounds = 5) {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });

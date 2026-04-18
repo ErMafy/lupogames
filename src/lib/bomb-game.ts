@@ -5,7 +5,7 @@ import {
 } from '@/lib/new-game-utils';
 
 const INITIAL_TIMER_SEC = 30;
-const RESULTS_DWELL_MS = 4000;
+const RESULTS_DWELL_MS = 8000;
 
 export async function startBombGame(roomCode: string, rounds = 5) {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });
@@ -60,7 +60,10 @@ export async function handleBombPass(roomCode: string, playerId: string, roundId
     const newWords = [...state.words, word.trim()];
 
     const gs = room.gameState;
-    const currentEnd = gs?.timerEndsAt?.getTime() || Date.now();
+    // Estensione SEMPRE additiva ma mai a partire da un timer già scaduto.
+    // Se il timer corrente è nel passato (timer scaduto ma round ancora PLAYING per un breve istante),
+    // partiamo da Date.now() così l'estensione di +5s è realmente percepita dal giocatore.
+    const currentEnd = Math.max(Date.now(), gs?.timerEndsAt?.getTime() || Date.now());
     const extension = 5 * 1000;
     const newEnd = new Date(currentEnd + extension);
 
@@ -80,12 +83,19 @@ export async function handleBombPass(roomCode: string, playerId: string, roundId
 }
 
 export async function explodeBomb(roomCode: string, roundId: string, roomId: string) {
-  // Re-check timer to avoid exploding if a pass just extended it
-  const freshGs = await prisma.gameState.findUnique({ where: { roomId } });
-  if (freshGs?.timerEndsAt && freshGs.timerEndsAt.getTime() > Date.now()) return;
-
-  const transitioned = await prisma.gameRound.updateMany({ where: { id: roundId, phase: 'PLAYING' }, data: { phase: 'EXPLODED', endedAt: new Date() } });
-  if (transitioned.count === 0) return;
+  // Atomically check that timer has truly expired AND no pass concurrently extended it,
+  // then transition phase. Use a transaction so the timer check and phase update can't race
+  // with handleBombPass.
+  const transitioned = await prisma.$transaction(async (tx) => {
+    const freshGs = await tx.gameState.findUnique({ where: { roomId } });
+    if (freshGs?.timerEndsAt && freshGs.timerEndsAt.getTime() > Date.now()) return 0;
+    const result = await tx.gameRound.updateMany({
+      where: { id: roundId, phase: 'PLAYING' },
+      data: { phase: 'EXPLODED', endedAt: new Date() },
+    });
+    return result.count;
+  });
+  if (transitioned === 0) return;
 
   const gr = await prisma.gameRound.findUnique({ where: { id: roundId } });
   const state = gr?.state as { bombHolderId: string; words: string[]; category: string };

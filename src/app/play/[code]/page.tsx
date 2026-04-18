@@ -346,20 +346,49 @@ export default function ControllerPage() {
           ...nested,
           ...(topChameleon ? { chameleonId: topChameleon } : {}),
         };
-        setNewGameData({
-          ...rd,
-          gameType: roundStartData.gameType,
-          phase: (roundStartData as { phase?: string }).phase || (nested.phase as string) || 'ACTIVE',
-          ...(roundStartData.gameType === 'CHAMELEON'
-            ? {
-                liveHints: [],
-                chameleonHintCount: 0,
-                chameleonPlayerCount: Array.isArray(nested.players) ? nested.players.length : allPlayers.length,
-              }
-            : {}),
+        const newRoundId = (rd?.roundId as string) ?? null;
+        const prevRoundId = newGameRoundIdRef.current;
+        const sameRound = !!newRoundId && newRoundId === prevRoundId;
+        const incomingPhase = (roundStartData as { phase?: string }).phase || (nested.phase as string) || 'ACTIVE';
+        // IMPORTANTE: se è lo stesso round (es. sync HTTP che rimanda round-started durante RESULTS),
+        // facciamo MERGE invece di REPLACE per non cancellare results/liveHints/bombHolderId aggiornati
+        // dagli altri eventi (round-results, bomb-passed, chameleon-hint).
+        setNewGameData((prev) => {
+          if (sameRound && prev) {
+            const merged: Record<string, unknown> = { ...prev };
+            // Aggiungi solo i campi mancanti dal nuovo round-started, preserva tutto il resto
+            for (const [k, v] of Object.entries(rd)) {
+              if (merged[k] === undefined || merged[k] === null) merged[k] = v;
+            }
+            // Non sovrascrivere mai 'results' o 'liveHints' qui (li gestiscono altri eventi)
+            // Aggiorna solo phase se è "più avanti" (non torna indietro a RESULTS già visto)
+            if (typeof prev.phase !== 'string' || prev.phase !== 'RESULTS') {
+              merged.phase = incomingPhase;
+            } else {
+              // se stiamo già mostrando i RESULTS, NON tornare a HINTING/PLAYING/...
+              merged.phase = prev.phase;
+            }
+            merged.gameType = roundStartData.gameType;
+            return merged;
+          }
+          // Round nuovo: reset completo
+          return {
+            ...rd,
+            gameType: roundStartData.gameType,
+            phase: incomingPhase,
+            ...(roundStartData.gameType === 'CHAMELEON'
+              ? {
+                  liveHints: [],
+                  chameleonHintCount: 0,
+                  chameleonPlayerCount: Array.isArray(nested.players) ? nested.players.length : allPlayers.length,
+                }
+              : {}),
+          };
         });
-        newGameRoundIdRef.current = (rd?.roundId as string) ?? null;
-        resetHasSubmitted();
+        if (!sameRound) {
+          resetHasSubmitted();
+        }
+        newGameRoundIdRef.current = newRoundId;
         if (roundStartData.gameType === 'CHAMELEON' && roomCode && player?.id) {
           void fetch(
             `/api/game/chameleon/context?code=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(player.id)}`,
@@ -1100,11 +1129,15 @@ export default function ControllerPage() {
             </div>
           );
 
-          if (gt === 'CHAMELEON') return (
+          if (gt === 'CHAMELEON') {
+            const _curId = String(player.id || '').trim();
+            const _chId = String(newGameData.chameleonId ?? '').trim();
+            const _meIsChameleon = _curId.length > 0 && _chId.length > 0 && _curId === _chId;
+            return (
             <div className="animate-slide-up">
               <ChameleonController phase={(phase as any) || 'HINTING'}
-                secretWord={String(player.id) === String(newGameData.chameleonId ?? '') ? null : (newGameData.secretWord as string)}
-                chameleonId={String(newGameData.chameleonId ?? '')} currentPlayerId={player.id}
+                secretWord={_meIsChameleon ? null : (newGameData.secretWord as string)}
+                chameleonId={_chId} currentPlayerId={_curId}
                 hintsSubmitted={typeof newGameData.chameleonHintCount === 'number' ? newGameData.chameleonHintCount : undefined}
                 hintsTotal={typeof newGameData.chameleonPlayerCount === 'number' ? newGameData.chameleonPlayerCount : undefined}
                 players={allPlayers.map(p => ({ id: p.playerId, name: p.playerName, avatar: p.avatar || null }))}
@@ -1115,7 +1148,8 @@ export default function ControllerPage() {
                 onVote={async (id) => { await handleNewGameAction('/api/game/chameleon/action', { action: 'vote', suspectedId: id }); }}
                 hasSubmitted={hasSubmitted} timeRemaining={timeRemaining} results={isResults ? results : undefined} />
             </div>
-          );
+            );
+          }
 
           if (gt === 'SPLIT_ROOM') return (
             <div className="animate-slide-up">

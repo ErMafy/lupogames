@@ -33,7 +33,13 @@ interface Props {
 export function ChameleonController({ phase, secretWord, chameleonId, currentPlayerId, hintsSubmitted, hintsTotal, players, hints, liveHints, onHint, onVote, hasSubmitted, timeRemaining, results, retry }: Props) {
   const [hint, setHint] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const isChameleon = String(currentPlayerId) === String(chameleonId || '');
+  // SAFETY: per essere "il camaleonte" servono ENTRAMBI gli ID validi.
+  // Senza questo, se per qualche motivo entrambi i valori arrivassero vuoti
+  // ('') la comparazione '' === '' restituirebbe true e tutti vedrebbero
+  // "Sei il Camaleonte!".
+  const _cur = String(currentPlayerId || '').trim();
+  const _ch = String(chameleonId || '').trim();
+  const isChameleon = _cur.length > 0 && _ch.length > 0 && _cur === _ch;
   const totalPlayers = hintsTotal ?? (players?.length ?? 0);
   const submittedCount =
     typeof hintsSubmitted === 'number'
