@@ -52,6 +52,11 @@ export function useGameEvents() {
   // questo roundId, qualsiasi successivo 'round-started' DUPLICATO per
   // lo STESSO roundId non deve resettare la view.
   const resultsShownForRoundRef = useRef<string | null>(null);
+  // Ultima fase applicata via 'phase-changed' (chiave: gameType:phase).
+  // Senza questo, il sync HTTP che rimanda 'phase-changed' ogni 2.5s
+  // resetterebbe hasSubmitted/canSubmit, riaprendo la UI di voto/scrittura
+  // subito dopo l'invio.
+  const lastPhaseAppliedRef = useRef<string | null>(null);
 
   // ============================================
   // ⏱️ TIMER LOCALE (definito prima degli handler che lo usano)
@@ -110,19 +115,18 @@ export function useGameEvents() {
     chameleonId?: string;
     data: TriviaRoundData | PromptRoundData | SecretRoundData | Record<string, unknown>;
   }) => {
-    // Idempotenza: se è esattamente lo stesso round già gestito, NON ripartiamo
-    // né timer, né view. Questo evita che un sync HTTP che rispedisce round-started
-    // durante la dwell dei risultati riporti il giocatore alla schermata di voto/risposta.
+    // Idempotenza FORTE: se è esattamente lo stesso round già gestito, NON ripartiamo
+    // né timer, né view, né hasSubmitted. Questo è CRITICO perché il sync HTTP gira
+    // ogni 2.5s e rispedisce 'round-started' per il round corrente: senza questa guardia
+    // (a) il timer si resettava ogni 2.5s,
+    // (b) hasSubmitted/canSubmit venivano riaperti, permettendo doppi invii o rollback
+    //     della UI subito dopo aver risposto,
+    // (c) durante la fase RESULTS la view tornava a 'trivia-answer'/'new-game-play'.
     const incomingRoundId =
       typeof (data.data as { roundId?: unknown })?.roundId === 'string'
         ? ((data.data as { roundId: string }).roundId)
         : null;
-    if (
-      incomingRoundId &&
-      lastRoundIdRef.current === incomingRoundId &&
-      resultsShownForRoundRef.current === incomingRoundId
-    ) {
-      // Round-started duplicato di un round per cui stiamo già mostrando i risultati: ignora.
+    if (incomingRoundId && lastRoundIdRef.current === incomingRoundId) {
       return;
     }
     let view: ControllerView = 'waiting';
@@ -195,6 +199,8 @@ export function useGameEvents() {
       if (resultsShownForRoundRef.current && resultsShownForRoundRef.current !== incomingRoundId) {
         resultsShownForRoundRef.current = null;
       }
+      // Nuovo round → permette di riapplicare phase-changed
+      lastPhaseAppliedRef.current = null;
     }
     startTimer(timeLimit);
   }, [startTimer]);
@@ -287,6 +293,14 @@ export function useGameEvents() {
   // ============================================
 
   const handlePhaseChanged = useCallback((data: { gameType: string; phase: string; chameleonId?: string; data?: { timeLimit?: number } }) => {
+    // Idempotenza: il sync HTTP rimanda 'phase-changed' per la fase corrente
+    // ogni 2.5s. Senza questa guardia hasSubmitted/canSubmit/timer si resettano
+    // di continuo, facendo "tornare indietro" la UI dopo che l'utente ha votato.
+    const phaseKey = `${lastRoundIdRef.current ?? ''}::${data.gameType}::${data.phase}`;
+    if (lastPhaseAppliedRef.current === phaseKey) {
+      return;
+    }
+    lastPhaseAppliedRef.current = phaseKey;
     const timeLimit = data.data?.timeLimit;
     const topChameleon = typeof data.chameleonId === 'string' ? data.chameleonId : '';
     setState(prev => {

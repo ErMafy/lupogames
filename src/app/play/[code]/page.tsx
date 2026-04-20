@@ -114,6 +114,8 @@ export default function ControllerPage() {
   // New games state
   const [newGameData, setNewGameData] = useState<Record<string, unknown> | null>(null);
   const newGameRoundIdRef = useRef<string | null>(null);
+  // Idempotenza phase-changed: chiave roundId::gameType::phase già applicata.
+  const lastLocalPhaseKeyRef = useRef<string | null>(null);
 
   // Score snapshot at game start (for per-game leaderboard)
   const scoreSnapshotRef = useRef<Record<string, number>>({});
@@ -273,7 +275,16 @@ export default function ControllerPage() {
     }
     
     if (eventName === 'phase-changed') {
-      const phaseData = data as { gameType: string; phase: string; skipVoting?: boolean; data?: { responses?: { id: string; response: string }[] } };
+      const phaseData = data as { gameType: string; phase: string; skipVoting?: boolean; data?: { responses?: { id: string; response: string }[]; roundId?: string } };
+      // Idempotenza: il sync HTTP rimanda phase-changed per la fase corrente ogni 2.5s.
+      // Senza guardia, ogni sync resetta hasSubmitted/canSubmit e sovrascrive lo stato
+      // locale, facendo "tornare indietro" la UI dopo un voto.
+      const phaseRid = phaseData.data?.roundId || newGameRoundIdRef.current || promptRoundIdRef.current || secretRoundIdRef.current || '';
+      const localPhaseKey = `${phaseRid}::${phaseData.gameType}::${phaseData.phase}`;
+      if (lastLocalPhaseKeyRef.current === localPhaseKey) {
+        return;
+      }
+      lastLocalPhaseKeyRef.current = localPhaseKey;
       if (phaseData.gameType === 'CONTINUE_PHRASE') {
         const newPhase = phaseData.phase as 'WRITING' | 'VOTING';
         setPromptPhase(newPhase);
@@ -314,27 +325,36 @@ export default function ControllerPage() {
 
     if (eventName === 'round-started') {
       const roundStartData = data as { gameType: string; phase?: string; data?: { secret?: string; roundId?: string; players?: { id: string; name: string; avatar: string | null; avatarColor: string | null }[] } };
+      // Guard: se il sync HTTP rimanda 'round-started' per il round corrente,
+      // NON resettare lo stato locale (triviaResult, promptResponses, ecc.).
+      const incomingRid =
+        (roundStartData.data as { roundId?: string } | undefined)?.roundId || null;
       if (roundStartData.gameType === 'WHO_WAS_IT' && roundStartData.data) {
-        setSecretPhase(roundStartData.phase as 'COLLECTING' | 'GUESSING' || 'GUESSING');
-        setSecretReveal(null);
-        secretRoundIdRef.current = roundStartData.data.roundId ?? null;
-        const secretData = roundStartData.data as { secret?: string; secretOwnerId?: string; roundId?: string; players?: typeof secretPlayers };
-        setSecretOwnerId(secretData.secretOwnerId ?? null);
-        if (secretData.secret) {
-          setCurrentSecret(secretData.secret);
-        }
-        if (secretData.players) {
-          setSecretPlayers(secretData.players);
+        const sameSecretRound = !!incomingRid && incomingRid === secretRoundIdRef.current;
+        if (!sameSecretRound) {
+          setSecretPhase(roundStartData.phase as 'COLLECTING' | 'GUESSING' || 'GUESSING');
+          setSecretReveal(null);
+          secretRoundIdRef.current = incomingRid;
+          const secretData = roundStartData.data as { secret?: string; secretOwnerId?: string; roundId?: string; players?: typeof secretPlayers };
+          setSecretOwnerId(secretData.secretOwnerId ?? null);
+          if (secretData.secret) {
+            setCurrentSecret(secretData.secret);
+          }
+          if (secretData.players) {
+            setSecretPlayers(secretData.players);
+          }
         }
       }
       if (roundStartData.gameType === 'CONTINUE_PHRASE') {
-        setPromptRoundResults(null);
-        setPromptPhase('WRITING');
-        setPromptResponses([]);
-        setPromptSkipVoting(false); // Reset skipping per nuovo round
-        const rd = (data as { data?: { roundId?: string } }).data;
-        promptRoundIdRef.current = rd?.roundId ?? null;
-        promptPhaseRef.current = 'WRITING';
+        const samePromptRound = !!incomingRid && incomingRid === promptRoundIdRef.current;
+        if (!samePromptRound) {
+          setPromptRoundResults(null);
+          setPromptPhase('WRITING');
+          setPromptResponses([]);
+          setPromptSkipVoting(false);
+          promptRoundIdRef.current = incomingRid;
+          promptPhaseRef.current = 'WRITING';
+        }
       }
       // New games
       const newGameTypes = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
@@ -387,6 +407,7 @@ export default function ControllerPage() {
         });
         if (!sameRound) {
           resetHasSubmitted();
+          lastLocalPhaseKeyRef.current = null;
         }
         newGameRoundIdRef.current = newRoundId;
         if (roundStartData.gameType === 'CHAMELEON' && roomCode && player?.id) {
@@ -413,9 +434,13 @@ export default function ControllerPage() {
         }
       }
       if (roundStartData.gameType === 'TRIVIA') {
-        setTriviaResult(null);
         const rd = (data as { data?: { roundId?: string } }).data;
-        triviaRoundIdRef.current = rd?.roundId ?? null;
+        const newTriviaRid = rd?.roundId ?? null;
+        const sameTriviaRound = !!newTriviaRid && newTriviaRid === triviaRoundIdRef.current;
+        if (!sameTriviaRound) {
+          setTriviaResult(null);
+          triviaRoundIdRef.current = newTriviaRid;
+        }
       }
     }
 

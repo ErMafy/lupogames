@@ -335,6 +335,8 @@ export default function HostPage() {
   // Generic new game state
   const [newGameData, setNewGameData] = useState<Record<string, unknown> | null>(null);
   const newGameRoundIdRef = useRef<string | null>(null);
+  // Idempotenza phase-changed (chiave roundId::gameType::phase)
+  const lastLocalPhaseKeyRef = useRef<string | null>(null);
   
   // Victory animation state
   const [showVictory, setShowVictory] = useState(false);
@@ -468,31 +470,37 @@ export default function HostPage() {
     if (eventName === 'round-started') {
       if (eventData.gameType === 'TRIVIA') {
         const roundData = eventData.data as { questionId: string; question: string; category?: string; options: { A: string; B: string; C: string; D: string }; timeLimit?: number; roundId?: string };
-        setCurrentQuestion({
-          id: roundData.questionId,
-          question: roundData.question,
-          category: roundData.category,
-          options: roundData.options,
-        });
-        setCurrentRoundNum(eventData.roundNumber as number);
-        setTotalRoundsNum((eventData.totalRounds as number) || 5);
-        setTimeLeft(roundData.timeLimit || 30);
-        setShowCorrectAnswer(null);
-        setHostTriviaResult(null);
-        hostTriviaRoundIdRef.current = roundData.roundId ?? null;
+        const sameTriviaRound = !!roundData.roundId && roundData.roundId === hostTriviaRoundIdRef.current;
+        if (!sameTriviaRound) {
+          setCurrentQuestion({
+            id: roundData.questionId,
+            question: roundData.question,
+            category: roundData.category,
+            options: roundData.options,
+          });
+          setCurrentRoundNum(eventData.roundNumber as number);
+          setTotalRoundsNum((eventData.totalRounds as number) || 5);
+          setTimeLeft(roundData.timeLimit || 30);
+          setShowCorrectAnswer(null);
+          setHostTriviaResult(null);
+          hostTriviaRoundIdRef.current = roundData.roundId ?? null;
+        }
       }
       
       if (eventData.gameType === 'CONTINUE_PHRASE') {
         const roundData = eventData.data as { phraseId: string; phrase: string; phase?: 'WRITING' | 'VOTING' | 'RESULTS'; roundId?: string };
-        const phase = (eventData.phase as typeof roundData.phase) || roundData.phase || 'WRITING';
-        setPromptData({
-          phraseId: roundData.phraseId,
-          phrase: roundData.phrase,
-          phase,
-        });
-        setCurrentRoundNum(eventData.roundNumber as number);
-        hostPromptRoundIdRef.current = roundData.roundId ?? null;
-        hostPromptPhaseRef.current = phase ?? 'WRITING';
+        const samePromptRound = !!roundData.roundId && roundData.roundId === hostPromptRoundIdRef.current;
+        if (!samePromptRound) {
+          const phase = (eventData.phase as typeof roundData.phase) || roundData.phase || 'WRITING';
+          setPromptData({
+            phraseId: roundData.phraseId,
+            phrase: roundData.phrase,
+            phase,
+          });
+          setCurrentRoundNum(eventData.roundNumber as number);
+          hostPromptRoundIdRef.current = roundData.roundId ?? null;
+          hostPromptPhaseRef.current = phase ?? 'WRITING';
+        }
       }
       
       if (eventData.gameType === 'WHO_WAS_IT') {
@@ -503,15 +511,18 @@ export default function HostPage() {
           secretOwnerId?: string;
           players?: SecretData['players'];
         };
-        const ph = (eventData.phase as 'COLLECTING' | 'GUESSING' | 'REVEAL') || 'GUESSING';
-        setSecretData({
-          secretContent: roundData.secret ?? roundData.secretContent,
-          phase: ph,
-          players: roundData.players,
-        });
-        setCurrentRoundNum(eventData.roundNumber as number);
-        hostSecretRoundIdRef.current = roundData.roundId ?? null;
-        setSecretOwnerId(roundData.secretOwnerId ?? null);
+        const sameSecretRound = !!roundData.roundId && roundData.roundId === hostSecretRoundIdRef.current;
+        if (!sameSecretRound) {
+          const ph = (eventData.phase as 'COLLECTING' | 'GUESSING' | 'REVEAL') || 'GUESSING';
+          setSecretData({
+            secretContent: roundData.secret ?? roundData.secretContent,
+            phase: ph,
+            players: roundData.players,
+          });
+          setCurrentRoundNum(eventData.roundNumber as number);
+          hostSecretRoundIdRef.current = roundData.roundId ?? null;
+          setSecretOwnerId(roundData.secretOwnerId ?? null);
+        }
       }
 
       // New games: store round data generically
@@ -560,6 +571,7 @@ export default function HostPage() {
         newGameRoundIdRef.current = newRoundId;
         if (!sameRound) {
           resetHasSubmitted();
+          lastLocalPhaseKeyRef.current = null;
         }
         if (ev.gameType === 'CHAMELEON' && roomCode && hostPlayer?.id) {
           void fetch(
@@ -587,7 +599,14 @@ export default function HostPage() {
     }
 
     if (eventName === 'phase-changed') {
-      const pd = eventData as { gameType: string; phase: string; skipVoting?: boolean; data?: { responses?: { id: string; response: string }[] } };
+      const pd = eventData as { gameType: string; phase: string; skipVoting?: boolean; data?: { responses?: { id: string; response: string }[]; roundId?: string } };
+      // Idempotenza phase-changed (sync HTTP la rimanda ogni 2.5s)
+      const phaseRid = pd.data?.roundId || newGameRoundIdRef.current || hostPromptRoundIdRef.current || hostSecretRoundIdRef.current || '';
+      const localPhaseKey = `${phaseRid}::${pd.gameType}::${pd.phase}`;
+      if (lastLocalPhaseKeyRef.current === localPhaseKey) {
+        return;
+      }
+      lastLocalPhaseKeyRef.current = localPhaseKey;
       if (pd.gameType === 'CONTINUE_PHRASE' && pd.phase === 'VOTING' && pd.data?.responses) {
         hostPromptPhaseRef.current = 'VOTING';
         setPromptData((prev) =>
