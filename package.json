@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:playthrough": "tsx scripts/smoke-playthrough-all-games.ts",
+    "test:playthrough:5p": "tsx scripts/full-playthrough-5p.ts",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
