@@ -350,6 +350,7 @@ export default function HostPage() {
   const lastHostSyncRevisionRef = useRef<string | null>(null);
   const lastHostKnownSyncVersionRef = useRef<number | null>(null);
   const handleCustomGameEventRef = useRef<(eventName: string, data: unknown) => void>(() => {});
+  const lastRoundNumberRef = useRef<number>(0);
 
   // Host trivia state
   const hostTriviaRoundIdRef = useRef<string | null>(null);
@@ -465,9 +466,17 @@ export default function HostPage() {
       const snap: Record<string, number> = {};
       for (const p of players) snap[p.id] = p.score;
       scoreSnapshotRef.current = snap;
+      lastRoundNumberRef.current = 0;
     }
     
     if (eventName === 'round-started') {
+      const incomingRoundNum = typeof eventData.roundNumber === 'number' ? eventData.roundNumber : 0;
+      if (incomingRoundNum > 0 && incomingRoundNum < lastRoundNumberRef.current) {
+        return;
+      }
+      if (incomingRoundNum > 0) {
+        lastRoundNumberRef.current = incomingRoundNum;
+      }
       if (eventData.gameType === 'TRIVIA') {
         const roundData = eventData.data as { questionId: string; question: string; category?: string; options: { A: string; B: string; C: string; D: string }; timeLimit?: number; roundId?: string };
         const sameTriviaRound = !!roundData.roundId && roundData.roundId === hostTriviaRoundIdRef.current;
@@ -737,6 +746,10 @@ export default function HostPage() {
     }
     
     if (eventName === 'show-results' && eventData.correctAnswer) {
+      const srRoundId = typeof eventData.roundId === 'string' ? eventData.roundId : null;
+      if (srRoundId && hostTriviaRoundIdRef.current && srRoundId !== hostTriviaRoundIdRef.current) {
+        return;
+      }
       const letter = eventData.correctAnswer as string;
       const txt =
         typeof (eventData as { correctAnswerText?: string }).correctAnswerText === 'string'

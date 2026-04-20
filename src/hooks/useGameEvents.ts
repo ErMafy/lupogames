@@ -96,15 +96,20 @@ export function useGameEvents() {
   // ============================================
 
   const handleGameStarted = useCallback((data: { gameType: GameType; totalRounds: number }) => {
-    setState(prev => ({
-      ...prev,
-      currentGame: data.gameType,
-      totalRounds: data.totalRounds,
-      currentRound: 0,
-      hasSubmitted: false,
-      controllerView:
-        data.gameType === 'WHO_WAS_IT' ? 'secret-write' : prev.controllerView,
-    }));
+    setState(prev => {
+      if (prev.currentGame === data.gameType && prev.currentRound > 0) {
+        return { ...prev, totalRounds: data.totalRounds };
+      }
+      return {
+        ...prev,
+        currentGame: data.gameType,
+        totalRounds: data.totalRounds,
+        currentRound: 0,
+        hasSubmitted: false,
+        controllerView:
+          data.gameType === 'WHO_WAS_IT' ? 'secret-write' : prev.controllerView,
+      };
+    });
   }, []);
 
   const handleRoundStarted = useCallback((data: {
@@ -126,6 +131,10 @@ export function useGameEvents() {
       typeof (data.data as { roundId?: unknown })?.roundId === 'string'
         ? ((data.data as { roundId: string }).roundId)
         : null;
+    const incomingRoundNumber = typeof data.roundNumber === 'number' ? data.roundNumber : 0;
+    if (incomingRoundNumber > 0 && incomingRoundNumber < stateRef.current.currentRound) {
+      return;
+    }
     if (incomingRoundId && lastRoundIdRef.current === incomingRoundId) {
       return;
     }
@@ -213,6 +222,9 @@ export function useGameEvents() {
   }, []);
 
   const handleShowResults = useCallback((data?: { resultsDwellSec?: number; roundId?: string }) => {
+    if (typeof data?.roundId === 'string' && data.roundId && lastRoundIdRef.current && data.roundId !== lastRoundIdRef.current) {
+      return;
+    }
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;

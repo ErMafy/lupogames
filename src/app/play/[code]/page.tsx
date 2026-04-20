@@ -121,6 +121,7 @@ export default function ControllerPage() {
   const scoreSnapshotRef = useRef<Record<string, number>>({});
   const lastSyncRevisionRef = useRef<string | null>(null);
   const lastKnownSyncVersionRef = useRef<number | null>(null);
+  const lastRoundNumberRef = useRef<number>(0);
 
   // Risultati round prompt (visibili a tutti)
   const [promptRoundResults, setPromptRoundResults] = useState<Array<{
@@ -268,6 +269,7 @@ export default function ControllerPage() {
       const snap: Record<string, number> = {};
       for (const p of allPlayers) snap[p.playerId] = p.score;
       scoreSnapshotRef.current = snap;
+      lastRoundNumberRef.current = 0;
     }
     
     if (eventName === 'avatar-deselected') {
@@ -324,9 +326,14 @@ export default function ControllerPage() {
     }
 
     if (eventName === 'round-started') {
-      const roundStartData = data as { gameType: string; phase?: string; data?: { secret?: string; roundId?: string; players?: { id: string; name: string; avatar: string | null; avatarColor: string | null }[] } };
-      // Guard: se il sync HTTP rimanda 'round-started' per il round corrente,
-      // NON resettare lo stato locale (triviaResult, promptResponses, ecc.).
+      const roundStartData = data as { roundNumber?: number; gameType: string; phase?: string; data?: { secret?: string; roundId?: string; players?: { id: string; name: string; avatar: string | null; avatarColor: string | null }[] } };
+      const incomingRoundNum = typeof roundStartData.roundNumber === 'number' ? roundStartData.roundNumber : 0;
+      if (incomingRoundNum > 0 && incomingRoundNum < lastRoundNumberRef.current) {
+        return;
+      }
+      if (incomingRoundNum > 0) {
+        lastRoundNumberRef.current = incomingRoundNum;
+      }
       const incomingRid =
         (roundStartData.data as { roundId?: string } | undefined)?.roundId || null;
       if (roundStartData.gameType === 'WHO_WAS_IT' && roundStartData.data) {
