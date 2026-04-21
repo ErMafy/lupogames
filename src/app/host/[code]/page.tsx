@@ -969,6 +969,7 @@ export default function HostPage() {
   const handleHostSecretSubmit = useCallback(
     async (secret: string) => {
       if (!hostPlayer) return;
+      const sentRoundIdAtStart = hostSecretRoundIdRef.current;
       try {
         const res = await fetch('/api/game/secret/submit', {
           method: 'POST',
@@ -980,7 +981,10 @@ export default function HostPage() {
           }),
         });
         const data = await res.json();
-        if (data.success) markAsSubmitted();
+        if (data.success) {
+          if (hostSecretRoundIdRef.current !== sentRoundIdAtStart) return;
+          markAsSubmitted();
+        }
       } catch (e) {
         console.error('Host secret submit:', e);
       }
@@ -1051,17 +1055,22 @@ export default function HostPage() {
   const handleNewGameAction = useCallback(
     async (endpoint: string, body: Record<string, unknown>) => {
       if (!hostPlayer) return;
+      const sentRoundId = newGameRoundIdRef.current;
+      const sentPhase = (newGameData?.phase as string | undefined) ?? null;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode, playerId: hostPlayer.id, roundId: newGameRoundIdRef.current, ...body }),
+        body: JSON.stringify({ roomCode, playerId: hostPlayer.id, roundId: sentRoundId, ...body }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Azione non riuscita');
+      if (newGameRoundIdRef.current !== sentRoundId) return;
+      const currentPhase = (newGameData?.phase as string | undefined) ?? null;
+      if (sentPhase && currentPhase && sentPhase !== currentPhase) return;
       markAsSubmitted();
       setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
     },
-    [hostPlayer, roomCode, markAsSubmitted]
+    [hostPlayer, roomCode, markAsSubmitted, newGameData]
   );
 
   const hostPromptRoundForController: (PromptRoundData & { roundId?: string }) | null =

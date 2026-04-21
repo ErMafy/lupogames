@@ -788,6 +788,9 @@ export default function ControllerPage() {
   const handleSecretSubmit = async (secret: string) => {
     if (!player) return;
 
+    const sentPhase = secretPhase;
+    const sentRoundIdAtStart = secretRoundIdRef.current;
+
     try {
       const res = await fetch('/api/game/secret/submit', {
         method: 'POST',
@@ -801,6 +804,8 @@ export default function ControllerPage() {
 
       const data = await res.json();
       if (data.success) {
+        if (sentPhase !== 'COLLECTING') return;
+        if (secretRoundIdRef.current !== sentRoundIdAtStart) return;
         markAsSubmitted();
       }
     } catch (err) {
@@ -834,13 +839,22 @@ export default function ControllerPage() {
 
   const handleNewGameAction = async (endpoint: string, body: Record<string, unknown>) => {
     if (!player) return;
+    const sentRoundId = newGameRoundIdRef.current;
+    const sentPhase = (newGameData?.phase as string | undefined) ?? null;
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomCode, playerId: player.id, roundId: newGameRoundIdRef.current, ...body }),
+      body: JSON.stringify({ roomCode, playerId: player.id, roundId: sentRoundId, ...body }),
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Azione non riuscita');
+    if (newGameRoundIdRef.current !== sentRoundId) {
+      return;
+    }
+    const currentPhase = (newGameData?.phase as string | undefined) ?? null;
+    if (sentPhase && currentPhase && sentPhase !== currentPhase) {
+      return;
+    }
     markAsSubmitted();
     setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
   };

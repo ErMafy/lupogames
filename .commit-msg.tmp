@@ -1,0 +1,26 @@
+fix(voto): blocca markAsSubmitted stale tra round (sticky vote bug)
+
+Bug: dopo aver votato a fine round, se la risposta API torna DOPO
+che il server ha gia avanzato al round successivo, markAsSubmitted()
+veniva chiamata sul nuovo round, lasciando il giocatore con
+hasSubmitted=true e i bottoni disabilitati per la domanda successiva.
+
+Sintomi riportati: in tutti i giochi (Trivia/Corsa del Sapere, Swipe,
+Tribunal, Bomba, Termometro, Mente Alveare, Camaleonte, Stanza Divisa,
+Intervista, Chi e Stato), il voto restava bloccato sul round successivo.
+
+Fix: cattura il roundId/phase prima del fetch e verifica dopo la
+risposta che siano ancora gli stessi prima di chiamare markAsSubmitted.
+Se il round e cambiato, scarta silenziosamente (la sync e Pusher
+gestiranno gia il nuovo round con hasSubmitted=false).
+
+Modifiche:
+- play page: handleNewGameAction (8 giochi nuovi) ora guarda sentRoundId
+  e sentPhase prima di markAsSubmitted.
+- play page: handleSecretSubmit (Chi e Stato COLLECTING) ora controlla
+  che il phase sia ancora COLLECTING e secretRoundIdRef non sia
+  cambiato (= GUESSING non e ancora iniziato).
+- host page: stesso guard su handleNewGameAction e handleHostSecretSubmit.
+
+I gia protetti (handleTriviaAnswer, handlePromptResponse, handlePromptVote,
+handleSecretVote) restano invariati.
