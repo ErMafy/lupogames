@@ -694,11 +694,22 @@ export default function ControllerPage() {
   };
 
   const handleTriviaAnswer = async (answer: 'A' | 'B' | 'C' | 'D', responseTimeMs: number) => {
-    if (!player || !roundData) {
+    if (!player) {
       throw new Error('Sessione non pronta');
     }
 
-    const answerRoundId = (roundData as TriviaRoundData & { roundId: string }).roundId;
+    // IMPORTANTE: leggiamo il roundId dal ref (sempre aggiornato in modo sincrono
+    // da customGameEventHandler) invece che dallo state `roundData` (asincrono via
+    // setState). Questo evita che, in una micro-finestra dopo round-started,
+    // un click invii la risposta col roundId del round PRECEDENTE → server
+    // restituirebbe 400 "Hai gia` risposto" e visivamente il bottone "tornerebbe
+    // indietro" (selectedAnswer reset nel catch).
+    const answerRoundId =
+      triviaRoundIdRef.current ??
+      ((roundData as TriviaRoundData & { roundId?: string } | null)?.roundId ?? null);
+    if (!answerRoundId) {
+      throw new Error('Nessun round attivo');
+    }
 
     try {
       const response = await fetch('/api/game/trivia/answer', {
@@ -737,8 +748,11 @@ export default function ControllerPage() {
   };
 
   const handlePromptResponse = async (response: string) => {
-    if (!player || !roundData) return;
-    const sentRoundId = (roundData as PromptRoundData & { roundId: string }).roundId;
+    if (!player) return;
+    const sentRoundId =
+      promptRoundIdRef.current ??
+      ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
+    if (!sentRoundId) return;
 
     try {
       const res = await fetch('/api/game/prompt/response', {
@@ -763,8 +777,11 @@ export default function ControllerPage() {
   };
 
   const handlePromptVote = async (responseId: string) => {
-    if (!player || !roundData) return;
-    const sentRoundId = (roundData as PromptRoundData & { roundId: string }).roundId;
+    if (!player) return;
+    const sentRoundId =
+      promptRoundIdRef.current ??
+      ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
+    if (!sentRoundId) return;
 
     const res = await fetch('/api/game/prompt/vote', {
       method: 'POST',
@@ -816,8 +833,11 @@ export default function ControllerPage() {
   };
 
   const handleSecretVote = async (suspectedPlayerId: string) => {
-    if (!player || !roundData) return;
-    const sentRoundId = (roundData as SecretRoundData & { roundId: string }).roundId;
+    if (!player) return;
+    const sentRoundId =
+      secretRoundIdRef.current ??
+      ((roundData as SecretRoundData & { roundId?: string } | null)?.roundId ?? null);
+    if (!sentRoundId) return;
 
     const res = await fetch('/api/game/secret/vote', {
       method: 'POST',

@@ -913,10 +913,11 @@ export default function HostPage() {
 
   const handleHostPromptResponse = useCallback(
     async (response: string) => {
-      if (!hostPlayer || !roundData || currentGameType !== 'CONTINUE_PHRASE') return;
-      const rd = roundData as PromptRoundData & { roundId?: string };
-      if (!rd.roundId) return;
-      const sentRoundId = rd.roundId;
+      if (!hostPlayer || currentGameType !== 'CONTINUE_PHRASE') return;
+      const sentRoundId =
+        hostPromptRoundIdRef.current ??
+        ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
+      if (!sentRoundId) return;
       try {
         const res = await fetch('/api/game/prompt/response', {
           method: 'POST',
@@ -942,10 +943,11 @@ export default function HostPage() {
 
   const handleHostPromptVote = useCallback(
     async (responseId: string) => {
-      if (!hostPlayer || !roundData || currentGameType !== 'CONTINUE_PHRASE') return;
-      const rd = roundData as PromptRoundData & { roundId?: string };
-      if (!rd.roundId) return;
-      const sentRoundId = rd.roundId;
+      if (!hostPlayer || currentGameType !== 'CONTINUE_PHRASE') return;
+      const sentRoundId =
+        hostPromptRoundIdRef.current ??
+        ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
+      if (!sentRoundId) return;
       const res = await fetch('/api/game/prompt/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -994,10 +996,11 @@ export default function HostPage() {
 
   const handleHostSecretVote = useCallback(
     async (suspectedPlayerId: string) => {
-      if (!hostPlayer || !roundData || currentGameType !== 'WHO_WAS_IT') return;
-      const rd = roundData as SecretRoundData & { roundId?: string };
-      if (!rd.roundId) return;
-      const sentRoundId = rd.roundId;
+      if (!hostPlayer || currentGameType !== 'WHO_WAS_IT') return;
+      const sentRoundId =
+        hostSecretRoundIdRef.current ??
+        ((roundData as SecretRoundData & { roundId?: string } | null)?.roundId ?? null);
+      if (!sentRoundId) return;
       const res = await fetch('/api/game/secret/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1020,10 +1023,11 @@ export default function HostPage() {
 
   const handleHostTriviaAnswer = useCallback(
     async (answer: 'A' | 'B' | 'C' | 'D', responseTimeMs: number) => {
-      if (!hostPlayer || !roundData || currentGameType !== 'TRIVIA') return;
-      const rd = roundData as TriviaRoundData & { roundId?: string };
-      if (!rd.roundId) return;
-      const sentRoundId = rd.roundId;
+      if (!hostPlayer || currentGameType !== 'TRIVIA') return;
+      const sentRoundId =
+        hostTriviaRoundIdRef.current ??
+        ((roundData as TriviaRoundData & { roundId?: string } | null)?.roundId ?? null);
+      if (!sentRoundId) return;
       const res = await fetch('/api/game/trivia/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

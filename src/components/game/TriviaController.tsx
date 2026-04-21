@@ -58,11 +58,16 @@ export function TriviaController({
 
   const myRank = currentPlayerId ? sorted.findIndex((p) => p.playerId === currentPlayerId) + 1 : 0;
 
+  // Reset stato locale quando cambia la domanda O il roundId (alcune
+  // implementazioni passano lo stesso questionId in round diversi: usiamo
+  // entrambe le chiavi per essere sicuri che il bottone selezionato si
+  // resetti SEMPRE all'inizio di ogni nuovo round).
+  const roundKey = `${(roundData as TriviaRoundData & { roundId?: string }).roundId ?? ''}::${roundData.questionId}`;
   useEffect(() => {
     setSelectedAnswer(null);
     setIsSubmitting(false);
     startTimeRef.current = Date.now();
-  }, [roundData.questionId]);
+  }, [roundKey]);
 
   const pick = async (key: 'A' | 'B' | 'C' | 'D') => {
     if (hasAnswered || isSubmitting) return;

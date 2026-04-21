@@ -289,15 +289,16 @@ export function useGameEvents() {
   // 📤 AZIONI GIOCATORE
   // ============================================
 
-  const markAsSubmitted = useCallback((roundId?: string | null) => {
-    // Round-aware guard: se viene passato un roundId e non corrisponde all'ultimo
-    // round-started applicato, ignoriamo. Questo blocca callback API in ritardo
-    // (es. risposta API torna dopo che il server ha gia` avanzato al round successivo)
-    // che altrimenti marcherebbero come "votato" il round NUOVO, lasciando il
-    // giocatore con bottoni disabilitati per la nuova domanda.
-    if (typeof roundId === 'string' && roundId && lastRoundIdRef.current && roundId !== lastRoundIdRef.current) {
-      return;
-    }
+  const markAsSubmitted = useCallback((_roundId?: string | null) => {
+    // I chiamanti (handleTriviaAnswer, handleNewGameAction, ecc.) eseguono gia` la
+    // guardia per round/phase corrente PRIMA di chiamare questa funzione, quindi
+    // qui non blocchiamo nulla: ci limitiamo a marcare l'invio come fatto. In passato
+    // avevamo aggiunto una doppia guardia round-aware basata su lastRoundIdRef, ma
+    // questo causava un bug: se lastRoundIdRef era leggermente disallineato rispetto
+    // ai ref locali della pagina (es. round-started skippato lato useGameEvents
+    // ma applicato lato pagina), il bottone cliccato non veniva mai marcato come
+    // "votato" e visivamente sembrava che il click "non si selezionasse".
+    void _roundId;
     setState(prev => ({
       ...prev,
       hasSubmitted: true,
