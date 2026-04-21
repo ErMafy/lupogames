@@ -5,7 +5,7 @@ import {
 } from '@/lib/new-game-utils';
 
 const INITIAL_TIMER_SEC = 30;
-const RESULTS_DWELL_MS = 8000;
+const RESULTS_DWELL_MS = 5000;
 
 export async function startBombGame(roomCode: string, rounds = 5) {
   const room = await prisma.room.findUnique({ where: { code: roomCode.toUpperCase() }, include: { players: true, gameState: true } });

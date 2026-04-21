@@ -216,12 +216,14 @@ export default function ControllerPage() {
     return () => clearInterval(interval);
   }, [roomCode, currentGame, refreshRoomPlayers]);
 
-  // Server tick: meno frequente per ridurre corse tra più client (host + telefoni)
+  // Server tick: ogni 2s per round transitions piu` reattive.
+  // Pusher avanza gia` quando tutti hanno votato; il tick e` la rete di sicurezza
+  // quando il timer scade ma non tutti hanno risposto.
   useEffect(() => {
     if (!roomCode || !currentGame) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 5000);
+    }, 2000);
     return () => clearInterval(id);
   }, [roomCode, currentGame]);
 
@@ -727,7 +729,7 @@ export default function ControllerPage() {
         correctAnswerText: data.data.correctAnswerText as string | undefined,
         pointsEarned: data.data.pointsEarned,
       });
-      markAsSubmitted();
+      markAsSubmitted(answerRoundId);
     } catch (err) {
       console.error('Errore invio risposta:', err);
       throw err;
@@ -753,7 +755,7 @@ export default function ControllerPage() {
       const data = await res.json();
       if (data.success) {
         if (promptRoundIdRef.current !== sentRoundId || promptPhaseRef.current !== 'WRITING') return;
-        markAsSubmitted();
+        markAsSubmitted(sentRoundId);
       }
     } catch (err) {
       console.error('Errore invio risposta prompt:', err);
@@ -806,7 +808,7 @@ export default function ControllerPage() {
       if (data.success) {
         if (sentPhase !== 'COLLECTING') return;
         if (secretRoundIdRef.current !== sentRoundIdAtStart) return;
-        markAsSubmitted();
+        markAsSubmitted(sentRoundIdAtStart);
       }
     } catch (err) {
       console.error('Errore invio segreto:', err);
@@ -855,8 +857,8 @@ export default function ControllerPage() {
     if (sentPhase && currentPhase && sentPhase !== currentPhase) {
       return;
     }
-    markAsSubmitted();
-    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
+    markAsSubmitted(sentRoundId);
+    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
   };
 
   // Loading Premium

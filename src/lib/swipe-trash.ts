@@ -5,7 +5,7 @@ import {
 } from '@/lib/new-game-utils';
 
 const VOTE_SEC = 20;
-const RESULTS_DWELL_MS = 8000;
+const RESULTS_DWELL_MS = 5000;
 
 export async function startSwipeTrashGame(roomCode: string, rounds = 5) {
   const room = await prisma.room.findUnique({

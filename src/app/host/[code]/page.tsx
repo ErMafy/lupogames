@@ -418,7 +418,7 @@ export default function HostPage() {
     if (gamePhase !== 'playing' || !roomCode) return;
     const id = setInterval(() => {
       void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {});
-    }, 5000);
+    }, 2000);
     return () => clearInterval(id);
   }, [gamePhase, roomCode]);
 
@@ -931,7 +931,7 @@ export default function HostPage() {
         const data = await res.json();
         if (data.success) {
           if (hostPromptRoundIdRef.current !== sentRoundId || hostPromptPhaseRef.current !== 'WRITING') return;
-          markAsSubmitted();
+          markAsSubmitted(sentRoundId);
         }
       } catch (e) {
         console.error('Host prompt response:', e);
@@ -983,7 +983,7 @@ export default function HostPage() {
         const data = await res.json();
         if (data.success) {
           if (hostSecretRoundIdRef.current !== sentRoundIdAtStart) return;
-          markAsSubmitted();
+          markAsSubmitted(sentRoundIdAtStart);
         }
       } catch (e) {
         console.error('Host secret submit:', e);
@@ -1046,7 +1046,7 @@ export default function HostPage() {
         correctAnswerText: data.data.correctAnswerText as string | undefined,
         pointsEarned: data.data.pointsEarned,
       });
-      markAsSubmitted();
+      markAsSubmitted(sentRoundId);
     },
     [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
   );
@@ -1067,8 +1067,8 @@ export default function HostPage() {
       if (newGameRoundIdRef.current !== sentRoundId) return;
       const currentPhase = (newGameData?.phase as string | undefined) ?? null;
       if (sentPhase && currentPhase && sentPhase !== currentPhase) return;
-      markAsSubmitted();
-      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
+      markAsSubmitted(sentRoundId);
+      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
     },
     [hostPlayer, roomCode, markAsSubmitted, newGameData]
   );

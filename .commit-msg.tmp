@@ -1,0 +1,39 @@
+fix: round-aware markAsSubmitted, dwell idempotente, tick + dwell ridotti
+
+Bugs risolti (segnalati: voto sticky sul round successivo + transizioni lente):
+
+1) markAsSubmitted ora accetta un roundId opzionale. Se passato e non
+   corrisponde all'ultimo round-started applicato (lastRoundIdRef),
+   l'aggiornamento di hasSubmitted/canSubmit viene scartato. Questo
+   blocca callback API in ritardo: se rispondi a fine round 1 e la
+   response API arriva DOPO che il server ha gia` avanzato a round 2,
+   il vecchio markAsSubmitted non puo` piu` "marcare come votato" il
+   nuovo round, lasciandolo libero di accettare il prossimo voto.
+
+   Tutti i call-site aggiornati per passare il roundId/phase corretto:
+   - play page: handleTriviaAnswer, handlePromptResponse,
+     handleSecretSubmit, handleNewGameAction
+   - host page: handleHostTriviaAnswer, handleHostPromptResponse,
+     handleHostSecretSubmit, handleNewGameAction
+
+2) handleShowResults era non-idempotente: ogni sync HTTP che rimanda
+   show-results durante la dwell ri-chiamava startTimer(7), resettando
+   il countdown a 7s ogni 2.5s. Aggiunta guardia tramite
+   resultsShownForRoundRef: se i risultati sono gia` stati mostrati
+   per quel roundId, lo show-results duplicato viene ignorato.
+
+3) handleGameEnded ora resetta currentRound, hasSubmitted, lastRoundIdRef,
+   resultsShownForRoundRef, lastPhaseAppliedRef. Senza questo, se l'host
+   lanciava subito un nuovo gioco dopo il game-over, il round 1 del
+   nuovo gioco veniva BLOCCATO dall'idempotency check
+   (incomingRoundNumber 1 < currentRound 5 dal gioco precedente).
+
+4) Tick interval ridotto da 5000ms a 2000ms (sia play che host page) e
+   nudge tick post-vote ridotto da 1500ms a 800ms. Pusher avanza gia`
+   immediatamente quando tutti hanno votato; il tick e` la rete di
+   sicurezza per quando il timer scade ma non tutti hanno risposto:
+   da fino-a-5s di latenza scendiamo a fino-a-2s.
+
+5) Dwell ridotti per transizioni piu` reattive:
+   - TRIVIA_RESULTS_DWELL_SEC: 7 -> 4
+   - RESULTS_DWELL_MS (8 giochi nuovi): 8000 -> 5000

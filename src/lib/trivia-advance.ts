@@ -3,7 +3,7 @@ import { sendToRoom } from '@/lib/pusher-server';
 
 const QUESTION_SEC = 30;
 /** Tempo in cui tutti vedono esito + classifica prima del round successivo (sync Pusher / HTTP). */
-export const TRIVIA_RESULTS_DWELL_SEC = 7;
+export const TRIVIA_RESULTS_DWELL_SEC = 4;
 
 interface TriviaGameState {
   questionIds: string[];

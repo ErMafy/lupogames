@@ -225,6 +225,13 @@ export function useGameEvents() {
     if (typeof data?.roundId === 'string' && data.roundId && lastRoundIdRef.current && data.roundId !== lastRoundIdRef.current) {
       return;
     }
+    // Idempotenza: il sync HTTP rimanda show-results ogni 2.5s durante la dwell.
+    // Senza questa guardia chiameremmo startTimer(7) ripetutamente, resettando
+    // il countdown a 7s ogni 2.5s e bloccando visivamente la transizione di round.
+    const refRid = (typeof data?.roundId === 'string' && data.roundId) ? data.roundId : lastRoundIdRef.current;
+    if (refRid && resultsShownForRoundRef.current === refRid) {
+      return;
+    }
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -237,13 +244,11 @@ export function useGameEvents() {
       data.resultsDwellSec > 0
         ? data.resultsDwellSec
         : isTrivia
-          ? 7
+          ? 4
           : 0;
 
-    if (typeof data?.roundId === 'string' && data.roundId) {
-      resultsShownForRoundRef.current = data.roundId;
-    } else if (lastRoundIdRef.current) {
-      resultsShownForRoundRef.current = lastRoundIdRef.current;
+    if (refRid) {
+      resultsShownForRoundRef.current = refRid;
     }
 
     setState(prev => ({
@@ -264,8 +269,17 @@ export function useGameEvents() {
       timerRef.current = null;
     }
 
+    // Resetta i ref di tracciamento round: se l'host avvia subito un nuovo
+    // gioco, il primo round-started (roundNumber=1) non deve essere bloccato
+    // dall'idempotency che confronta con il vecchio currentRound.
+    lastRoundIdRef.current = null;
+    resultsShownForRoundRef.current = null;
+    lastPhaseAppliedRef.current = null;
+
     setState(prev => ({
       ...prev,
+      currentRound: 0,
+      hasSubmitted: false,
       controllerView: 'final-scores',
       canSubmit: false,
     }));
@@ -275,7 +289,15 @@ export function useGameEvents() {
   // 📤 AZIONI GIOCATORE
   // ============================================
 
-  const markAsSubmitted = useCallback(() => {
+  const markAsSubmitted = useCallback((roundId?: string | null) => {
+    // Round-aware guard: se viene passato un roundId e non corrisponde all'ultimo
+    // round-started applicato, ignoriamo. Questo blocca callback API in ritardo
+    // (es. risposta API torna dopo che il server ha gia` avanzato al round successivo)
+    // che altrimenti marcherebbero come "votato" il round NUOVO, lasciando il
+    // giocatore con bottoni disabilitati per la nuova domanda.
+    if (typeof roundId === 'string' && roundId && lastRoundIdRef.current && roundId !== lastRoundIdRef.current) {
+      return;
+    }
     setState(prev => ({
       ...prev,
       hasSubmitted: true,

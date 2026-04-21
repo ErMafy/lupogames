@@ -6,7 +6,7 @@ import {
 
 const HINT_SEC = 30;
 const VOTE_SEC = 25;
-const RESULTS_DWELL_MS = 8000;
+const RESULTS_DWELL_MS = 5000;
 
 export type ChameleonHintRow = { playerId: string; playerName: string; hint: string };
 
