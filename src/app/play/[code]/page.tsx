@@ -114,6 +114,12 @@ export default function ControllerPage() {
   // New games state
   const [newGameData, setNewGameData] = useState<Record<string, unknown> | null>(null);
   const newGameRoundIdRef = useRef<string | null>(null);
+  // Phase corrente "viva" tracciata via ref. Senza questo, il guard in
+  // handleNewGameAction leggeva la phase da `newGameData` chiusa nello scope
+  // della funzione, quindi sentPhase === currentPhase erano SEMPRE uguali e il
+  // guard non scattava mai dopo un cambio fase. Ora confrontiamo la phase
+  // reale al momento della risposta API col snapshot al momento dell'invio.
+  const newGamePhaseRef = useRef<string | null>(null);
   // Idempotenza phase-changed: chiave roundId::gameType::phase già applicata.
   const lastLocalPhaseKeyRef = useRef<string | null>(null);
 
@@ -314,6 +320,9 @@ export default function ControllerPage() {
         if (typeof payload.roundId === 'string' && payload.roundId) {
           newGameRoundIdRef.current = payload.roundId;
         }
+        // Aggiorna SUBITO la phase ref (sincrono) prima del setState. Cosi`
+        // qualunque azione utente arrivi ora vede la phase corrente.
+        newGamePhaseRef.current = phaseData.phase;
         const topCh = typeof pdx.chameleonId === 'string' ? pdx.chameleonId : '';
         setNewGameData(prev => ({
           ...prev,
@@ -419,6 +428,7 @@ export default function ControllerPage() {
           lastLocalPhaseKeyRef.current = null;
         }
         newGameRoundIdRef.current = newRoundId;
+        newGamePhaseRef.current = incomingPhase;
         if (roundStartData.gameType === 'CHAMELEON' && roomCode && player?.id) {
           void fetch(
             `/api/game/chameleon/context?code=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(player.id)}`,
@@ -500,6 +510,7 @@ export default function ControllerPage() {
       }
       const newGameTypes3 = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
       if (newGameTypes3.includes(rd.gameType as string)) {
+        newGamePhaseRef.current = 'RESULTS';
         setNewGameData(prev => ({ ...prev, phase: 'RESULTS', results: rd.results }));
       }
       refreshRoomPlayers();
@@ -861,8 +872,13 @@ export default function ControllerPage() {
 
   const handleNewGameAction = async (endpoint: string, body: Record<string, unknown>) => {
     if (!player) return;
+    // Snapshot SINCRONO da ref (non da state chiuso): legge sempre l'ultimo
+    // round/phase noti al momento del click. Senza ref il guard post-await
+    // confrontava due valori catturati nella stessa closure (stessi sempre)
+    // e quindi non scattava mai dopo un cambio fase, causando markAsSubmitted
+    // stale → utente bloccato nel round/phase successivo.
     const sentRoundId = newGameRoundIdRef.current;
-    const sentPhase = (newGameData?.phase as string | undefined) ?? null;
+    const sentPhase = newGamePhaseRef.current;
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -873,8 +889,7 @@ export default function ControllerPage() {
     if (newGameRoundIdRef.current !== sentRoundId) {
       return;
     }
-    const currentPhase = (newGameData?.phase as string | undefined) ?? null;
-    if (sentPhase && currentPhase && sentPhase !== currentPhase) {
+    if (sentPhase && newGamePhaseRef.current && sentPhase !== newGamePhaseRef.current) {
       return;
     }
     markAsSubmitted(sentRoundId);

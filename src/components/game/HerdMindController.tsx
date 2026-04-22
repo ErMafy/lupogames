@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   question: string;
@@ -10,9 +10,16 @@ interface Props {
   results?: { clusters: Array<{ answer: string; members: Array<{ playerId: string; playerName: string }>; isWinner: boolean }>; winningAnswer: string };
 }
 
-export function HerdMindController({ question, onAnswer, hasAnswered, timeRemaining, results }: Props) {
+export function HerdMindController({ question, roundId, onAnswer, hasAnswered, timeRemaining, results }: Props) {
   const [answer, setAnswer] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Reset stato locale ad ogni nuovo round: senza questo l'input restava
+  // pre-compilato con la risposta del round precedente e l'utente vedeva
+  // "ho gia` risposto" senza poter selezionare/scrivere.
+  useEffect(() => {
+    setAnswer('');
+    setSubmitting(false);
+  }, [roundId]);
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 
   if (results) {

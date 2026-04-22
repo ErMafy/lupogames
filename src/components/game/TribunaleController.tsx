@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Player { id: string; name: string; avatar: string | null }
 interface Props {
@@ -19,9 +19,14 @@ interface Props {
   results?: { innocent: number; guilty: number; isInnocent: boolean; defendantId: string };
 }
 
-export function TribunaleController({ phase, accusation, players, currentPlayerId, defendantId, defendantName, defense, onAccuse, onDefense, onVerdict, hasSubmitted, timeRemaining, results }: Props) {
+export function TribunaleController({ phase, accusation, players, currentPlayerId, defendantId, defendantName, defense, roundId, onAccuse, onDefense, onVerdict, hasSubmitted, timeRemaining, results }: Props) {
   const [defenseText, setDefenseText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Reset stato locale al cambio round / fase.
+  useEffect(() => {
+    setDefenseText('');
+    setSubmitting(false);
+  }, [roundId, phase]);
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 
   const timerBadge = timeRemaining > 0 && (

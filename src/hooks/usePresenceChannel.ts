@@ -40,8 +40,25 @@ export function usePresenceChannel({
   onGameEvent,
   onPresenceReady,
 }: UsePresenceChannelOptions) {
+  // ⚠️ CRITICO: usiamo SEMPRE i ref per i callback nell'useEffect di
+  // sottoscrizione. Senza questo, ogni volta che il parent ricrea
+  // `customGameEventHandler` (succede ad ogni `allPlayers` update, ovvero
+  // ad ogni `player-advanced`/score change), l'effect si rieseguiva,
+  // chiamava `unbind_all`+`unsubscribe`, e nella micro-finestra fra cleanup
+  // e re-subscribe gli eventi Pusher arrivati venivano PERSI.
+  // In particolare il `round-started` del round successivo poteva svanire,
+  // lasciando il client incollato al round precedente con `hasSubmitted=true`
+  // → l'utente vedeva "Voto inviato!" e non riusciva piu` a rispondere.
   const onPresenceReadyRef = useRef(onPresenceReady);
   onPresenceReadyRef.current = onPresenceReady;
+  const onMemberAddedRef = useRef(onMemberAdded);
+  onMemberAddedRef.current = onMemberAdded;
+  const onMemberRemovedRef = useRef(onMemberRemoved);
+  onMemberRemovedRef.current = onMemberRemoved;
+  const onAvatarSelectedRef = useRef(onAvatarSelected);
+  onAvatarSelectedRef.current = onAvatarSelected;
+  const onGameEventRef = useRef(onGameEvent);
+  onGameEventRef.current = onGameEvent;
 
   const [state, setState] = useState<PresenceChannelState>({
     isConnected: false,
@@ -122,7 +139,7 @@ export function usePresenceChannel({
         };
       });
 
-      onMemberAdded?.(member);
+      onMemberAddedRef.current?.(member);
     });
 
     channel.bind('pusher:member_removed', (member: PusherMember) => {
@@ -138,7 +155,7 @@ export function usePresenceChannel({
         };
       });
 
-      onMemberRemoved?.(member);
+      onMemberRemovedRef.current?.(member);
     });
 
     // ============================================
@@ -147,7 +164,7 @@ export function usePresenceChannel({
 
     channel.bind('avatar-selected', (data: AvatarSelectedEvent) => {
       console.log('🐺 Avatar selezionato:', data.avatar, 'da', data.playerName);
-      onAvatarSelected?.(data);
+      onAvatarSelectedRef.current?.(data);
     });
 
     // ============================================
@@ -183,7 +200,7 @@ export function usePresenceChannel({
     gameEvents.forEach(eventName => {
       channel.bind(eventName, (data: unknown) => {
         console.log(`🐺 Evento ${eventName}:`, data);
-        onGameEvent?.(eventName, data);
+        onGameEventRef.current?.(eventName, data);
       });
     });
 
@@ -196,7 +213,10 @@ export function usePresenceChannel({
       }
       channelRef.current = null;
     };
-  }, [roomCode, playerId, playerName, isHost, onMemberAdded, onMemberRemoved, onAvatarSelected, onGameEvent]);
+    // ⚠️ NON aggiungere i callback (`onGameEvent`, ecc.) alle deps:
+    // sono gia` letti via ref, e aggiungerli farebbe ri-sottoscrivere il
+    // canale ad ogni render, perdendo eventi Pusher (incluso `round-started`).
+  }, [roomCode, playerId, playerName, isHost]);
 
   // ============================================
   // 🎨 TRIGGER SELEZIONE AVATAR

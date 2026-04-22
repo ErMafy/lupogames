@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Sentence { playerId: string; playerName: string; sentence: string }
 interface Props {
@@ -18,11 +18,19 @@ interface Props {
   results?: Array<{ playerId: string; playerName: string; sentence: string; votes: number }>;
 }
 
-export function InterviewController({ phase, questions, prompt, words, sentences, currentPlayerId, onCollect, onBuild, onVote, hasSubmitted, timeRemaining, results }: Props) {
+export function InterviewController({ phase, questions, prompt, words, sentences, currentPlayerId, roundId, onCollect, onBuild, onVote, hasSubmitted, timeRemaining, results }: Props) {
   const [answers, setAnswers] = useState<string[]>(['', '']);
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [availableWords, setAvailableWords] = useState<string[]>(words || []);
   const [submitting, setSubmitting] = useState(false);
+  // Reset stato locale al cambio round / fase: evita che testi/word picker
+  // restino dal round precedente.
+  useEffect(() => {
+    setAnswers(['', '']);
+    setSelectedWords([]);
+    setAvailableWords(words || []);
+    setSubmitting(false);
+  }, [roundId, phase]);
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 
   const timerBadge = timeRemaining > 0 && (

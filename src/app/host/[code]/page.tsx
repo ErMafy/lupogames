@@ -335,6 +335,11 @@ export default function HostPage() {
   // Generic new game state
   const [newGameData, setNewGameData] = useState<Record<string, unknown> | null>(null);
   const newGameRoundIdRef = useRef<string | null>(null);
+  // Phase corrente "viva" tracciata via ref (non da state chiuso): senza
+  // questo, il guard in handleNewGameAction confrontava due letture della
+  // stessa closure di newGameData → sempre uguali → markAsSubmitted veniva
+  // chiamato anche dopo un cambio fase, lasciando l'host bloccato.
+  const newGamePhaseRef = useRef<string | null>(null);
   // Idempotenza phase-changed (chiave roundId::gameType::phase)
   const lastLocalPhaseKeyRef = useRef<string | null>(null);
   
@@ -578,6 +583,7 @@ export default function HostPage() {
         setCurrentRoundNum(eventData.roundNumber as number);
         setTotalRoundsNum((eventData.totalRounds as number) || 5);
         newGameRoundIdRef.current = newRoundId;
+        newGamePhaseRef.current = incomingPhase;
         if (!sameRound) {
           resetHasSubmitted();
           lastLocalPhaseKeyRef.current = null;
@@ -646,6 +652,7 @@ export default function HostPage() {
         if (typeof payload.roundId === 'string' && payload.roundId) {
           newGameRoundIdRef.current = payload.roundId;
         }
+        newGamePhaseRef.current = pd.phase;
         const topCh = typeof pdx.chameleonId === 'string' ? pdx.chameleonId : '';
         setNewGameData(prev => ({
           ...prev,
@@ -699,6 +706,7 @@ export default function HostPage() {
       // New games: store results in newGameData
       const newGameTypes3 = ['SWIPE_TRASH', 'TRIBUNAL', 'BOMB', 'THERMOMETER', 'HERD_MIND', 'CHAMELEON', 'SPLIT_ROOM', 'INTERVIEW'];
       if (newGameTypes3.includes(eventData.gameType as string)) {
+        newGamePhaseRef.current = 'RESULTS';
         setNewGameData(prev => ({ ...prev, phase: 'RESULTS', results: eventData.results }));
       }
 
@@ -1059,8 +1067,9 @@ export default function HostPage() {
   const handleNewGameAction = useCallback(
     async (endpoint: string, body: Record<string, unknown>) => {
       if (!hostPlayer) return;
+      // Snapshot SINCRONO via ref: vedi commento omologo in play page.
       const sentRoundId = newGameRoundIdRef.current;
-      const sentPhase = (newGameData?.phase as string | undefined) ?? null;
+      const sentPhase = newGamePhaseRef.current;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1069,12 +1078,11 @@ export default function HostPage() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Azione non riuscita');
       if (newGameRoundIdRef.current !== sentRoundId) return;
-      const currentPhase = (newGameData?.phase as string | undefined) ?? null;
-      if (sentPhase && currentPhase && sentPhase !== currentPhase) return;
+      if (sentPhase && newGamePhaseRef.current && sentPhase !== newGamePhaseRef.current) return;
       markAsSubmitted(sentRoundId);
       setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
     },
-    [hostPlayer, roomCode, markAsSubmitted, newGameData]
+    [hostPlayer, roomCode, markAsSubmitted]
   );
 
   const hostPromptRoundForController: (PromptRoundData & { roundId?: string }) | null =

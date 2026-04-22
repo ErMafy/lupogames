@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Player { id: string; name: string; avatar: string | null }
 interface Hint { playerId: string; playerName: string; hint: string }
@@ -30,9 +30,15 @@ interface Props {
   retry?: boolean;
 }
 
-export function ChameleonController({ phase, secretWord, chameleonId, currentPlayerId, hintsSubmitted, hintsTotal, players, hints, liveHints, onHint, onVote, hasSubmitted, timeRemaining, results, retry }: Props) {
+export function ChameleonController({ phase, secretWord, chameleonId, currentPlayerId, hintsSubmitted, hintsTotal, players, roundId, hints, liveHints, onHint, onVote, hasSubmitted, timeRemaining, results, retry }: Props) {
   const [hint, setHint] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Reset stato locale al cambio round / fase: evita che il testo digitato
+  // o il flag submitting persistano e blocchino l'input nel round successivo.
+  useEffect(() => {
+    setHint('');
+    setSubmitting(false);
+  }, [roundId, phase]);
   // SAFETY: per essere "il camaleonte" servono ENTRAMBI gli ID validi.
   // Senza questo, se per qualche motivo entrambi i valori arrivassero vuoti
   // ('') la comparazione '' === '' restituirebbe true e tutti vedrebbero

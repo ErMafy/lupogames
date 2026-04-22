@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   concept: string;
@@ -11,9 +11,16 @@ interface Props {
   currentPlayerId: string;
 }
 
-export function ThermometerController({ concept, onVote, hasVoted, timeRemaining, results, currentPlayerId }: Props) {
+export function ThermometerController({ concept, roundId, onVote, hasVoted, timeRemaining, results, currentPlayerId }: Props) {
   const [value, setValue] = useState(50);
   const [submitting, setSubmitting] = useState(false);
+  // Reset stato locale ad ogni nuovo round: senza questo lo slider restava
+  // sul valore del round precedente e il flag submitting poteva bloccare
+  // il bottone Invia se un'azione era ancora in coda.
+  useEffect(() => {
+    setValue(50);
+    setSubmitting(false);
+  }, [roundId]);
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 
   if (results) {

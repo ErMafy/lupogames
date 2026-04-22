@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   category: string;
@@ -12,9 +12,14 @@ interface Props {
   results?: { loserId: string; loserName: string; words: string[]; category: string };
 }
 
-export function BombController({ category, bombHolderId, currentPlayerId, onPass, timeRemaining, words, results }: Props) {
+export function BombController({ category, bombHolderId, currentPlayerId, roundId, onPass, timeRemaining, words, results }: Props) {
   const [word, setWord] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Reset stato locale ad ogni nuovo round.
+  useEffect(() => {
+    setWord('');
+    setSubmitting(false);
+  }, [roundId]);
   const hasBomb = bombHolderId === currentPlayerId;
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 

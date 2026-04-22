@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   concept: string;
@@ -10,8 +10,13 @@ interface Props {
   results?: { yesCount: number; noCount: number; majority: string; voters?: Array<{ playerId: string; playerName: string; vote: string; won: boolean }> };
 }
 
-export function SwipeTrashController({ concept, onVote, hasVoted, timeRemaining, results }: Props) {
+export function SwipeTrashController({ concept, roundId, onVote, hasVoted, timeRemaining, results }: Props) {
   const [submitting, setSubmitting] = useState(false);
+  // Reset locale ad ogni round: senza questo un click rimasto in coda dal
+  // round precedente poteva tenere `submitting=true` e disabilitare i bottoni.
+  useEffect(() => {
+    setSubmitting(false);
+  }, [roundId]);
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 
   if (results) {

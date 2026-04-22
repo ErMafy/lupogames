@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   phase: 'WRITING' | 'VOTING' | 'RESULTS';
@@ -15,9 +15,14 @@ interface Props {
   results?: { yesCount: number; noCount: number; authorId: string; authorPoints: number; splitPercent: number };
 }
 
-export function SplitRoomController({ phase, dilemmaStart, dilemma, authorId, currentPlayerId, onWrite, onVote, hasSubmitted, timeRemaining, results }: Props) {
+export function SplitRoomController({ phase, dilemmaStart, dilemma, authorId, currentPlayerId, roundId, onWrite, onVote, hasSubmitted, timeRemaining, results }: Props) {
   const [completion, setCompletion] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Reset stato locale al cambio round / fase.
+  useEffect(() => {
+    setCompletion('');
+    setSubmitting(false);
+  }, [roundId, phase]);
   const isAuthor = currentPlayerId === authorId;
   const timerUrgent = timeRemaining > 0 && timeRemaining <= 5;
 
