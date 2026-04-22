@@ -93,6 +93,10 @@ export default function ControllerPage() {
     pointsEarned: number;
   } | null>(null);
   const triviaRoundIdRef = useRef<string | null>(null);
+  // Track round-id per cui `triviaResult` e` valido. Senza questo, il merge in
+  // show-results manteneva `correctAnswerText` del round precedente quando un
+  // show-results del nuovo round arrivava prima che React resettasse lo stato.
+  const triviaResultRoundIdRef = useRef<string | null>(null);
 
   // Round-ID refs to guard against stale markAsSubmitted calls
   const promptRoundIdRef = useRef<string | null>(null);
@@ -464,9 +468,12 @@ export default function ControllerPage() {
         const rd = (data as { data?: { roundId?: string } }).data;
         const newTriviaRid = rd?.roundId ?? null;
         const sameTriviaRound = !!newTriviaRid && newTriviaRid === triviaRoundIdRef.current;
-        if (!sameTriviaRound) {
+        if (!sameTriviaRound && newTriviaRid) {
+          // Aggiorna SOLO se abbiamo un id valido per evitare di azzerare il
+          // ref con dati malformati e bloccare i click successivi.
           setTriviaResult(null);
           triviaRoundIdRef.current = newTriviaRid;
+          triviaResultRoundIdRef.current = null;
         }
       }
     }
@@ -482,10 +489,13 @@ export default function ControllerPage() {
         return;
       }
       if (sr.correctAnswer) {
+        // ROUND-AWARE MERGE: se prev e` di un round diverso, REPLACE invece di
+        // mergiare, altrimenti `correctAnswerText` resta del round precedente.
+        const prevForSameRound = !!rid && triviaResultRoundIdRef.current === rid;
         setTriviaResult((prev) => {
           const letter = sr.correctAnswer as string;
           const text = (sr.correctAnswerText || '').trim() || undefined;
-          if (!prev) {
+          if (!prev || !prevForSameRound) {
             return {
               isCorrect: false,
               correctAnswer: letter,
@@ -499,6 +509,7 @@ export default function ControllerPage() {
             correctAnswerText: prev.correctAnswerText || text,
           };
         });
+        if (rid) triviaResultRoundIdRef.current = rid;
       }
       refreshRoomPlayers();
     }
@@ -591,6 +602,7 @@ export default function ControllerPage() {
       lastRoundNumberRef.current = 0;
       // Reset ref round-id dei giochi specifici
       triviaRoundIdRef.current = null;
+      triviaResultRoundIdRef.current = null;
       promptRoundIdRef.current = null;
       secretRoundIdRef.current = null;
       newGameRoundIdRef.current = null;
@@ -773,6 +785,7 @@ export default function ControllerPage() {
         correctAnswerText: data.data.correctAnswerText as string | undefined,
         pointsEarned: data.data.pointsEarned,
       });
+      triviaResultRoundIdRef.current = answerRoundId;
       markAsSubmitted(answerRoundId);
     } catch (err) {
       console.error('Errore invio risposta:', err);

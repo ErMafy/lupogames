@@ -359,6 +359,12 @@ export default function HostPage() {
 
   // Host trivia state
   const hostTriviaRoundIdRef = useRef<string | null>(null);
+  // Tiene traccia di per QUALE roundId e` valido `hostTriviaResult`. Senza
+  // questo, il merge in show-results preservava `correctAnswerText` del round
+  // precedente (es. round 1 "Hertz") anche dopo l'avanzo a round 2 ("Charles
+  // Darwin"), facendo apparire un overlay "Sbagliato A: Hertz" sopra la nuova
+  // domanda + bloccando visivamente il flusso del round successivo.
+  const hostTriviaResultRoundIdRef = useRef<string | null>(null);
   const [hostTriviaResult, setHostTriviaResult] = useState<{
     isCorrect: boolean;
     correctAnswer: string;
@@ -490,7 +496,8 @@ export default function HostPage() {
       if (eventData.gameType === 'TRIVIA') {
         const roundData = eventData.data as { questionId: string; question: string; category?: string; options: { A: string; B: string; C: string; D: string }; timeLimit?: number; roundId?: string };
         const sameTriviaRound = !!roundData.roundId && roundData.roundId === hostTriviaRoundIdRef.current;
-        if (!sameTriviaRound) {
+        if (!sameTriviaRound && roundData.roundId) {
+          // Aggiorna SOLO con un id valido per non azzerare il ref e bloccare i click.
           setCurrentQuestion({
             id: roundData.questionId,
             question: roundData.question,
@@ -502,7 +509,8 @@ export default function HostPage() {
           setTimeLeft(roundData.timeLimit || 30);
           setShowCorrectAnswer(null);
           setHostTriviaResult(null);
-          hostTriviaRoundIdRef.current = roundData.roundId ?? null;
+          hostTriviaRoundIdRef.current = roundData.roundId;
+          hostTriviaResultRoundIdRef.current = null;
         }
       }
       
@@ -769,8 +777,13 @@ export default function HostPage() {
           ? (eventData as { correctAnswerText?: string }).correctAnswerText
           : undefined;
       setShowCorrectAnswer(letter);
+      // ROUND-AWARE MERGE: se prev non e` per srRoundId, REPLACE (no merge),
+      // altrimenti l'overlay del round precedente si "appiccica" al round nuovo
+      // perche` `prev.correctAnswerText || txt` mantiene il testo vecchio.
+      const prevForSameRound =
+        srRoundId && hostTriviaResultRoundIdRef.current === srRoundId;
       setHostTriviaResult((prev) => {
-        if (!prev) {
+        if (!prev || !prevForSameRound) {
           return {
             isCorrect: false,
             correctAnswer: letter,
@@ -784,6 +797,7 @@ export default function HostPage() {
           correctAnswerText: prev.correctAnswerText || txt,
         };
       });
+      if (srRoundId) hostTriviaResultRoundIdRef.current = srRoundId;
       // Refresh scores after trivia round results
       fetch(`/api/rooms?code=${roomCode}`)
         .then(res => res.json())
@@ -811,6 +825,7 @@ export default function HostPage() {
       // Reset guardia round e ref dei giochi specifici per il prossimo gioco
       lastRoundNumberRef.current = 0;
       hostTriviaRoundIdRef.current = null;
+      hostTriviaResultRoundIdRef.current = null;
       hostPromptRoundIdRef.current = null;
       hostPromptPhaseRef.current = null;
       hostSecretRoundIdRef.current = null;
@@ -1074,6 +1089,7 @@ export default function HostPage() {
         correctAnswerText: data.data.correctAnswerText as string | undefined,
         pointsEarned: data.data.pointsEarned,
       });
+      hostTriviaResultRoundIdRef.current = sentRoundId;
       markAsSubmitted(sentRoundId);
     },
     [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
