@@ -274,10 +274,18 @@ export default function ControllerPage() {
     console.log('🎮 Controller event:', eventName, data);
 
     if (eventName === 'game-started') {
-      const snap: Record<string, number> = {};
-      for (const p of allPlayers) snap[p.playerId] = p.score;
-      scoreSnapshotRef.current = snap;
-      lastRoundNumberRef.current = 0;
+      // IMPORTANTE: NON resettare lastRoundNumberRef qui!
+      // Il sync HTTP rimanda `game-started` ogni 2.5s per il gioco corrente.
+      // Se lo resettiamo a 0, un successivo `round-started` stale (es. round 1
+      // quando siamo al round 2) passa la guardia `incomingRound < lastRoundNumber`
+      // e sovrascrive triviaResult/roundIdRef con dati vecchi.
+      // Il reset avviene SOLO in game-ended e quando sync torna inGame=false.
+      if (lastRoundNumberRef.current === 0) {
+        // Solo alla prima game-started (gioco appena iniziato): salva snapshot punteggi
+        const snap: Record<string, number> = {};
+        for (const p of allPlayers) snap[p.playerId] = p.score;
+        scoreSnapshotRef.current = snap;
+      }
     }
     
     if (eventName === 'avatar-deselected') {
@@ -579,9 +587,18 @@ export default function ControllerPage() {
     }
 
     if (eventName === 'game-ended') {
+      // Reset guardia round: il prossimo gioco partira` da round 1
+      lastRoundNumberRef.current = 0;
+      // Reset ref round-id dei giochi specifici
+      triviaRoundIdRef.current = null;
+      promptRoundIdRef.current = null;
+      secretRoundIdRef.current = null;
+      newGameRoundIdRef.current = null;
+      newGamePhaseRef.current = null;
+      lastLocalPhaseKeyRef.current = null;
+
       const gameEndedData = data as { finalScores?: Array<{ playerId: string; playerName: string; avatar: string; score: number }> };
       
-      // Trova il vincitore
       if (gameEndedData.finalScores && gameEndedData.finalScores.length > 0) {
         const topPlayer = gameEndedData.finalScores[0];
         setWinner({
@@ -597,9 +614,11 @@ export default function ControllerPage() {
           router.push(`/lobby?room=${roomCode}`);
         }, 4000);
       } else {
-        // Se non ci sono dati, torna subito alla lobby
         router.push(`/lobby?room=${roomCode}`);
       }
+      // Chiama handleGameEvent PRIMA di uscire, cosi` useGameEvents resetta
+      // lastRoundIdRef/resultsShownForRoundRef/lastPhaseAppliedRef/currentRound
+      handleGameEvent(eventName, data);
       return;
     }
     
@@ -631,6 +650,9 @@ export default function ControllerPage() {
       if (!d.inGame) {
         lastKnownSyncVersionRef.current = null;
         lastSyncRevisionRef.current = null;
+        // Siamo in lobby: resetta la guardia round cosi` il prossimo gioco
+        // puo` partire da round 1 anche se game-ended non e` stato ricevuto.
+        lastRoundNumberRef.current = 0;
         return;
       }
       if (d.unchanged === true) {

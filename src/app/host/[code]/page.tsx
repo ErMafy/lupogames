@@ -468,10 +468,15 @@ export default function HostPage() {
       setGamePhase('playing');
       setCurrentGameType(eventData.gameType as GameType);
       if (eventData.totalRounds) setTotalRoundsNum(eventData.totalRounds as number);
-      const snap: Record<string, number> = {};
-      for (const p of players) snap[p.id] = p.score;
-      scoreSnapshotRef.current = snap;
-      lastRoundNumberRef.current = 0;
+      // Snapshot punteggi solo alla prima game-started (lastRoundNumberRef=0).
+      // NON resettare lastRoundNumberRef: il sync rimanda game-started ogni 2.5s
+      // e resettarlo permetterebbe a round-started stale di passare la guardia
+      // e sovrascrivere lo stato del round corrente (es. triviaResult, roundIdRef).
+      if (lastRoundNumberRef.current === 0) {
+        const snap: Record<string, number> = {};
+        for (const p of players) snap[p.id] = p.score;
+        scoreSnapshotRef.current = snap;
+      }
     }
     
     if (eventName === 'round-started') {
@@ -803,6 +808,16 @@ export default function HostPage() {
     }
     
     if (eventName === 'game-ended') {
+      // Reset guardia round e ref dei giochi specifici per il prossimo gioco
+      lastRoundNumberRef.current = 0;
+      hostTriviaRoundIdRef.current = null;
+      hostPromptRoundIdRef.current = null;
+      hostPromptPhaseRef.current = null;
+      hostSecretRoundIdRef.current = null;
+      newGameRoundIdRef.current = null;
+      newGamePhaseRef.current = null;
+      lastLocalPhaseKeyRef.current = null;
+
       const gameEndedData = eventData as { finalScores?: Array<{ playerId: string; playerName: string; avatar: string; score: number }> };
       
       if (gameEndedData.finalScores && gameEndedData.finalScores.length > 0) {
@@ -873,6 +888,7 @@ export default function HostPage() {
       if (!d.inGame) {
         lastHostKnownSyncVersionRef.current = null;
         lastHostSyncRevisionRef.current = null;
+        lastRoundNumberRef.current = 0;
         return;
       }
       if (d.unchanged === true) {
