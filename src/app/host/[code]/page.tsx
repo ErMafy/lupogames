@@ -596,7 +596,15 @@ export default function HostPage() {
         setCurrentRoundNum(eventData.roundNumber as number);
         setTotalRoundsNum((eventData.totalRounds as number) || 5);
         newGameRoundIdRef.current = newRoundId;
-        newGamePhaseRef.current = incomingPhase;
+        // Sullo stesso round NON facciamo downgrade della phase ref:
+        // un sync HTTP "in ritardo" potrebbe rispedire round-started
+        // con la phase server piu` "vecchia" e sovrascriverebbe il
+        // ref dopo un phase-changed/round-results gia` applicato.
+        if (!sameRound || newGamePhaseRef.current === null) {
+          newGamePhaseRef.current = incomingPhase;
+        } else if (incomingPhase === 'RESULTS' || incomingPhase === 'EXPLODED') {
+          newGamePhaseRef.current = incomingPhase;
+        }
         if (!sameRound) {
           resetHasSubmitted();
           lastLocalPhaseKeyRef.current = null;
@@ -984,7 +992,7 @@ export default function HostPage() {
         });
         const data = await res.json();
         if (data.success) {
-          if (hostPromptRoundIdRef.current !== sentRoundId || hostPromptPhaseRef.current !== 'WRITING') return;
+          if (hostPromptRoundIdRef.current !== sentRoundId) return;
           markAsSubmitted(sentRoundId);
         }
       } catch (e) {
@@ -1113,9 +1121,13 @@ export default function HostPage() {
   const handleNewGameAction = useCallback(
     async (endpoint: string, body: Record<string, unknown>) => {
       if (!hostPlayer) return;
-      // Snapshot SINCRONO via ref: vedi commento omologo in play page.
+      // Snapshot SINCRONO via ref del solo roundId. NON usiamo guardia su
+      // phase: spesso il click stesso e` quello che fa scattare la transizione
+      // (es. ultimo voto / ultima accusa) e il phase-changed via Pusher arriva
+      // PRIMA della response. Una guardia "phase==same" lasciava hasSubmitted
+      // a false e l'utente cliccava di nuovo, finendo in loop sulle round
+      // successive al primo.
       const sentRoundId = newGameRoundIdRef.current;
-      const sentPhase = newGamePhaseRef.current;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1124,7 +1136,6 @@ export default function HostPage() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Azione non riuscita');
       if (newGameRoundIdRef.current !== sentRoundId) return;
-      if (sentPhase && newGamePhaseRef.current && sentPhase !== newGamePhaseRef.current) return;
       markAsSubmitted(sentRoundId);
       setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
     },

@@ -440,7 +440,17 @@ export default function ControllerPage() {
           lastLocalPhaseKeyRef.current = null;
         }
         newGameRoundIdRef.current = newRoundId;
-        newGamePhaseRef.current = incomingPhase;
+        // Sullo stesso round NON facciamo downgrade della phase ref:
+        // un sync HTTP che rispedisce round-started con la phase server
+        // potrebbe arrivare dopo che il client ha gia` applicato un
+        // phase-changed/round-results piu` avanzato → senza questa
+        // protezione il prossimo click invierebbe una phase obsoleta.
+        if (!sameRound || newGamePhaseRef.current === null) {
+          newGamePhaseRef.current = incomingPhase;
+        } else if (incomingPhase === 'RESULTS' || incomingPhase === 'EXPLODED') {
+          // RESULTS/EXPLODED sono "terminali" del round: ok aggiornare.
+          newGamePhaseRef.current = incomingPhase;
+        }
         if (roundStartData.gameType === 'CHAMELEON' && roomCode && player?.id) {
           void fetch(
             `/api/game/chameleon/context?code=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(player.id)}`,
@@ -832,7 +842,7 @@ export default function ControllerPage() {
 
       const data = await res.json();
       if (data.success) {
-        if (promptRoundIdRef.current !== sentRoundId || promptPhaseRef.current !== 'WRITING') return;
+        if (promptRoundIdRef.current !== sentRoundId) return;
         markAsSubmitted(sentRoundId);
       }
     } catch (err) {
@@ -871,7 +881,6 @@ export default function ControllerPage() {
   const handleSecretSubmit = async (secret: string) => {
     if (!player) return;
 
-    const sentPhase = secretPhase;
     const sentRoundIdAtStart = secretRoundIdRef.current;
 
     try {
@@ -887,7 +896,6 @@ export default function ControllerPage() {
 
       const data = await res.json();
       if (data.success) {
-        if (sentPhase !== 'COLLECTING') return;
         if (secretRoundIdRef.current !== sentRoundIdAtStart) return;
         markAsSubmitted(sentRoundIdAtStart);
       }
@@ -925,13 +933,8 @@ export default function ControllerPage() {
 
   const handleNewGameAction = async (endpoint: string, body: Record<string, unknown>) => {
     if (!player) return;
-    // Snapshot SINCRONO da ref (non da state chiuso): legge sempre l'ultimo
-    // round/phase noti al momento del click. Senza ref il guard post-await
-    // confrontava due valori catturati nella stessa closure (stessi sempre)
-    // e quindi non scattava mai dopo un cambio fase, causando markAsSubmitted
-    // stale → utente bloccato nel round/phase successivo.
+    // Snapshot SINCRONO da ref del roundId al momento del click.
     const sentRoundId = newGameRoundIdRef.current;
-    const sentPhase = newGamePhaseRef.current;
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -939,10 +942,13 @@ export default function ControllerPage() {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Azione non riuscita');
+    // CRITICO: se il round non è cambiato, marca SEMPRE come inviato,
+    // anche se la fase è già avanzata. Spesso il click stesso fa scattare
+    // la transizione di fase (es. ultimo voto del round); il phase-changed
+    // arriva via Pusher PRIMA che la POST risponda, e una guardia "phase==same"
+    // lasciava `hasSubmitted=false` → l'utente vedeva il bottone ancora attivo
+    // e cliccava di nuovo, finendo in loop con risposte che "non si contano".
     if (newGameRoundIdRef.current !== sentRoundId) {
-      return;
-    }
-    if (sentPhase && newGamePhaseRef.current && sentPhase !== newGamePhaseRef.current) {
       return;
     }
     markAsSubmitted(sentRoundId);
