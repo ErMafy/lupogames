@@ -12,23 +12,33 @@ interface TriviaGameState {
   showingResults?: boolean;
 }
 
+// IMPORTANTISSIMO: tutti gli `sendToRoom` devono essere fatti DOPO il
+// commit della transazione. Pusher e` velocissimo (sub-50ms): se emettiamo
+// `round-started` mentre la transazione non e` ancora committata, il client
+// reagisce e POSTa la risposta col nuovo roundId, ma l'endpoint
+// /api/game/trivia/answer (che gira fuori dalla transazione) non vede
+// ancora il nuovo round → 404 "Round non trovato" → loop infinito a
+// partire dal round 2. Per questo accumuliamo gli eventi e li mandiamo
+// dopo la return della transazione.
+type PendingEvent = { event: string; payload: Record<string, unknown> };
+
 async function advanceTriviaFromResultsDwell(
   roomCode: string,
   roomId: string,
 ): Promise<{ gameEnded: boolean }> {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction<{ gameEnded: boolean; events: PendingEvent[] }>(async (tx) => {
     const gs = await tx.gameState.findUnique({ where: { roomId } });
-    if (!gs) return { gameEnded: true };
+    if (!gs) return { gameEnded: true, events: [] };
     const st = gs.state as unknown as TriviaGameState;
     if (!st.showingResults) {
-      return { gameEnded: false };
+      return { gameEnded: false, events: [] };
     }
 
     const room = await tx.room.findUnique({
       where: { id: roomId },
       include: { players: true },
     });
-    if (!room) return { gameEnded: true };
+    if (!room) return { gameEnded: true, events: [] };
 
     const nextIndex = st.currentQuestionIndex;
 
@@ -37,7 +47,7 @@ async function advanceTriviaFromResultsDwell(
         where: { id: gs.id, updatedAt: gs.updatedAt },
         data: { state: {}, currentRound: 0, timerEndsAt: null },
       });
-      if (ended.count === 0) return { gameEnded: false };
+      if (ended.count === 0) return { gameEnded: false, events: [] };
 
       await tx.room.update({
         where: { id: roomId },
@@ -45,17 +55,23 @@ async function advanceTriviaFromResultsDwell(
       });
 
       const sorted = [...room.players].sort((a, b) => b.score - a.score);
-      await sendToRoom(roomCode, 'game-ended', {
-        finalScores: sorted.map((p) => ({
-          playerId: p.id,
-          playerName: p.name,
-          avatar: p.avatar,
-          score: p.score,
-          trackPosition: p.trackPosition,
-        })),
-      });
-
-      return { gameEnded: true };
+      return {
+        gameEnded: true,
+        events: [
+          {
+            event: 'game-ended',
+            payload: {
+              finalScores: sorted.map((p) => ({
+                playerId: p.id,
+                playerName: p.name,
+                avatar: p.avatar,
+                score: p.score,
+                trackPosition: p.trackPosition,
+              })),
+            },
+          },
+        ],
+      };
     }
 
     const question = await tx.triviaQuestion.findUnique({
@@ -66,7 +82,7 @@ async function advanceTriviaFromResultsDwell(
         where: { id: gs.id, updatedAt: gs.updatedAt },
         data: { state: {}, currentRound: 0, timerEndsAt: null },
       });
-      if (ended.count === 0) return { gameEnded: false };
+      if (ended.count === 0) return { gameEnded: false, events: [] };
 
       await tx.room.update({
         where: { id: roomId },
@@ -74,16 +90,23 @@ async function advanceTriviaFromResultsDwell(
       });
 
       const sorted = [...room.players].sort((a, b) => b.score - a.score);
-      await sendToRoom(roomCode, 'game-ended', {
-        finalScores: sorted.map((p) => ({
-          playerId: p.id,
-          playerName: p.name,
-          avatar: p.avatar,
-          score: p.score,
-          trackPosition: p.trackPosition,
-        })),
-      });
-      return { gameEnded: true };
+      return {
+        gameEnded: true,
+        events: [
+          {
+            event: 'game-ended',
+            payload: {
+              finalScores: sorted.map((p) => ({
+                playerId: p.id,
+                playerName: p.name,
+                avatar: p.avatar,
+                score: p.score,
+                trackPosition: p.trackPosition,
+              })),
+            },
+          },
+        ],
+      };
     }
 
     const triviaRound = await tx.triviaRound.create({
@@ -106,7 +129,7 @@ async function advanceTriviaFromResultsDwell(
 
     if (updated.count === 0) {
       await tx.triviaRound.delete({ where: { id: triviaRound.id } });
-      return { gameEnded: false };
+      return { gameEnded: false, events: [] };
     }
 
     await tx.room.update({
@@ -119,26 +142,39 @@ async function advanceTriviaFromResultsDwell(
       data: { timesUsed: { increment: 1 } },
     });
 
-    await sendToRoom(roomCode, 'round-started', {
-      roundNumber: nextIndex + 1,
-      gameType: 'TRIVIA',
-      data: {
-        questionId: question.id,
-        question: question.question,
-        category: question.category,
-        options: {
-          A: question.optionA,
-          B: question.optionB,
-          C: question.optionC,
-          D: question.optionD,
+    return {
+      gameEnded: false,
+      events: [
+        {
+          event: 'round-started',
+          payload: {
+            roundNumber: nextIndex + 1,
+            gameType: 'TRIVIA',
+            data: {
+              questionId: question.id,
+              question: question.question,
+              category: question.category,
+              options: {
+                A: question.optionA,
+                B: question.optionB,
+                C: question.optionC,
+                D: question.optionD,
+              },
+              timeLimit: QUESTION_SEC,
+              roundId: triviaRound.id,
+            },
+          },
         },
-        timeLimit: QUESTION_SEC,
-        roundId: triviaRound.id,
-      },
-    });
-
-    return { gameEnded: false };
+      ],
+    };
   });
+
+  // Emetti gli eventi DOPO il commit della transazione (vedi commento sopra).
+  for (const ev of result.events) {
+    await sendToRoom(roomCode, ev.event, ev.payload);
+  }
+
+  return { gameEnded: result.gameEnded };
 }
 
 export async function advanceTriviaRound(
