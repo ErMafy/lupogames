@@ -511,6 +511,7 @@ export default function HostPage() {
           setHostTriviaResult(null);
           hostTriviaRoundIdRef.current = roundData.roundId;
           hostTriviaResultRoundIdRef.current = null;
+          resetHasSubmitted();
         }
       }
       
@@ -527,6 +528,7 @@ export default function HostPage() {
           setCurrentRoundNum(eventData.roundNumber as number);
           hostPromptRoundIdRef.current = roundData.roundId ?? null;
           hostPromptPhaseRef.current = phase ?? 'WRITING';
+          resetHasSubmitted();
         }
       }
       
@@ -549,6 +551,7 @@ export default function HostPage() {
           setCurrentRoundNum(eventData.roundNumber as number);
           hostSecretRoundIdRef.current = roundData.roundId ?? null;
           setSecretOwnerId(roundData.secretOwnerId ?? null);
+          resetHasSubmitted();
         }
       }
 
@@ -1652,6 +1655,7 @@ export default function HostPage() {
                   👑 La tua risposta / voto
                 </p>
                 <PromptController
+                  key={`host-prompt-${currentRoundNum}-${hostPromptRoundForController.roundId ?? hostPromptRoundForController.phraseId}`}
                   roundData={hostPromptRoundForController}
                   phase={promptData.phase === 'VOTING' ? 'VOTING' : 'WRITING'}
                   onSubmitResponse={handleHostPromptResponse}

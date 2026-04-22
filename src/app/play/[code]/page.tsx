@@ -82,6 +82,7 @@ export default function ControllerPage() {
   // Game state
   const {
     currentGame,
+    currentRound,
     controllerView,
     roundData,
     hasSubmitted,
@@ -379,6 +380,7 @@ export default function ControllerPage() {
           if (secretData.players) {
             setSecretPlayers(secretData.players);
           }
+          resetHasSubmitted();
         }
       }
       if (roundStartData.gameType === 'CONTINUE_PHRASE') {
@@ -390,6 +392,12 @@ export default function ControllerPage() {
           setPromptSkipVoting(false);
           promptRoundIdRef.current = incomingRid;
           promptPhaseRef.current = 'WRITING';
+          // Cruciale: `useGameEvents.handleRoundStarted` puo` ritornare presto
+          // (stesso `lastRoundIdRef` o guardie idempotency) lasciando
+          // hasSubmitted=true del round precedente -> UI bloccata su "Inviato".
+          // I giochi "new game" fanno gia` resetHasSubmitted su round nuovo;
+          // Prompt/Trivia/Secret no: lo facciamo qui.
+          resetHasSubmitted();
         }
       }
       // New games
@@ -490,6 +498,7 @@ export default function ControllerPage() {
           setTriviaResult(null);
           triviaRoundIdRef.current = newTriviaRid;
           triviaResultRoundIdRef.current = null;
+          resetHasSubmitted();
         }
       }
     }
@@ -1209,6 +1218,7 @@ export default function ControllerPage() {
         {(controllerView === 'prompt-write' || controllerView === 'prompt-vote') && roundData && (
           <div className="animate-slide-up">
             <PromptController
+              key={`prompt-${currentRound}-${(roundData as PromptRoundData & { roundId?: string }).roundId ?? (roundData as PromptRoundData).phraseId}`}
               roundData={roundData as PromptRoundData}
               phase={promptPhase}
               onSubmitResponse={handlePromptResponse}
