@@ -163,7 +163,7 @@ export async function showInterviewResults(roomCode: string, roundId: string, ro
     votes: voteCounts[b.playerId] || 0,
   })).sort((a, b) => b.votes - a.votes);
 
-  await sendToRoom(roomCode, 'round-results', { gameType: 'INTERVIEW', results });
+  await sendToRoom(roomCode, 'round-results', { gameType: 'INTERVIEW', roundId, results });
 }
 
 export async function advanceInterview(roomCode: string): Promise<boolean> {

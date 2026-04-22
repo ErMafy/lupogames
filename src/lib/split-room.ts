@@ -112,6 +112,7 @@ export async function showSplitResults(roomCode: string, roundId: string, roomId
 
   await sendToRoom(roomCode, 'round-results', {
     gameType: 'SPLIT_ROOM',
+    roundId,
     results: { yesCount, noCount, authorId: state?.authorId, authorPoints, splitPercent: total > 0 ? Math.round((yesCount / total) * 100) : 50 },
   });
 }

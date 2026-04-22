@@ -184,6 +184,7 @@ export async function showSecretRoundResults(roomCode: string, roundId: string, 
 
     await sendToRoom(roomCode, 'round-results', {
       gameType: 'WHO_WAS_IT',
+      roundId,
       results,
     });
 

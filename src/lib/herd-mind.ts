@@ -81,6 +81,7 @@ export async function showHerdResults(roomCode: string, roundId: string, roomId:
 
   await sendToRoom(roomCode, 'round-results', {
     gameType: 'HERD_MIND',
+    roundId,
     results: {
       clusters: Object.entries(clusters).map(([answer, members]) => ({ answer, members, isWinner: answer === winningAnswer })),
       winningAnswer: clusters[winningAnswer]?.[0]?.original || winningAnswer,

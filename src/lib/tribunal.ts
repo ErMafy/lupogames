@@ -154,7 +154,7 @@ export async function showTribunalResults(roomCode: string, roundId: string, roo
   }
 
   await sendToRoom(roomCode, 'round-results', {
-    gameType: 'TRIBUNAL', results: { innocent, guilty, isInnocent, defendantId: state?.defendantId },
+    gameType: 'TRIBUNAL', roundId, results: { innocent, guilty, isInnocent, defendantId: state?.defendantId },
   });
 }
 

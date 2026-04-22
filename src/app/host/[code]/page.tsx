@@ -680,6 +680,20 @@ export default function HostPage() {
     }
 
     if (eventName === 'round-results') {
+      // GUARDIA STALE: round-results in ritardo del round precedente
+      // sovrascriverebbero la phase sul nuovo round bloccando i click.
+      const rdRoundId = typeof (eventData as { roundId?: string }).roundId === 'string'
+        ? ((eventData as { roundId: string }).roundId)
+        : null;
+      const isStaleNewGame =
+        !!rdRoundId && !!newGameRoundIdRef.current && rdRoundId !== newGameRoundIdRef.current;
+      const isStalePrompt =
+        eventData.gameType === 'CONTINUE_PHRASE' && !!rdRoundId && !!hostPromptRoundIdRef.current && rdRoundId !== hostPromptRoundIdRef.current;
+      const isStaleSecret =
+        eventData.gameType === 'WHO_WAS_IT' && !!rdRoundId && !!hostSecretRoundIdRef.current && rdRoundId !== hostSecretRoundIdRef.current;
+      if (isStaleNewGame || isStalePrompt || isStaleSecret) {
+        return;
+      }
       if (eventData.gameType === 'CONTINUE_PHRASE') {
         const results = eventData.results as Array<{
           responseId: string;

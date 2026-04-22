@@ -85,7 +85,7 @@ export async function showSwipeResults(roomCode: string, roundId: string, roomId
   });
 
   await sendToRoom(roomCode, 'round-results', {
-    gameType: 'SWIPE_TRASH', results: { yesCount, noCount, majority },
+    gameType: 'SWIPE_TRASH', roundId, results: { yesCount, noCount, majority },
     voters: actions.map(a => ({ playerId: a.playerId, playerName: a.player.name, vote: (a.data as { vote: string }).vote, won: (a.data as { vote: string }).vote === majority })),
   });
 }

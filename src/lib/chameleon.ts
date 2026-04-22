@@ -305,6 +305,7 @@ export async function showChameleonResults(roomCode: string, roundId: string, ro
   const hints = await buildHintRows(roomId, roundId);
   await sendToRoom(roomCode, 'round-results', {
     gameType: 'CHAMELEON',
+    roundId,
     results: { chameleonId: state.chameleonId, chameleonName: chameleon?.name, secretWord: state.secretWord, chameleonCaught, voteCounts, hints },
   });
 }

@@ -117,7 +117,7 @@ export async function explodeBomb(roomCode: string, roundId: string, roomId: str
   await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: until, state: { ...st, advanceAt: until.toISOString() } } });
 
   await sendToRoom(roomCode, 'round-results', {
-    gameType: 'BOMB', results: { loserId: state.bombHolderId, loserName: loser?.name, words: state.words, category: state.category },
+    gameType: 'BOMB', roundId, results: { loserId: state.bombHolderId, loserName: loser?.name, words: state.words, category: state.category },
   });
 }
 

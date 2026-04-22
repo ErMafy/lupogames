@@ -70,7 +70,7 @@ export async function showThermometerResults(roomCode: string, roundId: string, 
   await prisma.gameState.update({ where: { roomId }, data: { timerEndsAt: until, state: { ...st, advanceAt: until.toISOString() } } });
 
   await sendToRoom(roomCode, 'round-results', {
-    gameType: 'THERMOMETER', results: { average: Math.round(avg * 10) / 10, votes: values },
+    gameType: 'THERMOMETER', roundId, results: { average: Math.round(avg * 10) / 10, votes: values },
   });
 }
 

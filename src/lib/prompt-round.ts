@@ -121,6 +121,7 @@ export async function showPromptRoundResults(roomCode: string, roundId: string, 
 
     await sendToRoom(roomCode, 'round-results', {
       gameType: 'CONTINUE_PHRASE',
+      roundId,
       results,
       winner: results[0],
     });
@@ -128,6 +129,7 @@ export async function showPromptRoundResults(roomCode: string, roundId: string, 
     console.error('Prompt scoring/broadcast failed, advance still scheduled:', err);
     await sendToRoom(roomCode, 'round-results', {
       gameType: 'CONTINUE_PHRASE',
+      roundId,
       results: [],
       winner: null,
     });
@@ -187,6 +189,7 @@ export async function showPromptRoundResultsNoVoting(roomCode: string, roundId: 
 
     await sendToRoom(roomCode, 'round-results', {
       gameType: 'CONTINUE_PHRASE',
+      roundId,
       results,
       winner: results.length > 0 ? results[0] : null,
     });
@@ -194,6 +197,7 @@ export async function showPromptRoundResultsNoVoting(roomCode: string, roundId: 
     console.error('Prompt scoring/broadcast failed (no-voting mode), advance still scheduled:', err);
     await sendToRoom(roomCode, 'round-results', {
       gameType: 'CONTINUE_PHRASE',
+      roundId,
       results: [],
       winner: null,
     });

@@ -515,7 +515,25 @@ export default function ControllerPage() {
     }
 
     if (eventName === 'round-results') {
-      const rd = data as { gameType?: string; results?: unknown };
+      const rd = data as { gameType?: string; results?: unknown; roundId?: string };
+      // GUARDIA STALE: round-results in ritardo (es. round 1 dopo che il
+      // round 2 e` gia` partito) altrimenti riportano la phase a 'RESULTS'
+      // sul round successivo, bloccando i click successivi (sentPhase non
+      // matcha piu` newGamePhaseRef='RESULTS' o l'utente vede la UI risultati
+      // del round vecchio).
+      const rdRoundId = typeof rd.roundId === 'string' ? rd.roundId : null;
+      const currentNewRid = newGameRoundIdRef.current;
+      const currentPromptRid = promptRoundIdRef.current;
+      const currentSecretRid = secretRoundIdRef.current;
+      const isStaleNewGame =
+        !!rdRoundId && !!currentNewRid && rdRoundId !== currentNewRid;
+      const isStalePrompt =
+        rd.gameType === 'CONTINUE_PHRASE' && !!rdRoundId && !!currentPromptRid && rdRoundId !== currentPromptRid;
+      const isStaleSecret =
+        rd.gameType === 'WHO_WAS_IT' && !!rdRoundId && !!currentSecretRid && rdRoundId !== currentSecretRid;
+      if (isStaleNewGame || isStalePrompt || isStaleSecret) {
+        return;
+      }
       if (rd.gameType === 'CONTINUE_PHRASE' && Array.isArray(rd.results)) {
         setPromptRoundResults(
           (rd.results as Array<{ responseId: string; response: string; playerId: string; playerName: string; voteCount: number }>).map((r) => ({
