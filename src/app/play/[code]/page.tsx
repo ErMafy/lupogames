@@ -67,6 +67,12 @@ export default function ControllerPage() {
   const [player, setPlayer] = useState<Player | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Toast non bloccante per errori di azione (es. POST /api/game/.../vote rifiutata).
+  // Senza questo, gli errori venivano semplicemente "throwati" e silenziati,
+  // lasciando il bottone abilitato senza alcun feedback → utente cliccava di nuovo
+  // pensando che il click "non avesse risposto" → loop infinito.
+  const [actionError, setActionError] = useState<string | null>(null);
+  const actionErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mounted, setMounted] = useState(false);
   const [infoModal, setInfoModal] = useState<{ title: string; emoji: string } | null>(null);
   
@@ -740,6 +746,19 @@ export default function ControllerPage() {
     return () => clearInterval(id);
   }, [roomCode, player?.id, applyPlayGameSync]);
 
+  // Mostra un toast non bloccante (3.5s) E forza una sync immediata per recuperare
+  // dallo stato disallineato (es. il client invia roundId vecchio, server risponde
+  // 400 → senza recovery l'utente resta bloccato finche` non clicca di nuovo).
+  const reportActionError = useCallback((err: unknown, ctx: string) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[ACTION ERROR] ${ctx}:`, msg);
+    setActionError(msg);
+    if (actionErrorTimerRef.current) clearTimeout(actionErrorTimerRef.current);
+    actionErrorTimerRef.current = setTimeout(() => setActionError(null), 3500);
+    void applyPlayGameSync();
+    resetHasSubmitted();
+  }, [applyPlayGameSync, resetHasSubmitted]);
+
   const {
     isConnected,
     selectAvatar,
@@ -784,6 +803,7 @@ export default function ControllerPage() {
       throw new Error('Nessun round attivo');
     }
 
+    console.log('[CLICK] handleTriviaAnswer', { answerRoundId, answer, responseTimeMs });
     try {
       const response = await fetch('/api/game/trivia/answer', {
         method: 'POST',
@@ -798,9 +818,10 @@ export default function ControllerPage() {
       });
 
       const data = await response.json();
+      console.log('[CLICK] trivia response', { status: response.status, data, refNow: triviaRoundIdRef.current });
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Risposta non inviata');
+        throw new Error(data.error || `Risposta non inviata (${response.status})`);
       }
 
       if (triviaRoundIdRef.current !== null && triviaRoundIdRef.current !== answerRoundId) {
@@ -816,7 +837,7 @@ export default function ControllerPage() {
       triviaResultRoundIdRef.current = answerRoundId;
       markAsSubmitted(answerRoundId);
     } catch (err) {
-      console.error('Errore invio risposta:', err);
+      reportActionError(err, 'POST /api/game/trivia/answer');
       throw err;
     }
   };
@@ -828,6 +849,7 @@ export default function ControllerPage() {
       ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
     if (!sentRoundId) return;
 
+    console.log('[CLICK] handlePromptResponse', { sentRoundId, length: response.length });
     try {
       const res = await fetch('/api/game/prompt/response', {
         method: 'POST',
@@ -841,12 +863,15 @@ export default function ControllerPage() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        if (promptRoundIdRef.current !== sentRoundId) return;
-        markAsSubmitted(sentRoundId);
+      console.log('[CLICK] prompt response', { status: res.status, data });
+      if (!data.success) {
+        throw new Error(data.error || `Risposta non inviata (${res.status})`);
       }
+      if (promptRoundIdRef.current !== sentRoundId) return;
+      markAsSubmitted(sentRoundId);
     } catch (err) {
-      console.error('Errore invio risposta prompt:', err);
+      reportActionError(err, 'POST /api/game/prompt/response');
+      throw err;
     }
   };
 
@@ -857,31 +882,38 @@ export default function ControllerPage() {
       ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
     if (!sentRoundId) return;
 
-    const res = await fetch('/api/game/prompt/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        roomCode,
-        playerId: player.id,
-        roundId: sentRoundId,
-        responseId,
-      }),
-    });
+    console.log('[CLICK] handlePromptVote', { sentRoundId, responseId });
+    try {
+      const res = await fetch('/api/game/prompt/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode,
+          playerId: player.id,
+          roundId: sentRoundId,
+          responseId,
+        }),
+      });
 
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Voto non registrato');
+      const data = await res.json();
+      console.log('[CLICK] prompt vote response', { status: res.status, data });
+      if (!data.success) {
+        throw new Error(data.error || `Voto non registrato (${res.status})`);
+      }
+      if (promptRoundIdRef.current !== sentRoundId) return;
+      markAsSubmitted(sentRoundId);
+      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
+    } catch (err) {
+      reportActionError(err, 'POST /api/game/prompt/vote');
+      throw err;
     }
-    if (promptRoundIdRef.current !== sentRoundId) return;
-
-    // Nudge tick after voting to ensure auto-advance fires
-    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
   };
 
   const handleSecretSubmit = async (secret: string) => {
     if (!player) return;
 
     const sentRoundIdAtStart = secretRoundIdRef.current;
+    console.log('[CLICK] handleSecretSubmit', { sentRoundIdAtStart });
 
     try {
       const res = await fetch('/api/game/secret/submit', {
@@ -895,12 +927,15 @@ export default function ControllerPage() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        if (secretRoundIdRef.current !== sentRoundIdAtStart) return;
-        markAsSubmitted(sentRoundIdAtStart);
+      console.log('[CLICK] secret submit response', { status: res.status, data });
+      if (!data.success) {
+        throw new Error(data.error || `Segreto non inviato (${res.status})`);
       }
+      if (secretRoundIdRef.current !== sentRoundIdAtStart) return;
+      markAsSubmitted(sentRoundIdAtStart);
     } catch (err) {
-      console.error('Errore invio segreto:', err);
+      reportActionError(err, 'POST /api/game/secret/submit');
+      throw err;
     }
   };
 
@@ -911,48 +946,63 @@ export default function ControllerPage() {
       ((roundData as SecretRoundData & { roundId?: string } | null)?.roundId ?? null);
     if (!sentRoundId) return;
 
-    const res = await fetch('/api/game/secret/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        roomCode,
-        playerId: player.id,
-        roundId: sentRoundId,
-        suspectedPlayerId,
-      }),
-    });
+    console.log('[CLICK] handleSecretVote', { sentRoundId, suspectedPlayerId });
+    try {
+      const res = await fetch('/api/game/secret/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode,
+          playerId: player.id,
+          roundId: sentRoundId,
+          suspectedPlayerId,
+        }),
+      });
 
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Voto non registrato');
+      const data = await res.json();
+      console.log('[CLICK] secret vote response', { status: res.status, data });
+      if (!data.success) {
+        throw new Error(data.error || `Voto non registrato (${res.status})`);
+      }
+      if (secretRoundIdRef.current !== sentRoundId) return;
+      markAsSubmitted(sentRoundId);
+      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
+    } catch (err) {
+      reportActionError(err, 'POST /api/game/secret/vote');
+      throw err;
     }
-    if (secretRoundIdRef.current !== sentRoundId) return;
-
-    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
   };
 
   const handleNewGameAction = async (endpoint: string, body: Record<string, unknown>) => {
     if (!player) return;
     // Snapshot SINCRONO da ref del roundId al momento del click.
     const sentRoundId = newGameRoundIdRef.current;
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomCode, playerId: player.id, roundId: sentRoundId, ...body }),
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Azione non riuscita');
-    // CRITICO: se il round non è cambiato, marca SEMPRE come inviato,
-    // anche se la fase è già avanzata. Spesso il click stesso fa scattare
-    // la transizione di fase (es. ultimo voto del round); il phase-changed
-    // arriva via Pusher PRIMA che la POST risponda, e una guardia "phase==same"
-    // lasciava `hasSubmitted=false` → l'utente vedeva il bottone ancora attivo
-    // e cliccava di nuovo, finendo in loop con risposte che "non si contano".
-    if (newGameRoundIdRef.current !== sentRoundId) {
-      return;
+    const sentPhase = newGamePhaseRef.current;
+    console.log('[CLICK] handleNewGameAction', { endpoint, sentRoundId, sentPhase, body });
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomCode, playerId: player.id, roundId: sentRoundId, ...body }),
+      });
+      const data = await res.json();
+      console.log('[CLICK] response', { endpoint, status: res.status, data, refRoundIdNow: newGameRoundIdRef.current, refPhaseNow: newGamePhaseRef.current });
+      if (!data.success) throw new Error(data.error || `Azione non riuscita (${res.status})`);
+      // CRITICO: se il round non è cambiato, marca SEMPRE come inviato,
+      // anche se la fase è già avanzata. Spesso il click stesso fa scattare
+      // la transizione di fase (es. ultimo voto del round); il phase-changed
+      // arriva via Pusher PRIMA che la POST risponda, e una guardia "phase==same"
+      // lasciava `hasSubmitted=false` → l'utente vedeva il bottone ancora attivo
+      // e cliccava di nuovo, finendo in loop con risposte che "non si contano".
+      if (newGameRoundIdRef.current !== sentRoundId) {
+        return;
+      }
+      markAsSubmitted(sentRoundId);
+      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
+    } catch (err) {
+      reportActionError(err, `POST ${endpoint}`);
+      throw err;
     }
-    markAsSubmitted(sentRoundId);
-    setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
   };
 
   // Loading Premium
@@ -995,6 +1045,11 @@ export default function ControllerPage() {
       className={`flex min-h-[100dvh] flex-col transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
     >
       <div className="bg-stars" />
+      {actionError && (
+        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-[200] px-3 py-2 rounded-xl bg-red-600/90 backdrop-blur text-white text-xs sm:text-sm font-bold shadow-2xl border border-red-400/40 max-w-[92vw] text-center animate-bounce-in">
+          ⚠️ {actionError}
+        </div>
+      )}
       
       {/* Header Premium Mobile */}
       <header className="sticky top-0 z-50 shrink-0 backdrop-blur-xl bg-black/40 border-b border-white/10 px-4 py-3 pt-[max(12px,env(safe-area-inset-top,0px))]">

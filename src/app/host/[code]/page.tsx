@@ -972,6 +972,20 @@ export default function HostPage() {
     return () => clearInterval(id);
   }, [roomCode, applyHostGameSync]);
 
+  // Toast non bloccante + recovery sync per errori di azione (es. POST rifiutata).
+  // Senza questo gli errori venivano silenziati → utente cliccava di nuovo → loop.
+  const [actionError, setActionError] = useState<string | null>(null);
+  const actionErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reportActionError = useCallback((err: unknown, ctx: string) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[ACTION ERROR] ${ctx}:`, msg);
+    setActionError(msg);
+    if (actionErrorTimerRef.current) clearTimeout(actionErrorTimerRef.current);
+    actionErrorTimerRef.current = setTimeout(() => setActionError(null), 3500);
+    void applyHostGameSync();
+    resetHasSubmitted();
+  }, [applyHostGameSync, resetHasSubmitted]);
+
   const handleHostPromptResponse = useCallback(
     async (response: string) => {
       if (!hostPlayer || currentGameType !== 'CONTINUE_PHRASE') return;
@@ -979,6 +993,7 @@ export default function HostPage() {
         hostPromptRoundIdRef.current ??
         ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
       if (!sentRoundId) return;
+      console.log('[HOST CLICK] handleHostPromptResponse', { sentRoundId });
       try {
         const res = await fetch('/api/game/prompt/response', {
           method: 'POST',
@@ -991,15 +1006,16 @@ export default function HostPage() {
           }),
         });
         const data = await res.json();
-        if (data.success) {
-          if (hostPromptRoundIdRef.current !== sentRoundId) return;
-          markAsSubmitted(sentRoundId);
-        }
+        console.log('[HOST CLICK] prompt response', { status: res.status, data });
+        if (!data.success) throw new Error(data.error || `Risposta non inviata (${res.status})`);
+        if (hostPromptRoundIdRef.current !== sentRoundId) return;
+        markAsSubmitted(sentRoundId);
       } catch (e) {
-        console.error('Host prompt response:', e);
+        reportActionError(e, 'POST /api/game/prompt/response');
+        throw e;
       }
     },
-    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted, reportActionError]
   );
 
   const handleHostPromptVote = useCallback(
@@ -1009,30 +1025,37 @@ export default function HostPage() {
         hostPromptRoundIdRef.current ??
         ((roundData as PromptRoundData & { roundId?: string } | null)?.roundId ?? null);
       if (!sentRoundId) return;
-      const res = await fetch('/api/game/prompt/vote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomCode,
-          playerId: hostPlayer.id,
-          roundId: sentRoundId,
-          responseId,
-        }),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Voto non registrato');
+      console.log('[HOST CLICK] handleHostPromptVote', { sentRoundId, responseId });
+      try {
+        const res = await fetch('/api/game/prompt/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomCode,
+            playerId: hostPlayer.id,
+            roundId: sentRoundId,
+            responseId,
+          }),
+        });
+        const data = await res.json();
+        console.log('[HOST CLICK] prompt vote response', { status: res.status, data });
+        if (!data.success) throw new Error(data.error || `Voto non registrato (${res.status})`);
+        if (hostPromptRoundIdRef.current !== sentRoundId) return;
+        markAsSubmitted(sentRoundId);
+        setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
+      } catch (e) {
+        reportActionError(e, 'POST /api/game/prompt/vote');
+        throw e;
       }
-      if (hostPromptRoundIdRef.current !== sentRoundId) return;
-      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
     },
-    [hostPlayer, roundData, currentGameType, roomCode]
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted, reportActionError]
   );
 
   const handleHostSecretSubmit = useCallback(
     async (secret: string) => {
       if (!hostPlayer) return;
       const sentRoundIdAtStart = hostSecretRoundIdRef.current;
+      console.log('[HOST CLICK] handleHostSecretSubmit', { sentRoundIdAtStart });
       try {
         const res = await fetch('/api/game/secret/submit', {
           method: 'POST',
@@ -1044,15 +1067,16 @@ export default function HostPage() {
           }),
         });
         const data = await res.json();
-        if (data.success) {
-          if (hostSecretRoundIdRef.current !== sentRoundIdAtStart) return;
-          markAsSubmitted(sentRoundIdAtStart);
-        }
+        console.log('[HOST CLICK] secret submit response', { status: res.status, data });
+        if (!data.success) throw new Error(data.error || `Segreto non inviato (${res.status})`);
+        if (hostSecretRoundIdRef.current !== sentRoundIdAtStart) return;
+        markAsSubmitted(sentRoundIdAtStart);
       } catch (e) {
-        console.error('Host secret submit:', e);
+        reportActionError(e, 'POST /api/game/secret/submit');
+        throw e;
       }
     },
-    [hostPlayer, roomCode, markAsSubmitted]
+    [hostPlayer, roomCode, markAsSubmitted, reportActionError]
   );
 
   const handleHostSecretVote = useCallback(
@@ -1062,24 +1086,30 @@ export default function HostPage() {
         hostSecretRoundIdRef.current ??
         ((roundData as SecretRoundData & { roundId?: string } | null)?.roundId ?? null);
       if (!sentRoundId) return;
-      const res = await fetch('/api/game/secret/vote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomCode,
-          playerId: hostPlayer.id,
-          roundId: sentRoundId,
-          suspectedPlayerId,
-        }),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Voto non registrato');
+      console.log('[HOST CLICK] handleHostSecretVote', { sentRoundId, suspectedPlayerId });
+      try {
+        const res = await fetch('/api/game/secret/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomCode,
+            playerId: hostPlayer.id,
+            roundId: sentRoundId,
+            suspectedPlayerId,
+          }),
+        });
+        const data = await res.json();
+        console.log('[HOST CLICK] secret vote response', { status: res.status, data });
+        if (!data.success) throw new Error(data.error || `Voto non registrato (${res.status})`);
+        if (hostSecretRoundIdRef.current !== sentRoundId) return;
+        markAsSubmitted(sentRoundId);
+        setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
+      } catch (e) {
+        reportActionError(e, 'POST /api/game/secret/vote');
+        throw e;
       }
-      if (hostSecretRoundIdRef.current !== sentRoundId) return;
-      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 1500);
     },
-    [hostPlayer, roundData, currentGameType, roomCode]
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted, reportActionError]
   );
 
   const handleHostTriviaAnswer = useCallback(
@@ -1089,57 +1119,66 @@ export default function HostPage() {
         hostTriviaRoundIdRef.current ??
         ((roundData as TriviaRoundData & { roundId?: string } | null)?.roundId ?? null);
       if (!sentRoundId) return;
-      const res = await fetch('/api/game/trivia/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomCode,
-          playerId: hostPlayer.id,
-          roundId: sentRoundId,
-          answer,
-          responseTimeMs,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Risposta non inviata');
-      if (hostTriviaRoundIdRef.current !== null && hostTriviaRoundIdRef.current !== sentRoundId) {
-        return;
+      console.log('[HOST CLICK] handleHostTriviaAnswer', { sentRoundId, answer });
+      try {
+        const res = await fetch('/api/game/trivia/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomCode,
+            playerId: hostPlayer.id,
+            roundId: sentRoundId,
+            answer,
+            responseTimeMs,
+          }),
+        });
+        const data = await res.json();
+        console.log('[HOST CLICK] trivia answer response', { status: res.status, data });
+        if (!res.ok || !data.success) throw new Error(data.error || `Risposta non inviata (${res.status})`);
+        if (hostTriviaRoundIdRef.current !== null && hostTriviaRoundIdRef.current !== sentRoundId) {
+          return;
+        }
+        setHostTriviaResult({
+          isCorrect: data.data.isCorrect,
+          correctAnswer: data.data.correctAnswer as string,
+          correctAnswerText: data.data.correctAnswerText as string | undefined,
+          pointsEarned: data.data.pointsEarned,
+        });
+        hostTriviaResultRoundIdRef.current = sentRoundId;
+        markAsSubmitted(sentRoundId);
+      } catch (e) {
+        reportActionError(e, 'POST /api/game/trivia/answer');
+        throw e;
       }
-      setHostTriviaResult({
-        isCorrect: data.data.isCorrect,
-        correctAnswer: data.data.correctAnswer as string,
-        correctAnswerText: data.data.correctAnswerText as string | undefined,
-        pointsEarned: data.data.pointsEarned,
-      });
-      hostTriviaResultRoundIdRef.current = sentRoundId;
-      markAsSubmitted(sentRoundId);
     },
-    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted]
+    [hostPlayer, roundData, currentGameType, roomCode, markAsSubmitted, reportActionError]
   );
 
   // Generic handler for new games
   const handleNewGameAction = useCallback(
     async (endpoint: string, body: Record<string, unknown>) => {
       if (!hostPlayer) return;
-      // Snapshot SINCRONO via ref del solo roundId. NON usiamo guardia su
-      // phase: spesso il click stesso e` quello che fa scattare la transizione
-      // (es. ultimo voto / ultima accusa) e il phase-changed via Pusher arriva
-      // PRIMA della response. Una guardia "phase==same" lasciava hasSubmitted
-      // a false e l'utente cliccava di nuovo, finendo in loop sulle round
-      // successive al primo.
       const sentRoundId = newGameRoundIdRef.current;
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode, playerId: hostPlayer.id, roundId: sentRoundId, ...body }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Azione non riuscita');
-      if (newGameRoundIdRef.current !== sentRoundId) return;
-      markAsSubmitted(sentRoundId);
-      setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
+      const sentPhase = newGamePhaseRef.current;
+      console.log('[HOST CLICK] handleNewGameAction', { endpoint, sentRoundId, sentPhase, body });
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomCode, playerId: hostPlayer.id, roundId: sentRoundId, ...body }),
+        });
+        const data = await res.json();
+        console.log('[HOST CLICK] response', { endpoint, status: res.status, data, refRoundIdNow: newGameRoundIdRef.current, refPhaseNow: newGamePhaseRef.current });
+        if (!data.success) throw new Error(data.error || `Azione non riuscita (${res.status})`);
+        if (newGameRoundIdRef.current !== sentRoundId) return;
+        markAsSubmitted(sentRoundId);
+        setTimeout(() => { void fetch(`/api/game/tick?code=${roomCode}`).catch(() => {}); }, 800);
+      } catch (e) {
+        reportActionError(e, `POST ${endpoint}`);
+        throw e;
+      }
     },
-    [hostPlayer, roomCode, markAsSubmitted]
+    [hostPlayer, roomCode, markAsSubmitted, reportActionError]
   );
 
   const hostPromptRoundForController: (PromptRoundData & { roundId?: string }) | null =
@@ -1295,6 +1334,11 @@ export default function HostPage() {
   return (
     <div className="min-h-[100dvh]">
       <div className="bg-stars" />
+      {actionError && (
+        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-[200] px-3 py-2 rounded-xl bg-red-600/90 backdrop-blur text-white text-xs sm:text-sm font-bold shadow-2xl border border-red-400/40 max-w-[92vw] text-center animate-bounce-in">
+          ⚠️ {actionError}
+        </div>
+      )}
 
       {/* Game info modal */}
       {infoModal && (
